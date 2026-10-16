@@ -1,0 +1,18 @@
+/* Language switcher, injected by conf.py through html-page-context. */
+
+.surfit-language-switcher {
+    margin: 0 0 1rem 0;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #e1e4e5;
+    border-radius: 3px;
+    background: #f8f8f8;
+    font-size: 0.9rem;
+}
+
+.surfit-language-switcher a {
+    font-weight: 600;
+}
+
+.surfit-language-switcher .surfit-current {
+    color: #666;
+}

@@ -1,0 +1,12 @@
+{% extends "!layout.html" %}
+
+{# The language switcher, at the bottom of every page.  conf.py computes the
+   URL of the counterpart page in the other tree. #}
+{% block footer %}
+<div class="surfit-language-switcher">
+  <span class="surfit-current">{{ language_current_label }}</span>
+  &middot;
+  <a href="{{ language_switcher_url }}">{{ language_switcher_label }}</a>
+</div>
+{{ super() }}
+{% endblock %}

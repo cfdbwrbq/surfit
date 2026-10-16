@@ -1,7 +1,11 @@
 # Python bindings (pybind11) for the surfit core.
 #
-# Optional: when pybind11 is not installed the rest of the project still
-# builds.  Point CMake at it with
+# The extension is built *inside* the `surfit` package so the package stays
+# relocatable, and the pure-Python part of that package is copied next to it
+# from python/surfit.
+#
+# Optional: when pybind11 is absent the rest of the project still builds.
+# Point CMake at it with
 #   -Dpybind11_DIR=<prefix>/share/cmake/pybind11
 
 find_package(pybind11 CONFIG QUIET)
@@ -24,11 +28,19 @@ else()
 
 	target_link_libraries(${PROJ_NAME} PRIVATE libsstuff libsurfit)
 
+	# The extension lives inside the package directory, one level below the
+	# shared libraries it links against.
 	set_target_properties( ${PROJ_NAME} PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-		BUILD_RPATH "$ORIGIN"
-		INSTALL_RPATH "$ORIGIN"
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/surfit"
+		BUILD_RPATH "$ORIGIN/.."
+		INSTALL_RPATH "$ORIGIN/.."
 	)
 
-	install(TARGETS ${PROJ_NAME} DESTINATION lib)
+	# Pure-Python part of the package.
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/python/surfit"
+	     DESTINATION "${CMAKE_BINARY_DIR}/bin")
+
+	install(TARGETS ${PROJ_NAME} DESTINATION lib/surfit)
+	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/python/surfit"
+	        DESTINATION lib)
 endif()

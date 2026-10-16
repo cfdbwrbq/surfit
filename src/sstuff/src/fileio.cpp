@@ -99,6 +99,14 @@ void log_printf(const char *tmplt, ...)
 		Tcl_WriteChars(out, buf, written);
 		Tcl_Flush(out);
 	}
+	else {
+		// No Tcl interpreter: a host such as the Python bindings still wants to
+		// see the message, so fall back to plain stdout.
+		vprintf(tmplt, ap);
+		fflush(stdout);
+		va_end(ap);
+		va_start(ap, tmplt);
+	}
 
 	// logfile output
 	if ( (logfile) && (ferror(logfile) == 0) ) 
@@ -171,6 +179,32 @@ void writelog (int errlevel, const char *tmplt, ...)
 		Tcl_WriteChars(out, &enter, 1);
 		Tcl_Flush(out);
 
+	}
+	else {
+		// No Tcl interpreter: emit on stdout.  The timestamp came through
+		// Tcl_printf() and the severity prefix is written here, so the console
+		// layout matches the Tcl one.
+		switch (errlevel) {
+
+		case LOG_MESSAGE:
+			break;
+		case LOG_ERROR:
+		case LOG_ERROR_TCL:
+			fputs(error, stdout);
+			break;
+		case LOG_WARNING:
+			fputs(warning, stdout);
+			break;
+		case LOG_DEBUG:
+			fputs(debug, stdout);
+			break;
+		};
+
+		vprintf(tmplt, ap);
+		fputc(enter, stdout);
+		fflush(stdout);
+		va_end(ap);
+		va_start (ap, tmplt);
 	}
 
 	// logfile output
@@ -270,6 +304,30 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 		Tcl_Flush(out);
 
 	}
+	else {
+		// No Tcl interpreter: see writelog().  writelog2() does not append a
+		// newline and neither does this branch.
+		switch (errlevel) {
+
+		case LOG_MESSAGE:
+			break;
+		case LOG_ERROR:
+		case LOG_ERROR_TCL:
+			fputs(error, stdout);
+			break;
+		case LOG_WARNING:
+			fputs(warning, stdout);
+			break;
+		case LOG_DEBUG:
+			fputs(debug, stdout);
+			break;
+		};
+
+		vprintf(tmplt, ap);
+		fflush(stdout);
+		va_end(ap);
+		va_start(ap, tmplt);
+	}
 
 	// logfile output
 	if ( (logfile) && (ferror(logfile) == 0) ) {
@@ -312,15 +370,23 @@ void Tcl_printf (const char *tmplt, ...)
 	if (loglevel == LOG_SILENT)
 		return;
 
-	if (!interp)
-		return;
-
-	Tcl_Channel out = Tcl_GetStdChannel(TCL_STDOUT);
-	if (out == NULL)
-		return;
-	
 	va_list ap;
 	va_start (ap, tmplt);
+
+	if (!interp) {
+		// No Tcl interpreter means no Tcl console channel, but the message must
+		// still reach the user (Python bindings, plain embedding).
+		vprintf(tmplt, ap);
+		fflush(stdout);
+		va_end (ap);
+		return;
+	}
+
+	Tcl_Channel out = Tcl_GetStdChannel(TCL_STDOUT);
+	if (out == NULL) {
+		va_end (ap);
+		return;
+	}
 
 	// console output		
 	char buf[2048];

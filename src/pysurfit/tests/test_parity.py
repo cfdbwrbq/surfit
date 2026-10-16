@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""Acceptance check for the L1 Python bindings.
+"""Acceptance checks for the L1 Python bindings.
 
 The bindings reuse the C++ API layer that the Tcl commands are generated from,
 so the same gridding task must produce the same answer through both front ends.
 
-This script runs examples/surfit/tests/area.tcl through tclsh and the same
-sequence through the pybind11 module, then verifies that
+Check 1 (parity): runs examples/surfit/tests/area.tcl through tclsh and the same
+sequence through the bindings, then verifies that both produce a byte-identical
+surfit data file and that surf_values() returns exactly the coefficient block
+stored in that file, in row-major (count_y, count_x) order.
 
-  * both produce a byte-identical surfit data file, and
-  * surf_values() returns exactly the coefficient block stored in that file,
-    in row-major (count_y, count_x) order.
+Check 2 (numpy in/out): registers a numpy array as a surface and reads it back.
 
 Environment:
-  SURFIT_BIN  directory holding the built libraries (default: <repo>/../build-cpp/bin)
+  SURFIT_BIN  directory holding the built packages and libraries
+              (default: <repo>/../build-cpp/bin)
 
 Usage: python3 test_parity.py
 """
@@ -31,7 +32,7 @@ TCL_TEST = os.path.join(TESTS, "area.tcl")
 
 sys.path.insert(0, BIN)
 
-import _surfit as sf  # noqa: E402
+import surfit  # noqa: E402
 
 AREAS = ["area1", "area2", "area3", "area4", "area5"]
 
@@ -41,12 +42,16 @@ COEFF_COUNT_OFFSET = 273
 COEFF_DATA_OFFSET = 277
 
 
+def core_libraries():
+    """The shared libraries the Tcl module needs, next to the built package."""
+    return [name for name in os.listdir(BIN) if name.endswith(".so")]
+
+
 def run_tcl(workdir):
     """Runs the reference Tcl script; returns the path to its data file."""
     os.symlink(os.path.join(TESTS, "data"), os.path.join(workdir, "data"))
-    for name in os.listdir(BIN):
-        if name.endswith(".so"):
-            os.symlink(os.path.join(BIN, name), os.path.join(workdir, name))
+    for name in core_libraries():
+        os.symlink(os.path.join(BIN, name), os.path.join(workdir, name))
 
     env = dict(os.environ, LD_LIBRARY_PATH=BIN)
     subprocess.run(["tclsh", TCL_TEST], cwd=workdir, env=env, check=True)
@@ -55,29 +60,29 @@ def run_tcl(workdir):
 
 def run_python():
     """Mirrors area.tcl through the bindings; returns the solved surface."""
-    sf.clear_data()
-    sf.set_map_name("map_area")
-    sf.set_tol(5.01187e-006)  # `set tol ...` in area.tcl
+    surfit.clear_data()
+    surfit.set_map_name("map_area")
+    surfit.set_tol(5.01187e-006)  # `set tol ...` in area.tcl
 
     for name in AREAS:
-        assert all(sf.area_read("data/%s.txt" % name, name)), name
+        assert all(surfit.area_read("data/%s.txt" % name, name)), name
 
-    sf.grid_get(-12, 12, 0.2, -12, 12, 0.2)
+    surfit.grid_get(-12, 12, 0.2, -12, 12, 0.2)
 
-    sf.area("10", "area1")
-    sf.area("30", "area3")
-    sf.area("undef", "area5")
-    sf.completer(1, 1.6)
-    sf.area_add(20, 0.07, "area2")
-    sf.area_add(40, 0.07, "area4")
+    surfit.area("10", "area1")
+    surfit.area("30", "area3")
+    surfit.area("undef", "area5")
+    surfit.completer(1, 1.6)
+    surfit.area_add(20, 0.07, "area2")
+    surfit.area_add(40, 0.07, "area4")
 
-    sf.surfit()
+    surfit.surfit()
 
-    assert sf.surf_count() == 1, sf.surf_count()
-    assert sf.surf_name_at(0) == "map_area", sf.surf_name_at(0)
-    assert all(sf.surf_save("area.dat", "map_area"))
+    assert surfit.surf_count() == 1, surfit.surf_count()
+    assert surfit.surf_names() == ["map_area"], surfit.surf_names()
+    assert all(surfit.surf_save("area.dat", "map_area"))
 
-    return sf.surf_values(0)
+    return surfit.values("map_area")
 
 
 def coeff_from_file(path):
@@ -88,9 +93,7 @@ def coeff_from_file(path):
     return np.frombuffer(raw, dtype="<f8", count=count, offset=COEFF_DATA_OFFSET)
 
 
-def main():
-    failures = []
-
+def check_parity(failures):
     with tempfile.TemporaryDirectory() as tcl_dir, \
             tempfile.TemporaryDirectory() as py_dir:
         tcl_dat = run_tcl(tcl_dir)
@@ -119,15 +122,45 @@ def main():
         if values.shape != (121, 121):
             failures.append("unexpected array shape %s" % (values.shape,))
         elif np.array_equal(values, flat.reshape(values.shape)):
-            print("OK   surf_values() matches the stored coefficients "
+            print("OK   values() matches the stored coefficients "
                   "(%d values, %s)" % (flat.size, values.shape))
         else:
-            failures.append("surf_values() does not match the stored coefficients")
+            failures.append("values() does not match the stored coefficients")
 
-        defined = ~np.isclose(values, np.finfo(np.float32).max, rtol=1e-6)
+        defined = surfit.defined_mask(values)
         print("     %d/%d nodes defined, min=%.6f max=%.6f mean=%.6f" % (
             defined.sum(), values.size, values[defined].min(),
             values[defined].max(), values[defined].mean()))
+
+
+def check_numpy_roundtrip(failures):
+    """A numpy array must survive a trip through add_surface()/values()."""
+    surfit.clear_data()
+
+    count_x, count_y = 7, 5
+    source = (np.arange(count_x * count_y, dtype="float64")
+              .reshape(count_y, count_x) * 1.5)
+
+    surfit.add_surface(source, start_x=-1.0, step_x=0.5,
+                       start_y=10.0, step_y=2.0, name="trend")
+
+    pos = surfit.surf_index("trend")
+    if pos < 0:
+        failures.append("add_surface() did not register the surface")
+        return
+
+    back = surfit.surf_values(pos)
+    if back.shape == source.shape and np.array_equal(back, source):
+        print("OK   numpy round-trip through add_surface() (%s)" % (back.shape,))
+    else:
+        failures.append("numpy round-trip mismatch: %s vs %s"
+                        % (back.shape, source.shape))
+
+
+def main():
+    failures = []
+    check_parity(failures)
+    check_numpy_roundtrip(failures)
 
     if failures:
         for line in failures:

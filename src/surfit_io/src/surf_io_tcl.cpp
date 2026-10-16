@@ -180,9 +180,9 @@ struct save_oper
 	virtual bool do_oper(const char * filename, d_surf * surf) = 0;
 };
 
-struct match_surf_save
+struct match_surf_save_io
 {
-	match_surf_save(const char * ifilename, const char * ipos, save_oper * ioper) 
+	match_surf_save_io(const char * ifilename, const char * ipos, save_oper * ioper) 
 		: filename(ifilename), pos(ipos), oper(ioper), res(NULL) {};
 	void operator()(d_surf * surf)
 	{
@@ -226,7 +226,7 @@ struct save_oper_grd : public save_oper
 boolvec * surf_save_grd(const char * filename, const char * pos, int format) 
 {
 	save_oper_grd oper(format);
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -244,7 +244,7 @@ struct save_oper_gmt : public save_oper
 boolvec * surf_save_gmt(const char * filename, const char * pos) 
 {
 	save_oper_gmt oper;
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -262,7 +262,7 @@ struct save_oper_grass : public save_oper
 boolvec * surf_save_grass(const char * filename, const char * pos) 
 {
 	save_oper_grass oper;
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -280,7 +280,7 @@ struct save_oper_arcgis : public save_oper
 boolvec * surf_save_arcgis(const char * filename, const char * pos) 
 {
 	save_oper_arcgis oper;
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -298,7 +298,7 @@ struct save_oper_xyz : public save_oper
 boolvec * surf_save_xyz(const char * filename, const char * pos) 
 {
 	save_oper_xyz oper;
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -318,7 +318,7 @@ struct save_oper_jpg : public save_oper
 boolvec * surf_save_jpg(const char * filename, const char * pos, int quality) 
 {
 	save_oper_jpg oper(quality);
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };
@@ -336,7 +336,7 @@ struct save_oper_bmp : public save_oper
 boolvec * surf_save_bmp(const char * filename, const char * pos) 
 {
 	save_oper_bmp oper;
-	match_surf_save qq(filename, pos, &oper);
+	match_surf_save_io qq(filename, pos, &oper);
 	qq = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), qq);
 	return qq.res;
 };

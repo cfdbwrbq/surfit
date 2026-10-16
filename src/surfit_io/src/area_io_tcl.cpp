@@ -63,9 +63,9 @@ struct save_oper
 	virtual bool do_oper(const char * filename, d_area * area) = 0;
 };
 
-struct match_area_save
+struct match_area_save_io
 {
-	match_area_save(const char * ifilename, const char * ipos, save_oper * ioper) 
+	match_area_save_io(const char * ifilename, const char * ipos, save_oper * ioper) 
 		: filename(ifilename), pos(ipos), oper(ioper), res(NULL) {};
 	void operator()(d_area * area)
 	{
@@ -97,7 +97,7 @@ struct oper_save_bln : save_oper
 boolvec * area_save_bln(const char * filename, const char * area_pos) 
 {
 	oper_save_bln oper;
-	match_area_save qq(filename, area_pos, &oper);
+	match_area_save_io qq(filename, area_pos, &oper);
 	qq = std::for_each(surfit_areas->begin(), surfit_areas->end(), qq);
 	return qq.res;
 };
@@ -117,7 +117,7 @@ struct oper_save_shp : save_oper
 boolvec * area_save_shp(const char * filename, const char * area_pos) 
 {
 	oper_save_shp oper;
-	match_area_save qq(filename, area_pos, &oper);
+	match_area_save_io qq(filename, area_pos, &oper);
 	qq = std::for_each(surfit_areas->begin(), surfit_areas->end(), qq);
 	return qq.res;
 };

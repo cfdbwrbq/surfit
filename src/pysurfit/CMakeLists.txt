@@ -21,12 +21,13 @@ else()
 
 	include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/../surfit/src
+		${CMAKE_CURRENT_SOURCE_DIR}/../surfit_io/src
 		${CMAKE_CURRENT_SOURCE_DIR}/../sstuff/src
 		${CMAKE_CURRENT_SOURCE_DIR}/../sstuff/src/ptypes
 		${CMAKE_BINARY_DIR}
 	)
 
-	target_link_libraries(${PROJ_NAME} PRIVATE libsstuff libsurfit)
+	target_link_libraries(${PROJ_NAME} PRIVATE libsurfit_io libsstuff libsurfit)
 
 	# The extension lives inside the package directory, one level below the
 	# shared libraries it links against.

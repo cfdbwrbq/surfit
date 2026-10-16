@@ -48,9 +48,28 @@
 #include "surf_tcl.h"
 #include "cmofs.h"
 #include "variables_tcl.h"
+#include "variables.h"
 #include "surf.h"
 
+// surfit_io: the file-format plugin.
+#include "surfit_io_ie.h"
+#include "surfit_io_variables.h"
+#include "surfit_io_data_manager.h"
+#include "area_io_tcl.h"
+#include "cntr_io_tcl.h"
+#include "curv_io_tcl.h"
+#include "mask_io_tcl.h"
+#include "pnts_io_tcl.h"
+#include "surf_io_tcl.h"
+
 namespace py = pybind11;
+
+namespace surfit {
+/*! Defined in surfit_io_variables.cpp but not declared in any header upstream,
+	so the definition is repeated here to let the module register the plugin's
+	manager without going through Tcl. */
+extern surfit_io_manager * my_surfit_io_manager;
+}  // namespace surfit
 
 using surfit::area;
 using surfit::area_add;
@@ -92,6 +111,19 @@ const char * opt_cstr(const py::object & value, std::string & storage) {
 		return NULL;
 	storage = std::string(py::str(value));
 	return storage.c_str();
+}
+
+/*! Registers the surfit_io data manager.
+
+	The Tcl plugin does this in surfit_io_init_variables(), which first calls
+	init_surfit_lib() -- and that one evaluates Tcl code, so it cannot run
+	without an interpreter.  Everything else it does is reproduced here.
+*/
+void ensure_io_manager() {
+	if (surfit::my_surfit_io_manager != NULL)
+		return;
+	surfit::my_surfit_io_manager = new surfit::surfit_io_manager;
+	surfit::add_manager(surfit::my_surfit_io_manager);
 }
 
 /*! The core names the resulting surface after the global `map_name`, which the
@@ -184,6 +216,10 @@ int surf_index(const std::string & name) {
 
 PYBIND11_MODULE(_surfit, m) {
 	m.doc() = "surfit gridding engine -- C++ core bindings (stage L1)";
+
+	// Registers the file-format plugin, which the Tcl front end would load as
+	// a separate shared library.
+	ensure_io_manager();
 
 	// Without a Tcl interpreter the core suppresses console output; log_open()
 	// still writes the log file.  A real logging bridge is the next L1 step.
@@ -711,4 +747,114 @@ PYBIND11_MODULE(_surfit, m) {
 		free(text);
 		return result;
 	}, py::arg("path"));
+
+	// ---- surfit_io: file formats -------------------------------------------
+	// These are the commands of the libsurfit_io plugin.  Defaults follow the
+	// SWIG interface file, which is what the Tcl front end uses: loaders take
+	// an optional name (NULL derives it from the file), savers default to "*".
+
+#define SURFIT_IO_LOAD(command)                                                \
+	m.def(#command, [](const std::string & path, py::object name) {            \
+		std::string storage;                                                   \
+		return drain_boolvec(                                                  \
+			surfit::command(path.c_str(), opt_cstr(name, storage)));           \
+	}, py::arg("path"), py::arg("name") = py::none())
+
+#define SURFIT_IO_SAVE(command)                                                \
+	m.def(#command, [](const std::string & path, const std::string & name) {   \
+		return drain_boolvec(surfit::command(path.c_str(), name.c_str()));     \
+	}, py::arg("path"), py::arg("name") = "*")
+
+	SURFIT_IO_LOAD(curv_load_bln);
+	SURFIT_IO_LOAD(curv_load_shp);
+	SURFIT_IO_LOAD(area_load_bln);
+	SURFIT_IO_LOAD(area_load_shp);
+	SURFIT_IO_LOAD(cntr_load_bln);
+	SURFIT_IO_LOAD(surf_load_grd);
+	SURFIT_IO_LOAD(surf_load_gmt);
+	SURFIT_IO_LOAD(surf_load_grass);
+	SURFIT_IO_LOAD(surf_load_arcgis);
+
+	SURFIT_IO_SAVE(curv_save_bln);
+	SURFIT_IO_SAVE(curv_save_shp);
+	SURFIT_IO_SAVE(area_save_bln);
+	SURFIT_IO_SAVE(area_save_shp);
+	SURFIT_IO_SAVE(cntr_save_bln);
+	SURFIT_IO_SAVE(cntr_save_shp);
+	SURFIT_IO_SAVE(surf_save_gmt);
+	SURFIT_IO_SAVE(surf_save_grass);
+	SURFIT_IO_SAVE(surf_save_arcgis);
+	SURFIT_IO_SAVE(surf_save_xyz);
+	SURFIT_IO_SAVE(surf_save_bmp);
+	SURFIT_IO_SAVE(mask_save_grd);
+	SURFIT_IO_SAVE(mask_save_xyz);
+
+#undef SURFIT_IO_LOAD
+#undef SURFIT_IO_SAVE
+
+	m.def("pnts_load_shp", [](const std::string & path, py::object name,
+	                          const std::string & param) {
+		std::string storage;
+		return drain_boolvec(surfit::pnts_load_shp(path.c_str(),
+		                                           opt_cstr(name, storage),
+		                                           param.c_str()));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("param") = "VALUE");
+	m.def("pnts_save_shp", [](const std::string & path, const std::string & name) {
+		return drain_boolvec(surfit::pnts_save_shp(path.c_str(), name.c_str()));
+	}, py::arg("path"), py::arg("name") = "*");
+
+	m.def("cntr_load_shp", [](const std::string & path, py::object name,
+	                          py::object zfield) {
+		std::string name_storage;
+		std::string zfield_storage;
+		return drain_boolvec(surfit::cntr_load_shp(path.c_str(),
+		                                           opt_cstr(name, name_storage),
+		                                           opt_cstr(zfield, zfield_storage)));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("zfield") = py::none());
+
+	m.def("surf_load_xyz", [](const std::string & path, py::object name,
+	                          bool force) {
+		std::string storage;
+		return drain_boolvec(surfit::surf_load_xyz(path.c_str(),
+		                                           opt_cstr(name, storage),
+		                                           force));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("force") = false);
+	m.def("surf_save_grd", [](const std::string & path, const std::string & name,
+	                          int format) {
+		return drain_boolvec(surfit::surf_save_grd(path.c_str(), name.c_str(),
+		                                           format));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("format") = 0);
+	m.def("surf_save_jpg", [](const std::string & path, const std::string & name,
+	                          int quality) {
+		return drain_boolvec(surfit::surf_save_jpg(path.c_str(), name.c_str(),
+		                                           quality));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("quality") = 255);
+
+	// Both image loaders share the same extra arguments: a z-range plus an
+	// explicit grid to interpret the pixels on.
+	m.def("surf_load_jpg", [](const std::string & path, py::object name,
+	                          double minz, double maxz, double start_x,
+	                          double start_y, double step_x, double step_y) {
+		std::string storage;
+		return drain_boolvec(surfit::surf_load_jpg(path.c_str(),
+		                                           opt_cstr(name, storage),
+		                                           minz, maxz, start_x, start_y,
+		                                           step_x, step_y));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("minz") = 0, py::arg("maxz") = 0, py::arg("start_x") = 0,
+	   py::arg("start_y") = 0, py::arg("step_x") = 1, py::arg("step_y") = 1);
+	m.def("surf_load_bmp", [](const std::string & path, py::object name,
+	                          double minz, double maxz, double start_x,
+	                          double start_y, double step_x, double step_y) {
+		std::string storage;
+		return drain_boolvec(surfit::surf_load_bmp(path.c_str(),
+		                                           opt_cstr(name, storage),
+		                                           minz, maxz, start_x, start_y,
+		                                           step_x, step_y));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("minz") = 0, py::arg("maxz") = 0, py::arg("start_x") = 0,
+	   py::arg("start_y") = 0, py::arg("step_x") = 1, py::arg("step_y") = 1);
 }

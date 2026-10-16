@@ -202,9 +202,10 @@ PYBIND11_MODULE(_surfit, m) {
 	      "tolerance for the iterative solver");
 	m.def("get_tol", []() { return surfit::tol; });
 
-	m.def("area_read", [](const std::string & path, const std::string & name) {
-		return drain_boolvec(area_read(path.c_str(), name.c_str()));
-	}, py::arg("path"), py::arg("name"));
+	m.def("area_read", [](const std::string & path, py::object name) {
+		std::string storage;
+		return drain_boolvec(area_read(path.c_str(), opt_cstr(name, storage)));
+	}, py::arg("path"), py::arg("name") = py::none());
 
 	// `name` is optional in the C++ API (NULL means "unnamed grid"), so accept
 	// None here instead of inventing a name.
@@ -226,14 +227,17 @@ PYBIND11_MODULE(_surfit, m) {
 
 	// In Tcl every argument is a string, so the value may arrive as a number
 	// ("10") or as the literal "undef"; accept both.
-	m.def("area", [](const py::object & value, const std::string & name) {
+	m.def("area", [](const py::object & value, const std::string & name,
+	                 int inside) {
 		std::string text = std::string(py::str(value));
-		return drain_boolvec(area(text.c_str(), name.c_str()));
-	}, py::arg("value"), py::arg("name") = "*");
+		return drain_boolvec(area(text.c_str(), name.c_str(), inside));
+	}, py::arg("value"), py::arg("name") = "*", py::arg("inside") = 1);
 
-	m.def("area_add", [](double value, double weight, const std::string & name) {
-		return drain_boolvec(area_add(value, weight, name.c_str()));
-	}, py::arg("value"), py::arg("weight"), py::arg("name") = "*");
+	m.def("area_add", [](double value, double weight, const std::string & name,
+	                     int inside) {
+		return drain_boolvec(area_add(value, weight, name.c_str(), inside));
+	}, py::arg("value"), py::arg("weight"), py::arg("name") = "*",
+	   py::arg("inside") = 1);
 
 	m.def("completer", &completer,
 	      py::arg("D1") = 1, py::arg("D2") = 2,
@@ -598,4 +602,113 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("hist_del", [](const std::string & name) {
 		surfit::hist_del(name.c_str());
 	}, py::arg("name") = "*");
+
+	// ---- dataset utilities -------------------------------------------------
+
+	m.def("pnts_save", [](const std::string & path, const std::string & name) {
+		return drain_boolvec(surfit::pnts_save(path.c_str(), name.c_str()));
+	}, py::arg("path"), py::arg("name") = "*");
+	m.def("pnts_write", [](const std::string & path, const std::string & name,
+	                       const std::string & delimiter) {
+		return drain_boolvec(surfit::pnts_write(path.c_str(), name.c_str(),
+		                                        delimiter.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t");
+	m.def("pnts_set", [](const std::string & first, const std::string & second) {
+		return drain_boolvec(surfit::pnts_set(first.c_str(), second.c_str()));
+	}, py::arg("points1"), py::arg("points2"));
+	m.def("pnts_mult_real", [](double value, const std::string & name) {
+		return drain_boolvec(surfit::pnts_mult_real(value, name.c_str()));
+	}, py::arg("value"), py::arg("name") = "*");
+	m.def("pnts_filter_in_area", [](const std::string & name,
+	                                const std::string & area) {
+		return drain_boolvec(surfit::pnts_filter_in_area(name.c_str(), area.c_str()));
+	}, py::arg("name") = "*", py::arg("area") = "*");
+	m.def("pnts_filter_out_area", [](const std::string & name,
+	                                 const std::string & area) {
+		return drain_boolvec(surfit::pnts_filter_out_area(name.c_str(), area.c_str()));
+	}, py::arg("name") = "*", py::arg("area") = "*");
+	m.def("pnts_info", []() { surfit::pnts_info(); });
+
+	m.def("cntr_del", [](const std::string & name) {
+		surfit::cntr_del(name.c_str());
+	}, py::arg("name") = "*");
+	m.def("cntr_mult_real", [](double value, const std::string & name) {
+		return drain_boolvec(surfit::cntr_mult_real(value, name.c_str()));
+	}, py::arg("value"), py::arg("name") = "*");
+	m.def("cntr_to_pnts", [](double step, const std::string & name) {
+		return drain_boolvec(surfit::cntr_to_pnts(step, name.c_str()));
+	}, py::arg("step") = 1, py::arg("name") = "*");
+	m.def("cntrs_info", []() { surfit::cntrs_info(); });
+
+	m.def("curv_to_cntr", [](double value, const std::string & name) {
+		return drain_boolvec(surfit::curv_to_cntr(value, name.c_str()));
+	}, py::arg("value"), py::arg("name") = "*");
+	m.def("curvs_info", []() { surfit::curvs_info(); });
+
+	m.def("area_hist", [](const std::string & area, const std::string & hist,
+	                      double penalty, int inside) {
+		return drain_boolvec(surfit::area_hist(area.c_str(), hist.c_str(),
+		                                       penalty, inside));
+	}, py::arg("area") = "*", py::arg("hist") = "*",
+	   py::arg("penalty_factor") = -1, py::arg("inside") = 1);
+	m.def("areas_info", []() { surfit::areas_info(); });
+
+	m.def("smooth_contour", [](const std::string & name, double penalty) {
+		return drain_boolvec(surfit::smooth_contour(name.c_str(), penalty));
+	}, py::arg("name") = "*", py::arg("penalty_factor") = 0);
+	m.def("smooth_contour_add", [](double weight, const std::string & name) {
+		return drain_boolvec(surfit::smooth_contour_add(weight, name.c_str()));
+	}, py::arg("weight") = 50, py::arg("name") = "*");
+
+	m.def("surf_del", [](const std::string & name) {
+		surfit::surf_del(name.c_str());
+	}, py::arg("name") = "*");
+	m.def("surf_minus", [](const std::string & first, const std::string & second) {
+		return drain_boolvec(surfit::surf_minus(first.c_str(), second.c_str()));
+	}, py::arg("surface1_name"), py::arg("surface2_name"));
+	m.def("surf_swapxy", [](const std::string & name) {
+		return drain_boolvec(surfit::surf_swapxy(name.c_str()));
+	}, py::arg("name") = "*");
+	m.def("surf_filter_in_area", [](const std::string & name,
+	                                const std::string & area) {
+		return drain_boolvec(surfit::surf_filter_in_area(name.c_str(), area.c_str()));
+	}, py::arg("name") = "*", py::arg("area") = "*");
+	m.def("surf_info", [](const std::string & name) {
+		surfit::surf_info(name.c_str());
+	}, py::arg("name") = "*");
+	m.def("surfs_info", []() { surfit::surfs_info(); });
+
+	m.def("mask_info", [](const std::string & name) {
+		surfit::mask_info(name.c_str());
+	}, py::arg("name") = "*");
+	m.def("hists_info", []() { surfit::hists_info(); });
+	m.def("grid_info", []() { surfit::grid_info(); });
+	m.def("grid_unload", []() { surfit::grid_unload(); });
+	m.def("solvers_info", []() { surfit::solvers_info(); });
+	m.def("mem_info", []() { surfit::mem_info(); });
+
+	m.def("completer_add", [](double weight, double d1, double d2, double alpha,
+	                          double w) {
+		return surfit::completer_add(weight, d1, d2, alpha, w);
+	}, py::arg("weight") = 1, py::arg("D1") = 1, py::arg("D2") = 2,
+	   py::arg("alpha") = 0, py::arg("w") = 1);
+
+	// Overloaded in C++ (the other one is the Triangle entry point), hence the
+	// lambda rather than a plain function pointer.
+	m.def("triangulate", []() { return surfit::triangulate(); });
+
+	// ---- whole-task data files ---------------------------------------------
+
+	m.def("file_load", [](const std::string & path) {
+		surfit::file_load(path.c_str());
+	}, py::arg("path"));
+	m.def("file_save", [](const std::string & path) {
+		return surfit::file_save(path.c_str());
+	}, py::arg("path"));
+	m.def("file_info", [](const std::string & path) {
+		char * text = surfit::file_info(path.c_str());
+		std::string result = text != NULL ? std::string(text) : std::string();
+		free(text);
+		return result;
+	}, py::arg("path"));
 }

@@ -22,7 +22,6 @@
 
 #include <vector>
 
-struct Tcl_Interp;
 
 namespace surfit {
 
@@ -32,7 +31,7 @@ namespace surfit {
 
 	//! inits surfit variables 
 	SURFIT_EXPORT
-	void surfit_init_variables(Tcl_Interp * interp);
+	void surfit_init_variables();
 
 	//! contains number of iteration made by penalty algorithm
 	SURFIT_EXPORT

@@ -36,7 +36,7 @@
 
 %init 
 %{
-surfit::surfit_io_init_variables(interp);
+surfit::surfit_io_init_variables();
 %}
 
 namespace surfit {

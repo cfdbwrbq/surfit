@@ -26,7 +26,6 @@ class datafile;
 class vec;
 class datafile;
 class d_grid;
-class dem;
 class boolvec;
 class strvec;
 class intvec;

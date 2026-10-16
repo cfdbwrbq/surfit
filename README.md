@@ -103,19 +103,19 @@ make -j"$(nproc)"
 export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 ```
 
-Requirements: `cmake` >= 3.10, a C++ compiler, and the Tcl development headers
-(`tcl-dev`). `zlib`, `libjpeg` and `netcdf` are optional and enable the globe
-module and the JPEG/netCDF formats. SWIG is only needed for the Tcl front end.
+Requirements: `cmake` >= 3.10 and a C++ compiler. The engine itself has no
+Tcl dependency. `zlib`, `libjpeg` and `netcdf` are optional and enable the globe
+module and the JPEG/netCDF formats.
 
-The Tcl front end is what the original examples use:
+The original examples use a Tcl front end, which is off by default; it needs
+`tcl-dev` and SWIG:
 
 ```bash
+cmake -DSURFIT_BUILD_TCL=ON ../src
+make -j"$(nproc)"
 cd examples/surfit/tests
 tclsh area.tcl
 ```
-
-It is built by default; configure with `-DSURFIT_BUILD_TCL=OFF` to skip the Tcl
-module, the CLI and the `globe`/`freeflow` subprojects.
 
 ## Tests
 

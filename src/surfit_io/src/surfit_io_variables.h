@@ -20,7 +20,6 @@
 #ifndef __surfit_surfit_io_variables_included__
 #define __surfit_surfit_io_variables_included__
 
-struct Tcl_Interp;
 #include <vector>
 
 namespace surfit {
@@ -29,7 +28,7 @@ namespace surfit {
 
 //! inits libsurfit_io global variables
 SURFIT_IO_EXPORT
-void surfit_io_init_variables(Tcl_Interp * interp);
+void surfit_io_init_variables();
 
 }; // namespace surfit;
 

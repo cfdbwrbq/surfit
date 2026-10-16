@@ -25,7 +25,6 @@
 #include "findfile.h"
 
 #include "interp.h"
-#include <tcl.h>
 #include <algorithm>
 
 #include <errno.h>

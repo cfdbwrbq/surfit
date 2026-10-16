@@ -29,8 +29,6 @@
 #include "surfit_data.h"
 #include "free_elements.h"
 
-#include <tcl.h>
-
 namespace surfit {
 
 surfit_io_manager * my_surfit_io_manager = NULL;
@@ -51,13 +49,9 @@ surfit_io_garbage::~surfit_io_garbage() {
 
 surfit_io_garbage surfit_io_garb;
 
-void surfit_io_init_variables(Tcl_Interp * iinterp) {
+void surfit_io_init_variables() {
 
 	if (my_surfit_io_manager == NULL) {
-		
-		if (!init_surfit_lib(iinterp)) {
-			return;
-		}
 		
 		my_surfit_io_manager = new surfit_io_manager;
 		add_manager(my_surfit_io_manager);

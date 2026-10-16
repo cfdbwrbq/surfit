@@ -81,7 +81,7 @@ void log_printf (const char *tmplt, ...);
 
 //! Prints text to Tcl-console
 SSTUFF_EXPORT
-void Tcl_printf (const char *tmplt, ...);
+void console_printf (const char *tmplt, ...);
 
 /*! \brief observer of every message that writelog() and log_printf() emit
 

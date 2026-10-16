@@ -15,7 +15,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # no globe/freeflow, and every shared library installed *inside* the package so
 # the extension finds it through $ORIGIN.
 
-option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, globe, freeflow)" ON)
+option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, globe, freeflow)" OFF)
 option(SURFIT_BUILD_PYTHON "Build the Python bindings" ON)
 option(SURFIT_PYTHON_WHEEL "Install for a Python wheel, inside the package" OFF)
 
@@ -27,11 +27,11 @@ endif()
 set(SURFIT_LIBDIR "${SURFIT_LIBDIR}" CACHE STRING
 	"Install destination for the shared libraries")
 
-# The engine itself still needs Tcl: StringMatch() uses Tcl_StringMatch() and the
-# logging bridge knows about Tcl channels.  Only the Tcl *front end* is optional.
-find_package(TCL REQUIRED)
-
+# The engine has no Tcl dependency: StringMatch() is local and the logging
+# speaks to stdio and to the log hook.  Tcl is needed only by the front end and
+# by the plugins that wrap themselves as Tcl commands.
 if (SURFIT_BUILD_TCL)
+	find_package(TCL REQUIRED)
 	find_package(SWIG REQUIRED)
 	INCLUDE(${SWIG_USE_FILE})
 	SET(CMAKE_SWIG_FLAGS "-c++")

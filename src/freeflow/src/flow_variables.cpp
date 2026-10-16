@@ -31,7 +31,6 @@
 
 #include "free_elements.h"
 
-#include "tcl.h"
 
 namespace surfit {
 
@@ -53,13 +52,9 @@ flow_garbage::~flow_garbage() {
 
 flow_garbage flow_garb;
 
-void freeflow_init_variables(Tcl_Interp * iinterp) {
+void freeflow_init_variables() {
 
 	if (flow_manager == NULL) {
-		
-		if (!init_surfit_lib(iinterp)) {
-			return;
-		}
 		
 		flow_manager = new freeflow_manager;
 		add_manager(flow_manager);

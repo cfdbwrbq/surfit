@@ -20,13 +20,12 @@
 #ifndef __surfit__included__
 #define __surfit__included__
 
-struct Tcl_Interp;
-
 namespace surfit {
 
-//! main initialization function
-SURFIT_EXPORT
-bool init_surfit_lib(Tcl_Interp * interp);
+//! ile
+//! The library no longer needs a host interpreter: it initialises itself
+//! through a static constructor and reports through console_printf() and the
+//! log hook.
 
 };// namespace surfit;
 

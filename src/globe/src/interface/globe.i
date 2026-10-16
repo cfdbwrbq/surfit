@@ -34,7 +34,7 @@
 
 %init 
 %{
-surfit::globe_init_variables(interp);
+surfit::globe_init_variables();
 %}
 
 namespace surfit {

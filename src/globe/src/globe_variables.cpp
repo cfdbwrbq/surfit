@@ -29,7 +29,6 @@
 #include "surfit_data.h"
 #include "free_elements.h"
 
-#include <tcl.h>
 
 namespace surfit {
 
@@ -51,13 +50,9 @@ globe_garbage::~globe_garbage() {
 
 globe_garbage globe_garb;
 
-void globe_init_variables(Tcl_Interp * iinterp) {
+void globe_init_variables() {
 
 	if (my_globe_manager == NULL) {
-		
-		if (!init_surfit_lib(iinterp)) {
-			return;
-		}
 		
 		my_globe_manager = new globe_manager;
 		add_manager(my_globe_manager);

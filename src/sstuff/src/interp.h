@@ -21,22 +21,16 @@
 #define __sstuff_interp_included__
 
 /*! \file
-    \brief declaration of functions connected with using of Tcl interpretator
+    \brief string matching used to select objects by name
+
+    The engine used to call Tcl_StringMatch() here, which was the last thing
+    tying the core to Tcl.  The matching rules are Tcl's, implemented locally;
+    see StringMatch() for the details.
 */
-
-struct Tcl_Interp;
-
-//! Tcl scripting language interpretator
-extern SSTUFF_EXPORT Tcl_Interp * interp;
-
-//! initializes interp variable
-SSTUFF_EXPORT
-void init_interp(Tcl_Interp * iinterp);
 
 //! Compares two strings, where the first is a string mask
 SSTUFF_EXPORT
 bool StringMatch(const char * match, const char * str);
 
 #endif
-
 

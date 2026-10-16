@@ -6,6 +6,9 @@ that SWIG turns into a Tcl command, with argument defaults taken from the C++
 signature — which is why a script can write ``grid_get -12 12 0.2 -12 12 0.2``
 and leave the grid name out.
 
+The front end is optional and off by default; build it with
+``-DSURFIT_BUILD_TCL=ON``, which needs ``tcl-dev`` and SWIG.
+
 Running a script
 ----------------
 

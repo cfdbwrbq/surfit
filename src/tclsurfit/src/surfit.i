@@ -46,7 +46,7 @@ TCL_DECLARE_MUTEX(surfitMutex)
 
 %init 
 %{
-surfit::surfit_init_variables(interp);
+surfit::surfit_init_variables();
 %}
 
 namespace surfit {

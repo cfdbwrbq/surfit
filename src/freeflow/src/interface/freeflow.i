@@ -36,7 +36,7 @@
 
 %init 
 %{
-surfit::freeflow_init_variables(interp);
+surfit::freeflow_init_variables();
 %}
 
 namespace surfit {

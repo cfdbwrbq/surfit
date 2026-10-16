@@ -29,7 +29,6 @@
 
 #include <string.h>
 #include <float.h>
-#include <tcl.h>
 
 #include "grid_internal.h"
 #include "grid.h"
@@ -47,6 +46,11 @@
 #include "cntr.h"
 #include "cntr_internal.h"
 #include "cntr_tcl.h"
+#include "curvs_tcl.h"
+#include "f_points_tcl.h"
+#include "hist_tcl.h"
+#include "others_tcl.h"
+#include "surfs_tcl.h"
 #include "curv.h"
 #include "curv_internal.h"
 #include "curv_tcl.h"
@@ -741,27 +745,41 @@ const data * surfit_manager::data_get(int i) const {
 	return NULL;
 };
 
+namespace {
+
+/*! Releases the per-object flags these rule functions return; the caller here
+	only cares about the side effect of registering a functional. */
+void discard_flags(boolvec * flags)
+{
+	if (flags != NULL)
+		flags->release();
+}
+
+}  // namespace
+
 void surfit_manager::auto_functionals(int priority) const
 {
+	// These used to be evaluated as Tcl commands.  They are ordinary functions
+	// underneath, so they are called directly now.
 	switch(priority)
 	{
 	case 0:
 		{
-			Tcl_Eval(interp,"points");
-			Tcl_Eval(interp,"surface");
-			Tcl_Eval(interp,"fault");
+			discard_flags(points("*"));
+			discard_flags(surface("*"));
+			discard_flags(fault("*"));
 		}
 		break;
 
 	case 31:
 		{
-			Tcl_Eval(interp,"hist");
+			discard_flags(hist("*"));
 		}
 		break;
 	case 32:
 		{
-			Tcl_Eval(interp,"completer");
-			Tcl_Eval(interp,"contours_add 10");
+			completer();
+			discard_flags(contour_add(10, "*"));
 		}
 		break;
 	};

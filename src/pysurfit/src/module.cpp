@@ -253,6 +253,14 @@ PYBIND11_MODULE(_surfit, m) {
 
 	m.def("clear_data", &clear_data, "drop all loaded data and gridding rules");
 
+	// Object selection by name is the one thing the engine used to borrow from
+	// Tcl; the matcher is local now, and this exposes it so it can be checked
+	// against Tcl itself.
+	m.def("string_match", [](const std::string & pattern, const std::string & string) {
+		return ::StringMatch(pattern.c_str(), string.c_str());
+	}, py::arg("pattern"), py::arg("string"),
+	   "Tcl-style name matching: *, ?, [sets], backslash escapes");
+
 	// The core reports progress and diagnostics through writelog() and
 	// log_printf(); an observer can turn that into a progress bar.
 	m.def("set_log_handler", [](py::object handler) {

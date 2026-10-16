@@ -8,11 +8,13 @@ Building the engine needs:
 
 * CMake 3.10 or newer
 * a C++ compiler
-* the Tcl development headers (``tcl-dev`` on Debian and Ubuntu)
 
-The engine itself links Tcl: name matching between objects uses
-``Tcl_StringMatch``. The Tcl *front end* is optional and is the only part that
-needs SWIG.
+That is all. The engine has no Tcl dependency: name matching between objects is
+implemented locally, and logging speaks to stdio and to a hook.
+
+The Tcl *front end* is optional and off by default. Building it additionally
+needs the Tcl development headers (``tcl-dev`` on Debian and Ubuntu) and SWIG;
+see `Build options`_.
 
 These are optional and enable extra features:
 
@@ -44,9 +46,12 @@ From source
    make -j"$(nproc)"
    export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 
-That produces the shared libraries, the Tcl module ``libtclsurfit.so``, the
-``surfit`` command line interpreter, and — when pybind11 is available — the
-Python extension inside ``bin/surfit/``.
+That produces the engine libraries, the format library
+``libsurfit_io_core.so``, and — when pybind11 is available — the Python
+extension inside ``bin/surfit/``. With ``SURFIT_BUILD_TCL=ON`` you also get the
+Tcl module ``libtclsurfit.so``, the ``surfit`` command line interpreter, the
+``globe`` and ``freeflow`` subprojects, and the Tcl plugin
+``libsurfit_io.so``.
 
 To install into a prefix, ``make install`` puts the libraries in ``lib`` and the
 interpreter in ``bin``. There is no RPATH, so ``lib`` has to be on the loader
@@ -63,9 +68,9 @@ Build options
      - Default
      - Meaning
    * - ``SURFIT_BUILD_TCL``
-     - ``ON``
-     - Build the Tcl module, the command line interpreter, ``globe`` and
-       ``freeflow``. Needs SWIG.
+     - ``OFF``
+     - Build the Tcl module, the command line interpreter, ``globe``,
+       ``freeflow`` and the Tcl plugin for the formats. Needs Tcl and SWIG.
    * - ``SURFIT_BUILD_PYTHON``
      - ``ON``
      - Build the Python extension. Skipped with a message when pybind11 is

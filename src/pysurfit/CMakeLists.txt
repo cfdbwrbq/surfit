@@ -44,7 +44,7 @@ else()
 		${CMAKE_BINARY_DIR}
 	)
 
-	target_link_libraries(${PROJ_NAME} PRIVATE libsurfit_io libsstuff libsurfit)
+	target_link_libraries(${PROJ_NAME} PRIVATE libsurfit_io_core libsstuff libsurfit)
 
 	# In the build tree the extension sits one level below the libraries; in an
 	# installed wheel every library lands in the same package directory.

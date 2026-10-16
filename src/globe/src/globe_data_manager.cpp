@@ -23,13 +23,13 @@
 #include "boolvec.h"
 #include "interp.h"
 
-#include <tcl.h>
 
 #include "sstuff.h"
 
 #include "dem.h"
 #include "dem_internal.h"
 #include "dem_tcl.h"
+#include "dems_tcl.h"
 #include "datafile.h"
 #include "free_elements.h"
 
@@ -184,13 +184,25 @@ exit:
 	return res;
 };
 
+namespace {
+
+/*! Releases the per-object flags dem() returns; only the side effect matters. */
+void discard_flags(boolvec * flags)
+{
+	if (flags != NULL)
+		flags->release();
+}
+
+}  // namespace
+
 void globe_manager::auto_functionals(int priority) const
 {
 	switch(priority)
 	{
 	case 0:
 		{
-			Tcl_Eval(interp,"dem");
+			// Was Tcl_Eval(interp, "dem"); the command is a plain function.
+			discard_flags(dem("*"));
 		}
 		break;
 	};

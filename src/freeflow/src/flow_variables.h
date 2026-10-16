@@ -20,7 +20,6 @@
 #ifndef __surfit_flow_variables_included__
 #define __surfit_flow_variables_included__
 
-struct Tcl_Interp;
 #include <vector>
 
 namespace surfit {
@@ -29,7 +28,7 @@ namespace surfit {
 
 //! inits libfreeflow global variables
 FLOW_EXPORT
-void freeflow_init_variables(Tcl_Interp * interp);
+void freeflow_init_variables();
 
 }; // namespace surfit;
 

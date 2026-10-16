@@ -25,6 +25,10 @@ Usage:
   python3 run_tcl_suite.py                                  # examples/surfit/tests
   python3 run_tcl_suite.py --sequential <directory>         # pipelines, in order
   python3 run_tcl_suite.py path/to/script.tcl               # one script
+
+  # keep the Tcl side's output, then check a build that has no Tcl front end
+  python3 run_tcl_suite.py --sequential --save-references refs <directory>
+  python3 run_tcl_suite.py --sequential --use-references  refs <directory>
 """
 import os
 import re
@@ -261,14 +265,25 @@ def compare(tcl_dir, py_dir, note):
     return "PASS", note
 
 
-def check_group(scripts):
-    """Runs a group of scripts in order, each front end in its own scratch dir."""
+def reference_dir_for(root, key):
+    return os.path.join(root, key) if root else None
+
+
+def check_group(scripts, key=None, mode="live", reference_root=None):
+    """Runs a group of scripts in order, each front end in its own scratch dir.
+
+    With mode "save" the Tcl side is run and its output kept as the reference;
+    with mode "use" the Tcl side is skipped and the Python output is compared
+    against the stored reference instead.  The second mode is what verifies a
+    build that has no Tcl front end at all.
+    """
     env = dict(os.environ, LD_LIBRARY_PATH=BIN)
     with tempfile.TemporaryDirectory() as py_dir, \
             tempfile.TemporaryDirectory() as tcl_dir:
         copy_into(scripts[0], py_dir)
-        copy_into(scripts[0], tcl_dir)
-        link_libraries(tcl_dir)
+        if mode != "use":
+            copy_into(scripts[0], tcl_dir)
+            link_libraries(tcl_dir)
 
         warnings = []
         for script in scripts:
@@ -279,6 +294,8 @@ def check_group(scripts):
                 return "SKIP", "%s: %s" % (label, error)
             except Exception as error:  # noqa: BLE001 - report anything raised
                 return "ERROR", "%s: %s: %s" % (label, type(error).__name__, error)
+            if mode == "use":
+                continue
             try:
                 subprocess.run(["tclsh", script], cwd=tcl_dir, env=env,
                                check=True, stdout=subprocess.DEVNULL,
@@ -291,6 +308,20 @@ def check_group(scripts):
             note += " from %d scripts" % len(scripts)
         if warnings:
             note += "; WARN " + warnings[0]
+
+        if mode == "save":
+            target = reference_dir_for(reference_root, key)
+            if os.path.isdir(target):
+                shutil.rmtree(target)
+            shutil.copytree(tcl_dir, target)
+            return compare(tcl_dir, py_dir, note + "; reference saved")
+
+        if mode == "use":
+            target = reference_dir_for(reference_root, key)
+            if not os.path.isdir(target):
+                return "ERROR", "no reference for %r in %s" % (key, reference_root)
+            return compare(target, py_dir, note + "; vs reference")
+
         return compare(tcl_dir, py_dir, note)
 
 
@@ -314,6 +345,12 @@ def collect(argv):
     return sorted(scripts)
 
 
+def group_key(group):
+    if len(group) > 1:
+        return os.path.basename(os.path.dirname(group[0])) + "__group"
+    return os.path.basename(group[0])[:-4]
+
+
 def group_by_directory(scripts):
     groups = {}
     for script in scripts:
@@ -323,12 +360,27 @@ def group_by_directory(scripts):
 
 def main(argv):
     sequential = "--sequential" in argv
-    scripts = collect([item for item in argv if item != "--sequential"])
+
+    mode, reference_root = "live", None
+    remaining = []
+    index = 0
+    while index < len(argv):
+        item = argv[index]
+        if item in ("--save-references", "--use-references"):
+            mode = "save" if item == "--save-references" else "use"
+            reference_root = argv[index + 1]
+            index += 2
+            continue
+        if item != "--sequential":
+            remaining.append(item)
+        index += 1
+
+    scripts = collect(remaining)
     groups = group_by_directory(scripts) if sequential else [[s] for s in scripts]
 
     counts = {}
     for group in groups:
-        status, note = check_group(group)
+        status, note = check_group(group, group_key(group), mode, reference_root)
         counts[status] = counts.get(status, 0) + 1
         label = os.path.basename(group[0])[:-4]
         if len(group) > 1:

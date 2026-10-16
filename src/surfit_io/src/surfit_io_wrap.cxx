@@ -7894,7 +7894,7 @@ SWIGEXPORT int SWIG_init(Tcl_Interp *interp) {
   
   
   
-  surfit::surfit_io_init_variables(interp);
+  surfit::surfit_io_init_variables();
   
   SWIG_Tcl_SetConstantObj(interp, "REAL_NAME", SWIG_FromCharPtr("double"));
   return TCL_OK;

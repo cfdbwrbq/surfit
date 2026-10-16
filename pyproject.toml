@@ -14,10 +14,6 @@ authors = [
     { name = "V. N. Kutrunov" },
 ]
 dependencies = ["numpy>=1.20"]
-
-[project.optional-dependencies]
-# surfit.progress() draws a live progress bar from the engine's log messages.
-progress = ["tqdm>=4.20"]
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: C++",
@@ -25,6 +21,10 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: GIS",
 ]
+
+[project.optional-dependencies]
+# surfit.progress() draws a live progress bar from the engine's log messages.
+progress = ["tqdm>=4.20"]
 
 [project.urls]
 Homepage = "http://surfit.sourceforge.net"

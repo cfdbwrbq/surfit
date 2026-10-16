@@ -25,11 +25,9 @@
 #include <string.h>
 #endif
 
-#include <tcl.h>
 #include <time.h>
 #include <errno.h>
 
-#include "interp.h"
 #include "fileio.h"
 
 #ifdef HAVE_UNISTD_H
@@ -84,13 +82,6 @@ void log_printf(const char *tmplt, ...)
 {
 	if (loglevel == LOG_SILENT)
 		return;
-	Tcl_Channel out = NULL;
-	if (interp) {
-		out = Tcl_GetStdChannel(TCL_STDOUT);
-		if (out == NULL)
-			return;
-	}
-
 	va_list ap;
 	va_start (ap, tmplt);
 
@@ -105,16 +96,8 @@ void log_printf(const char *tmplt, ...)
 		written = sizeof(buf) - 1;
 
 	// console output
-	if (interp) {
-		Tcl_WriteChars(out, buf, written);
-		Tcl_Flush(out);
-	}
-	else {
-		// No Tcl interpreter: a host such as the Python bindings still wants to
-		// see the message, so fall back to plain stdout.
-		fputs(buf, stdout);
-		fflush(stdout);
-	}
+	fputs(buf, stdout);
+	fflush(stdout);
 
 	if (surfit_log_hook != NULL)
 		surfit_log_hook(LOG_MESSAGE, buf);
@@ -137,12 +120,6 @@ void writelog (int errlevel, const char *tmplt, ...)
 	if (errlevel > loglevel) 
 		return;
 
-	Tcl_Channel out = NULL;
-	if (interp) {
-		out = Tcl_GetStdChannel(TCL_STDOUT);
-		if (out == NULL)
-			return;
-	}
 	char enter = '\n';
 
 	struct tm * newtime;
@@ -155,7 +132,7 @@ void writelog (int errlevel, const char *tmplt, ...)
 	// Print local time as a string
 	char tmpbuf[128];
 	strftime(tmpbuf, 128, "%d/%m/%y %H:%M:%S : ", newtime);
-	Tcl_printf("%s", tmpbuf);
+	console_printf("%s", tmpbuf);
 
 	const char * prefix = "";
 	switch (errlevel) {
@@ -185,22 +162,12 @@ void writelog (int errlevel, const char *tmplt, ...)
 	if ((size_t)written >= sizeof(buf))
 		written = sizeof(buf) - 1;
 
-	// console output
-	if (interp) {
-		Tcl_WriteChars(out, prefix, strlen(prefix));
-		Tcl_WriteChars(out, buf, written);
-		Tcl_WriteChars(out, &enter, 1);
-		Tcl_Flush(out);
-	}
-	else {
-		// No Tcl interpreter: emit on stdout.  The timestamp came through
-		// Tcl_printf() and the severity prefix is written here, so the console
-		// layout matches the Tcl one.
-		fputs(prefix, stdout);
-		fputs(buf, stdout);
-		fputc(enter, stdout);
-		fflush(stdout);
-	}
+	// console output: the timestamp arrived through console_printf() and the
+	// severity prefix is written here.
+	fputs(prefix, stdout);
+	fputs(buf, stdout);
+	fputc(enter, stdout);
+	fflush(stdout);
 
 	if (surfit_log_hook != NULL)
 		surfit_log_hook(errlevel, buf);
@@ -230,13 +197,6 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	if (errlevel > loglevel) 
 		return;
 
-	Tcl_Channel out = NULL;
-	if (interp) {
-		out = Tcl_GetStdChannel(TCL_STDOUT);
-		if (out == NULL)
-			return;
-	}
-	
 	struct tm * newtime;
 	time_t aclock;
 
@@ -247,7 +207,7 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	// Print local time as a string 
 	char tmpbuf[128];
 	strftime(tmpbuf, 128, "%d/%m/%y %H:%M:%S : ", newtime);
-	Tcl_printf("%s", tmpbuf);
+	console_printf("%s", tmpbuf);
 
 	const char * prefix = "";
 	switch (errlevel) {
@@ -278,18 +238,10 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	if ((size_t)written >= sizeof(buf))
 		written = sizeof(buf) - 1;
 
-	// console output
-	if (interp) {
-		Tcl_WriteChars(out, prefix, strlen(prefix));
-		Tcl_WriteChars(out, buf, written);
-		Tcl_Flush(out);
-	}
-	else {
-		// No Tcl interpreter: see writelog().
-		fputs(prefix, stdout);
-		fputs(buf, stdout);
-		fflush(stdout);
-	}
+	// console output: see writelog().
+	fputs(prefix, stdout);
+	fputs(buf, stdout);
+	fflush(stdout);
 
 	if (surfit_log_hook != NULL)
 		surfit_log_hook(errlevel, buf);
@@ -308,7 +260,7 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	}
 };
 
-void Tcl_printf (const char *tmplt, ...) 
+void console_printf (const char *tmplt, ...) 
 {
 	// don't print any messages in LOG_SILENT mode
 	if (loglevel == LOG_SILENT)
@@ -317,28 +269,11 @@ void Tcl_printf (const char *tmplt, ...)
 	va_list ap;
 	va_start (ap, tmplt);
 
-	if (!interp) {
-		// No Tcl interpreter means no Tcl console channel, but the message must
-		// still reach the user (Python bindings, plain embedding).
-		vprintf(tmplt, ap);
-		fflush(stdout);
-		va_end (ap);
-		return;
-	}
+	// Console output only: no timestamp, no severity prefix, no logfile.  This
+	// is what writelog() and writelog2() use for their timestamp.
+	vprintf(tmplt, ap);
+	fflush(stdout);
 
-	Tcl_Channel out = Tcl_GetStdChannel(TCL_STDOUT);
-	if (out == NULL) {
-		va_end (ap);
-		return;
-	}
-
-	// console output		
-	char buf[2048];
-	int written = vsprintf(buf,tmplt, ap);
-	if (written > 2048) 
-		writelog(LOG_WARNING,"Too large message. ");
-	Tcl_WriteChars(out, buf, written);
-	
 	va_end (ap);
 
 };

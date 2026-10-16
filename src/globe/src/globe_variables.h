@@ -20,7 +20,6 @@
 #ifndef __surfit_globe_variables_included__
 #define __surfit_globe_variables_included__
 
-struct Tcl_Interp;
 #include <vector>
 
 namespace surfit {
@@ -29,7 +28,7 @@ namespace surfit {
 
 //! inits libglobe global variables
 GLOBE_EXPORT
-void globe_init_variables(Tcl_Interp * interp);
+void globe_init_variables();
 
 }; // namespace surfit;
 

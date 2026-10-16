@@ -78,10 +78,47 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/check_stringmatch.py``
+     - the local name matcher agrees with Tcl on every well-formed pattern
    * - ``python3 gil_check.py``
      - the solve really releases the GIL
    * - ``python3 stress_check.py``
      - repeated runs in one process do not leak
+
+The runner can also check a build that has no Tcl front end at all. The Tcl side
+is run once and its output kept, and later runs compare the Python side against
+that stored reference:
+
+.. code-block:: bash
+
+   python3 src/pysurfit/tests/run_tcl_suite.py --sequential \
+       --save-references refs examples/surfit/realworld     # with Tcl
+   python3 src/pysurfit/tests/run_tcl_suite.py --sequential \
+       --use-references refs examples/surfit/realworld      # without Tcl
+
+Name matching
+-------------
+
+Objects are selected by name with wildcards, and the engine implements the
+matching itself. It used to call ``Tcl_StringMatch``, which was the last thing
+tying the core to Tcl.
+
+The rules were read off Tcl rather than guessed, and
+``src/pysurfit/tests/check_stringmatch.py`` compares the two over a few thousand
+pattern and string pairs, including ``[]]``, reversed ranges such as ``[c-a]``
+and escapes:
+
+* ``*`` and ``?`` behave as expected;
+* a range matches either way round, so ``[c-a]`` matches ``a``, ``b`` and ``c``;
+* a ``]`` straight after ``[`` closes the set, so ``[]]`` is an empty set;
+* ``!`` and ``^`` are ordinary members — Tcl's string match has no negation;
+* there is no escaping inside a set: a backslash is a member like any other.
+
+Patterns with an **unterminated** ``[`` are excluded from that comparison. Tcl's
+answer there depends on the memory after the string: ``string match {a[b} {ab}``
+returns 1 on its own and 0 once another string has been allocated after it. The
+local matcher takes the deterministic reading, treating the set as running to
+the end of the pattern, which is what Tcl returns in the ordinary case.
 
 Why byte equality
 -----------------
@@ -99,10 +136,6 @@ a bare "all good".
 Known issues
 ------------
 
-* **Tcl is a hard dependency of the engine.** ``StringMatch`` calls
-  ``Tcl_StringMatch``. This keeps a wheel from being portable: manylinux allows
-  only a fixed list of system libraries and ``libtcl`` is not on it. Replacing
-  the matcher with a local implementation would remove the last coupling.
 * **Global state.** The data manager, the functional list and the grid are
   process-wide singletons. A session resets them, but two cannot coexist.
 * **The plugin is linked whole.** ``libsurfit_io`` should be built with hidden

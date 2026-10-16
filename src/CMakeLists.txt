@@ -53,6 +53,9 @@ add_subdirectory(surfit)
 add_subdirectory(tclsurfit)
 add_subdirectory(surfit_io)
 
+# Python bindings; skipped automatically when pybind11 is unavailable
+add_subdirectory(pysurfit)
+
 if (ZLIB_FOUND)
 	add_subdirectory(globe)
 endif(ZLIB_FOUND)

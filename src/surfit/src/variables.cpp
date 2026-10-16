@@ -126,7 +126,11 @@ void surfit_init_all() {
 	surfit_data_manager = new data_manager;
 	add_manager(new surfit_manager);
 
-	Tcl_CreateThreadExitHandler(data_cleanup, NULL);
+	// NB: the Tcl thread-exit handler is registered in surfit_init_variables(),
+	// not here.  This function runs from a static constructor when the library
+	// is dlopen()ed, and Tcl's thread-exit machinery needs a live Tcl runtime
+	// by then.  A non-Tcl host (the Python bindings) never initialises Tcl and
+	// must still be able to load the core.
 #ifdef HAVE_THREADS
 #ifdef WIN32
 	SYSTEM_INFO info;
@@ -167,6 +171,10 @@ void surfit_init_variables(Tcl_Interp * iinterp) {
 	init_interp(iinterp);
 	print_license();
 	log_open();
+
+	// Only a real Tcl host reaches this point, so it is the right place for the
+	// interpreter-dependent hooks.
+	Tcl_CreateThreadExitHandler(data_cleanup, NULL);
 
 	//init_all();
 };

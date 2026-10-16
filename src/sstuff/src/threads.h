@@ -69,7 +69,7 @@ protected:
 public:
 	
 	semaphore sem;
-	slavethread() : thread(true), sem(0), j(NULL) {};
+	slavethread() : thread(false), sem(0), j(NULL) {};
 	void post_do_job();
 	void postquit();
 	

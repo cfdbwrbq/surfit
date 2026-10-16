@@ -156,8 +156,13 @@ class thread: public unknown
 protected:
 #ifdef WIN32
     ulong id;
-#endif
     int  handle;
+#else
+    // pthread_t is 8 bytes on 64-bit platforms and does not fit in an int.
+    // Storing it in an int made pthread_create() write past the field and
+    // clobber `autofree`, and made waitfor() join a truncated handle.
+    pthread_t handle;
+#endif
     bool autofree;
     int  running;
     int  signaled;

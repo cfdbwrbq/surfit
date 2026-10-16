@@ -159,7 +159,7 @@ d_surf * _surf_load_gmt(const char * filename, const char * surfname)
 	return NULL;
 #else
 	if (!filename)
-		return false;
+		return NULL;
 
 	writelog(LOG_MESSAGE, "loading surface from GMT file %s",filename);
 

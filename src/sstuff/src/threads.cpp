@@ -38,11 +38,24 @@ struct garbage_slaves
 	garbage_slaves() {};
 	~garbage_slaves() {
 		size_t i;
+		//
+		// Slaves are constructed as thread(false), so the pool owns them: a
+		// ptypes thread must be joined and deleted by its owner.  Autofree
+		// (thread(true)) cannot be used here -- a self-deleting thread trips
+		// ~thread()'s "Attempt to free a working thread" fatal, because
+		// nothing has cleared its handle yet, and joining it afterwards is a
+		// use-after-free.
+		//
 		for (i = 0; i < slaves.size(); i++) {
 			slavethread * s = slaves[i];
 			slaves[i] = NULL;
+			if (s != NULL) {
+				s->postquit();
+				s->waitfor();
+			}
 			delete s;
 		}
+		slaves.clear();
 		for (i = 0; i < jobs.size(); i++)
 			delete jobs[i];
 	};
@@ -70,6 +83,7 @@ void sstuff_init_threads(size_t cnt) {
 			slave->postquit();
 			slave->waitfor();
 			slaves.erase(slaves.end()-1);
+			delete slave;
 		}
 	} else {
 		for (i = 0; i < cpu-ssize-1; i++) {

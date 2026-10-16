@@ -54,8 +54,11 @@ void thread::waitfor()
         CloseHandle(h);
     }
 #else
-    pthread_t h = (pthread_t)pexchange(&handle, -1);
-    if ((int)h != -1)
+    // handle is not an int on POSIX, so it cannot go through the int-based
+    // pexchange(); the owner is the only caller of waitfor().
+    pthread_t h = handle;
+    handle = (pthread_t)(-1);
+    if (h != (pthread_t)(-1))
     {
         pthread_join(h, nil);
         pthread_detach(h);

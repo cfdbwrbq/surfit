@@ -21,6 +21,7 @@ add_library(${PROJ_NAME} SHARED ${srcs_cpp} ${hdrs} ${ptypes_src} )
 
 target_link_libraries(${PROJ_NAME}
 ${TCL_LIBRARY}
+Threads::Threads
 )
 
 set_target_properties( ${PROJ_NAME} PROPERTIES PREFIX "" )

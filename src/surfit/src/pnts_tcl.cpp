@@ -477,7 +477,7 @@ boolvec * pnts_filter_in_area(const char * pnts_pos, const char * area_pos)
 
 struct match_fbm2
 {
-	match_fbm2(d_points * ipnts, const char * idef_pos) : pnts(ipnts), def_pos(idef_pos), res(false) {};
+	match_fbm2(d_points * ipnts, const char * idef_pos) : pnts(ipnts), def_pos(idef_pos), res(NULL) {};
 	void operator()(d_mask * mask)
 	{
 		if ( StringMatch(def_pos, mask->getName()) )

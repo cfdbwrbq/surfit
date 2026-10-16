@@ -84,7 +84,7 @@ bool f_area_wmean::make_matrix_and_vector(matr *& matrix, extvec *& v, bitvec * 
 	size_t matrix_size = method_basis_cntX*method_basis_cntY;
 
 	get_area_mask(mask_undefined);
-	if (area_mask == false) 
+	if (area_mask == NULL) 
 		return false;
 	
 	size_t aux_X_from, aux_X_to;

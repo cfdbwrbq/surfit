@@ -213,7 +213,7 @@ cont:
 			if (grd)
 				grd->release();
 			free(name);
-			return false;
+			return NULL;
 		}
 		
 		srf = create_dem(icoeff, grd, name);
@@ -338,7 +338,7 @@ d_dem * _dem_load_dtm(const char * hdr_file, const char * bin_file) {
 	FILE * hdr = fopen(hdr_file, "r");
 	if (!hdr) {
 		writelog(LOG_ERROR, "The file %s was not opened: %s",hdr_file,strerror( errno ));
-		return false;
+		return NULL;
 	}
 
 	char * Bin_file = NULL;
@@ -527,12 +527,12 @@ d_dem * _dem_load_dtm(const char * hdr_file, const char * bin_file) {
 #endif
 	if (bin == -1) {
 		writelog(LOG_ERROR, "The file %s was not opened: %s",bin_file,strerror( errno ));
-		return false;
+		return NULL;
 	}
 
 	if (grid_size_x_ == -1) {
 		writelog(LOG_ERROR,"Unsupported format.");
-		return false;
+		return NULL;
 	}
 
 	int i,j, read_bytes;
@@ -548,7 +548,7 @@ d_dem * _dem_load_dtm(const char * hdr_file, const char * bin_file) {
 
 	if (!val) {
 		writelog(LOG_ERROR,"Not enougth memory.");
-		return false;
+		return NULL;
 	}
 	int cnt = 0;
 
@@ -558,7 +558,7 @@ d_dem * _dem_load_dtm(const char * hdr_file, const char * bin_file) {
 	if (read_bytes != size_int16*number_of_rows*number_of_columns) {
 		writelog(LOG_ERROR,"Read error!");
 		free(val);
-		return false;
+		return NULL;
 	}
 
 	if (swap_bytes) 

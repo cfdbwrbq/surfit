@@ -73,11 +73,18 @@ struct fileio_garbage {
 
 fileio_garbage garb2;
 
+//! Observer installed by set_log_hook(); NULL when nobody is listening.
+static log_hook_type surfit_log_hook = NULL;
+
+void set_log_hook(log_hook_type hook) {
+	surfit_log_hook = hook;
+};
+
 void log_printf(const char *tmplt, ...) 
 {
 	if (loglevel == LOG_SILENT)
 		return;
-	Tcl_Channel out;
+	Tcl_Channel out = NULL;
 	if (interp) {
 		out = Tcl_GetStdChannel(TCL_STDOUT);
 		if (out == NULL)
@@ -87,33 +94,36 @@ void log_printf(const char *tmplt, ...)
 	va_list ap;
 	va_start (ap, tmplt);
 
+	// Format once, so the console, the observer and the logfile all see the
+	// same text.  vsnprintf keeps a long message from overrunning the buffer.
+	char buf[2048];
+	int written = vsnprintf(buf, sizeof(buf), tmplt, ap);
+	va_end(ap);
+	if (written < 0)
+		return;
+	if ((size_t)written >= sizeof(buf))
+		written = sizeof(buf) - 1;
+
 	// console output
 	if (interp) {
-
-		char buf[2048];
-		int written = vsprintf(buf,tmplt, ap);
-		va_end(ap);
-		va_start(ap,tmplt);
-		if (written > 2048) 
-			writelog(LOG_WARNING,"Too large error message. ");
 		Tcl_WriteChars(out, buf, written);
 		Tcl_Flush(out);
 	}
 	else {
 		// No Tcl interpreter: a host such as the Python bindings still wants to
 		// see the message, so fall back to plain stdout.
-		vprintf(tmplt, ap);
+		fputs(buf, stdout);
 		fflush(stdout);
-		va_end(ap);
-		va_start(ap, tmplt);
 	}
 
+	if (surfit_log_hook != NULL)
+		surfit_log_hook(LOG_MESSAGE, buf);
+
 	// logfile output
-	if ( (logfile) && (ferror(logfile) == 0) ) 
-		vfprintf (logfile, tmplt, ap);
-	
-	va_end (ap);
-	if ( (logfile) && (ferror(logfile) == 0) ) fflush(logfile);
+	if ( (logfile) && (ferror(logfile) == 0) ) {
+		fputs(buf, logfile);
+		fflush(logfile);
+	}
 
 };
 
@@ -127,7 +137,7 @@ void writelog (int errlevel, const char *tmplt, ...)
 	if (errlevel > loglevel) 
 		return;
 
-	Tcl_Channel out;
+	Tcl_Channel out = NULL;
 	if (interp) {
 		out = Tcl_GetStdChannel(TCL_STDOUT);
 		if (out == NULL)
@@ -146,96 +156,63 @@ void writelog (int errlevel, const char *tmplt, ...)
 	char tmpbuf[128];
 	strftime(tmpbuf, 128, "%d/%m/%y %H:%M:%S : ", newtime);
 	Tcl_printf("%s", tmpbuf);
-	
+
+	const char * prefix = "";
+	switch (errlevel) {
+
+	case LOG_MESSAGE:
+		break;
+	case LOG_ERROR: 
+	case LOG_ERROR_TCL:
+		prefix = error;
+		break;
+	case LOG_WARNING:
+		prefix = warning;
+		break;
+	case LOG_DEBUG:
+		prefix = debug;
+		break;
+	};
+
+	// One formatting pass, shared by the console, the observer and the logfile.
 	va_list ap;
 	va_start (ap, tmplt);
-	
+	char buf[2048];
+	int written = vsnprintf(buf, sizeof(buf), tmplt, ap);
+	va_end(ap);
+	if (written < 0)
+		return;
+	if ((size_t)written >= sizeof(buf))
+		written = sizeof(buf) - 1;
+
 	// console output
 	if (interp) {
-
-		switch (errlevel) {
-
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR: 
-		case LOG_ERROR_TCL:
-			Tcl_WriteChars(out, error, strlen(error));
-			break;
-		case LOG_WARNING:
-				Tcl_WriteChars(out, warning, strlen(warning));
-			break;
-		case LOG_DEBUG:
-				Tcl_WriteChars(out, debug, strlen(debug));
-			break;
-		};
-
-		char buf[2048];
-		int written = vsprintf(buf,tmplt, ap);
-		va_end(ap);
-		va_start (ap, tmplt);
-		if (written > 2048) 
-			writelog(LOG_WARNING,"Too large error message. ");
+		Tcl_WriteChars(out, prefix, strlen(prefix));
 		Tcl_WriteChars(out, buf, written);
 		Tcl_WriteChars(out, &enter, 1);
 		Tcl_Flush(out);
-
 	}
 	else {
 		// No Tcl interpreter: emit on stdout.  The timestamp came through
 		// Tcl_printf() and the severity prefix is written here, so the console
 		// layout matches the Tcl one.
-		switch (errlevel) {
-
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR:
-		case LOG_ERROR_TCL:
-			fputs(error, stdout);
-			break;
-		case LOG_WARNING:
-			fputs(warning, stdout);
-			break;
-		case LOG_DEBUG:
-			fputs(debug, stdout);
-			break;
-		};
-
-		vprintf(tmplt, ap);
+		fputs(prefix, stdout);
+		fputs(buf, stdout);
 		fputc(enter, stdout);
 		fflush(stdout);
-		va_end(ap);
-		va_start (ap, tmplt);
 	}
+
+	if (surfit_log_hook != NULL)
+		surfit_log_hook(errlevel, buf);
 
 	// logfile output
 	if ( (logfile) && (ferror(logfile) == 0) ) {
-		
-		time_t ltime;
-		time( &ltime );
-		char * stime = ctime( &ltime );
-		const char * space = " :  ";
-		
 		fwrite(tmpbuf, 1, strlen(tmpbuf), logfile);
-		switch (errlevel) {
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR:
-		case LOG_ERROR_TCL:
-			fprintf(logfile,"%s",error);
-			break;
-		case LOG_WARNING:
-			fprintf(logfile,"%s",warning);
-			break;
-		case LOG_DEBUG:
-			fprintf(logfile,"%s",debug);
-			break;
-		};
-		vfprintf (logfile, tmplt, ap);
-		va_end(ap);
-		fprintf (logfile,"\n");
+		fputs(prefix, logfile);
+		fputs(buf, logfile);
+		fputc('\n', logfile);
+		fflush(logfile);
 	}
-
-	if ( (logfile) && (ferror(logfile) == 0) ) fflush(logfile);
 
 	if (stop_on_error == 1) {
 		if (errlevel == LOG_ERROR) 
@@ -253,7 +230,7 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	if (errlevel > loglevel) 
 		return;
 
-	Tcl_Channel out;
+	Tcl_Channel out = NULL;
 	if (interp) {
 		out = Tcl_GetStdChannel(TCL_STDOUT);
 		if (out == NULL)
@@ -271,92 +248,59 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	char tmpbuf[128];
 	strftime(tmpbuf, 128, "%d/%m/%y %H:%M:%S : ", newtime);
 	Tcl_printf("%s", tmpbuf);
-	
+
+	const char * prefix = "";
+	switch (errlevel) {
+
+	case LOG_MESSAGE:
+		break;
+	case LOG_ERROR: 
+	case LOG_ERROR_TCL:
+		prefix = error;
+		break;
+	case LOG_WARNING:
+		prefix = warning;
+		break;
+	case LOG_DEBUG:
+		prefix = debug;
+		break;
+	};
+
+	// One formatting pass, shared by the console, the observer and the logfile.
+	// writelog2() does not append a newline.
 	va_list ap;
 	va_start (ap, tmplt);
+	char buf[2048];
+	int written = vsnprintf(buf, sizeof(buf), tmplt, ap);
+	va_end(ap);
+	if (written < 0)
+		return;
+	if ((size_t)written >= sizeof(buf))
+		written = sizeof(buf) - 1;
 
 	// console output
 	if (interp) {
-
-		switch (errlevel) {
-
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR: 
-		case LOG_ERROR_TCL:
-			Tcl_WriteChars(out, error, strlen(error));
-			break;
-		case LOG_WARNING:
-				Tcl_WriteChars(out, warning, strlen(warning));
-			break;
-		case LOG_DEBUG:
-				Tcl_WriteChars(out, debug, strlen(debug));
-			break;
-		};
-
-		char buf[2048];
-		int written = vsprintf(buf,tmplt, ap);
-		va_end(ap);
-		va_start(ap, tmplt);
-		if (written > 2048) 
-			writelog(LOG_WARNING,"Too large error message. ");
+		Tcl_WriteChars(out, prefix, strlen(prefix));
 		Tcl_WriteChars(out, buf, written);
 		Tcl_Flush(out);
-
 	}
 	else {
-		// No Tcl interpreter: see writelog().  writelog2() does not append a
-		// newline and neither does this branch.
-		switch (errlevel) {
-
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR:
-		case LOG_ERROR_TCL:
-			fputs(error, stdout);
-			break;
-		case LOG_WARNING:
-			fputs(warning, stdout);
-			break;
-		case LOG_DEBUG:
-			fputs(debug, stdout);
-			break;
-		};
-
-		vprintf(tmplt, ap);
+		// No Tcl interpreter: see writelog().
+		fputs(prefix, stdout);
+		fputs(buf, stdout);
 		fflush(stdout);
-		va_end(ap);
-		va_start(ap, tmplt);
 	}
+
+	if (surfit_log_hook != NULL)
+		surfit_log_hook(errlevel, buf);
 
 	// logfile output
 	if ( (logfile) && (ferror(logfile) == 0) ) {
-		
-		time_t ltime;
-		time( &ltime );
-		char * stime = ctime( &ltime );
-		const char * space = " :  ";
-		
 		fwrite(tmpbuf, 1, strlen(tmpbuf), logfile);
-		switch (errlevel) {
-		case LOG_MESSAGE:
-			break;
-		case LOG_ERROR:
-		case LOG_ERROR_TCL:
-			fprintf(logfile,"%s",error);
-			break;
-		case LOG_WARNING:
-			fprintf(logfile,"%s",warning);
-			break;
-		case LOG_DEBUG:
-			fprintf(logfile,"%s",debug);
-			break;
-		};
-		vfprintf (logfile, tmplt, ap);
+		fputs(prefix, logfile);
+		fputs(buf, logfile);
+		fflush(logfile);
 	}
-
-	va_end (ap);
-	if ( (logfile) && (ferror(logfile) == 0) ) fflush(logfile);
 
 	if (stop_on_error == 1) {
 		if (errlevel == LOG_ERROR) 

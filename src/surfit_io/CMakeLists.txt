@@ -51,4 +51,4 @@ set_target_properties( ${PROJ_NAME} PROPERTIES PREFIX "" )
 # install
 #
 
-install(TARGETS ${PROJ_NAME} DESTINATION lib)
+install(TARGETS ${PROJ_NAME} DESTINATION ${SURFIT_LIBDIR})

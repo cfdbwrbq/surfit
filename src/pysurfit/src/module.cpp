@@ -126,6 +126,29 @@ void ensure_io_manager() {
 	surfit::add_manager(surfit::my_surfit_io_manager);
 }
 
+/*! Python observer of the core's log messages.
+
+	Deliberately leaked rather than held in a static py::object: a static one
+	would be destroyed while the interpreter is finalising, which is a crash
+	waiting to happen.  At most one object is ever allocated and it is replaced
+	in place.
+*/
+py::object * log_observer = NULL;
+
+void forward_log_message(int level, const char * message) {
+	if (log_observer == NULL || !*log_observer)
+		return;
+	// writelog() and log_printf() run while surfit() has released the GIL, and
+	// possibly on a worker thread, so take it back for the duration of the call.
+	py::gil_scoped_acquire acquire;
+	try {
+		(*log_observer)(level, std::string(message));
+	} catch (py::error_already_set & error) {
+		// An observer that raises must not take the solve down with it.
+		error.discard_as_unraisable(__func__);
+	}
+}
+
 /*! The core names the resulting surface after the global `map_name`, which the
 	Tcl front end exposes as a traced variable.  Here it is an explicit call. */
 void set_map_name(const std::string & name) {
@@ -229,6 +252,23 @@ PYBIND11_MODULE(_surfit, m) {
 	}, py::arg("level") = 1 /* LOG_MESSAGE */, py::arg("path") = std::string());
 
 	m.def("clear_data", &clear_data, "drop all loaded data and gridding rules");
+
+	// The core reports progress and diagnostics through writelog() and
+	// log_printf(); an observer can turn that into a progress bar.
+	m.def("set_log_handler", [](py::object handler) {
+		if (handler.is_none()) {
+			surfit::set_log_hook(NULL);
+			return;
+		}
+		if (log_observer == NULL)
+			log_observer = new py::object(handler);
+		else
+			*log_observer = handler;
+		surfit::set_log_hook(forward_log_message);
+	}, py::arg("handler"),
+	   "call handler(level, message) for every message the core emits");
+	m.def("clear_log_handler", []() { surfit::set_log_hook(NULL); },
+	      "stop observing the core's messages");
 	m.def("set_map_name", &set_map_name, "name given to the resulting surface");
 	m.def("map_name", &get_map_name);
 
@@ -279,7 +319,12 @@ PYBIND11_MODULE(_surfit, m) {
 	      py::arg("D1") = 1, py::arg("D2") = 2,
 	      py::arg("alpha") = 0, py::arg("w") = 1);
 
-	m.def("surfit", []() { surfit::surfit(); }, "run the gridding algorithm");
+	// The solve can run for minutes and touches no Python object, so let the
+	// interpreter keep running: other threads (progress reporting, servers)
+	// stay responsive.  Calls that build Python results cannot do this, because
+	// drain_boolvec() needs the GIL.
+	m.def("surfit", []() { surfit::surfit(); }, "run the gridding algorithm",
+	      py::call_guard<py::gil_scoped_release>());
 
 	m.def("surf_save", [](const std::string & path, const std::string & name) {
 		return drain_boolvec(surf_save(path.c_str(), name.c_str()));
@@ -737,10 +782,10 @@ PYBIND11_MODULE(_surfit, m) {
 
 	m.def("file_load", [](const std::string & path) {
 		surfit::file_load(path.c_str());
-	}, py::arg("path"));
+	}, py::arg("path"), py::call_guard<py::gil_scoped_release>());
 	m.def("file_save", [](const std::string & path) {
 		return surfit::file_save(path.c_str());
-	}, py::arg("path"));
+	}, py::arg("path"), py::call_guard<py::gil_scoped_release>());
 	m.def("file_info", [](const std::string & path) {
 		char * text = surfit::file_info(path.c_str());
 		std::string result = text != NULL ? std::string(text) : std::string();

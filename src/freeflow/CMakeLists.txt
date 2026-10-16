@@ -24,5 +24,5 @@ target_link_libraries(${PROJ_NAME}
 
 set_target_properties( ${PROJ_NAME} PROPERTIES PREFIX "" )
 
-install(TARGETS ${PROJ_NAME} DESTINATION lib)
+install(TARGETS ${PROJ_NAME} DESTINATION ${SURFIT_LIBDIR})
 

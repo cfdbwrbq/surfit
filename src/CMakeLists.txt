@@ -8,13 +8,35 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-# Widgets finds its own dependencies.
+# ----------------------------------
+# what to build
+# ----------------------------------
+# A Python wheel wants only the engine and its bindings: no Tcl module, no CLI,
+# no globe/freeflow, and every shared library installed *inside* the package so
+# the extension finds it through $ORIGIN.
+
+option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, globe, freeflow)" ON)
+option(SURFIT_BUILD_PYTHON "Build the Python bindings" ON)
+option(SURFIT_PYTHON_WHEEL "Install for a Python wheel, inside the package" OFF)
+
+if (SURFIT_PYTHON_WHEEL)
+	set(SURFIT_LIBDIR "surfit")
+else()
+	set(SURFIT_LIBDIR "lib")
+endif()
+set(SURFIT_LIBDIR "${SURFIT_LIBDIR}" CACHE STRING
+	"Install destination for the shared libraries")
+
+# The engine itself still needs Tcl: StringMatch() uses Tcl_StringMatch() and the
+# logging bridge knows about Tcl channels.  Only the Tcl *front end* is optional.
 find_package(TCL REQUIRED)
 
-find_package(SWIG REQUIRED)
-INCLUDE(${SWIG_USE_FILE})
-SET(CMAKE_SWIG_FLAGS "-c++")
-message(${SWIG_EXECUTABLE})
+if (SURFIT_BUILD_TCL)
+	find_package(SWIG REQUIRED)
+	INCLUDE(${SWIG_USE_FILE})
+	SET(CMAKE_SWIG_FLAGS "-c++")
+	message(${SWIG_EXECUTABLE})
+endif()
 
 find_package(ZLIB)
 find_package(JPEG)
@@ -50,20 +72,25 @@ configure_file(config.h.in config.h)
 # Libraries
 add_subdirectory(sstuff)
 add_subdirectory(surfit)
-add_subdirectory(tclsurfit)
 add_subdirectory(surfit_io)
 
 # Python bindings; skipped automatically when pybind11 is unavailable
-add_subdirectory(pysurfit)
+if (SURFIT_BUILD_PYTHON)
+	add_subdirectory(pysurfit)
+endif()
 
-if (ZLIB_FOUND)
-	add_subdirectory(globe)
-endif(ZLIB_FOUND)
+if (SURFIT_BUILD_TCL)
+	add_subdirectory(tclsurfit)
 
-add_subdirectory(freeflow)
+	if (ZLIB_FOUND)
+		add_subdirectory(globe)
+	endif(ZLIB_FOUND)
 
-# Executabels
-add_subdirectory(surfit_cmd)
+	add_subdirectory(freeflow)
+
+	# Executabels
+	add_subdirectory(surfit_cmd)
+endif()
 
 
 # uninstall target

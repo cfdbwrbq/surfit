@@ -83,6 +83,19 @@ void log_printf (const char *tmplt, ...);
 SSTUFF_EXPORT
 void Tcl_printf (const char *tmplt, ...);
 
+/*! \brief observer of every message that writelog() and log_printf() emit
+
+    The message is already formatted and carries no trailing newline of its own.
+    It is called on whatever thread produced it, so an implementation that
+    touches a language runtime -- the Python bindings do -- has to take care of
+    that runtime's own locking.
+*/
+typedef void (*log_hook_type)(int errlevel, const char * message);
+
+//! Installs an observer; pass NULL to remove it.
+SSTUFF_EXPORT
+void set_log_hook(log_hook_type hook);
+
 //! prints contents of surfit datafile
 SSTUFF_EXPORT
 void _file_info(const char * filename, char **& contents);

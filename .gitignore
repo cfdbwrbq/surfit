@@ -30,3 +30,11 @@
 # Python bytecode (the tree now contains Python as well)
 __pycache__/
 *.pyc
+
+# Build trees (CMake and Python wheel builds)
+build/
+dist/
+*.egg-info/
+
+# Sphinx output
+docs/_build/

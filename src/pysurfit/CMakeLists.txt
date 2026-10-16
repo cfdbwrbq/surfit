@@ -7,8 +7,25 @@
 # Optional: when pybind11 is absent the rest of the project still builds.
 # Point CMake at it with
 #   -Dpybind11_DIR=<prefix>/share/cmake/pybind11
+# When building through pip the build environment has pybind11 installed but its
+# CMake config is not on the prefix path, so ask the interpreter for the path.
 
 find_package(pybind11 CONFIG QUIET)
+
+if (NOT pybind11_FOUND)
+	find_package(Python COMPONENTS Interpreter QUIET)
+	if (Python_Interpreter_FOUND)
+		execute_process(
+			COMMAND "${Python_EXECUTABLE}" -m pybind11 --cmakedir
+			OUTPUT_VARIABLE SURFIT_PYBIND11_DIR
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET)
+		if (SURFIT_PYBIND11_DIR)
+			set(pybind11_DIR "${SURFIT_PYBIND11_DIR}")
+			find_package(pybind11 CONFIG QUIET)
+		endif()
+	endif()
+endif()
 
 if (NOT pybind11_FOUND)
 	message(STATUS "pybind11 not found - skipping the Python bindings "
@@ -29,19 +46,23 @@ else()
 
 	target_link_libraries(${PROJ_NAME} PRIVATE libsurfit_io libsstuff libsurfit)
 
-	# The extension lives inside the package directory, one level below the
-	# shared libraries it links against.
+	# In the build tree the extension sits one level below the libraries; in an
+	# installed wheel every library lands in the same package directory.
 	set_target_properties( ${PROJ_NAME} PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/surfit"
 		BUILD_RPATH "$ORIGIN/.."
-		INSTALL_RPATH "$ORIGIN/.."
+		INSTALL_RPATH "$ORIGIN"
 	)
 
-	# Pure-Python part of the package.
+	# Pure-Python part of the package, next to the extension in the build tree.
 	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/python/surfit"
 	     DESTINATION "${CMAKE_BINARY_DIR}/bin")
 
-	install(TARGETS ${PROJ_NAME} DESTINATION lib/surfit)
-	install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/python/surfit"
-	        DESTINATION lib)
+	if (SURFIT_PYTHON_WHEEL)
+		# scikit-build-core packs whatever CMake installs, so the libraries
+		# installed into ${SURFIT_LIBDIR} (= surfit) end up inside the wheel.
+		install(TARGETS ${PROJ_NAME} DESTINATION surfit)
+		install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/python/surfit/"
+		        DESTINATION surfit)
+	endif()
 endif()

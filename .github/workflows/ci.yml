@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # The realworld pipelines take about an hour, so they run at night rather
+    # than on every push.
+    - cron: "17 4 * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            tcl-dev swig libjpeg-dev libnetcdf-dev
+
+      - name: python packages
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy tqdm pybind11 scikit-build-core
+
+      # The viewer tests need a DOM and d3. Without these they report SKIP
+      # instead of failing, so this step is what turns them on.
+      - name: node packages
+        run: |
+          mkdir -p js-test
+          cd js-test && npm install --no-audit --no-fund d3 jsdom
+
+      - name: check
+        env:
+          PYTHON: python
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            ci/check.sh --full
+          else
+            ci/check.sh
+          fi
+
+      - name: keep the build log
+        if: failure()
+        run: |
+          for log in build-ci/wheel.log build-ci/CMakeFiles/CMakeOutput.log; do
+            if [ -f "$log" ]; then
+              echo "--- $log ---"
+              tail -50 "$log"
+            fi
+          done

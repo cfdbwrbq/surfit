@@ -19,5 +19,10 @@ target_link_libraries(${PROJ_NAME}
 ${TCL_LIBRARY}
 )
 
-install(TARGETS ${PROJ_NAME} DESTINATION bin)
+# The build tree keeps the development copy of the Python package at
+# bin/surfit, which is where an executable of that name would go.  The binary is
+# therefore built as bin/surfit-cli and installed under its real name.
+set_target_properties(${PROJ_NAME} PROPERTIES OUTPUT_NAME "surfit-cli")
+
+install(TARGETS ${PROJ_NAME} RUNTIME DESTINATION bin RENAME surfit)
 

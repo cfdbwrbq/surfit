@@ -33,6 +33,7 @@ __pycache__/
 
 # Build trees (CMake and Python wheel builds)
 build/
+build-*/
 dist/
 *.egg-info/
 

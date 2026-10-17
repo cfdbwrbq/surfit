@@ -56,6 +56,24 @@ def run_solo(index):
     print(digest(task.values()))
 
 
+def build_module_level(map_name, first_area_value):
+    """The same task built through the module functions, on the default state."""
+    surfit.clear_data()
+    surfit.set_map_name(map_name)
+    surfit.set_tol(5.01187e-006)
+    for name in AREAS:
+        surfit.area_read(os.path.join(DATA, "%s.txt" % name), name)
+    surfit.grid_get(-12, 12, 0.2, -12, 12, 0.2)
+    surfit.area(first_area_value, "area1")
+    surfit.area(30, "area3")
+    surfit.area("undef", "area5")
+    surfit.completer(1, 1.6)
+    surfit.area_add(20, 0.07, "area2")
+    surfit.area_add(40, 0.07, "area4")
+    surfit.surfit()
+    return surfit.values()
+
+
 def main():
     # Solo runs, one per process, as the reference.
     solo = []
@@ -86,6 +104,16 @@ def main():
     assert again == solo, "a repeated run changed the result"
     assert solo[0] != solo[1], "the two tasks produced the same grid"
     print("PASS: each task keeps its own result")
+
+    # A Session must compute what the engine computes.  Without this the state
+    # work could quietly change the answer while every other check still passed:
+    # the suites run through the module functions, and comparing Sessions with
+    # Sessions compares the same mistake twice.
+    module_level = digest(build_module_level("map_a", 10))
+    assert module_level == solo[0], (
+        "a Session disagrees with the module-level result:\n  session %s\n"
+        "  module  %s" % (solo[0], module_level))
+    print("PASS: a Session computes what the module functions compute")
 
     # A task has to survive the comings and goings of others; releasing a state
     # is the part most likely to free something still in use.

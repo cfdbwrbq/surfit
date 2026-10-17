@@ -120,6 +120,21 @@ returns 1 on its own and 0 once another string has been allocated after it. The
 local matcher takes the deterministic reading, treating the set as running to
 the end of the pattern, which is what Tcl returns in the ordinary case.
 
+Continuous integration
+----------------------
+
+``ci/check.sh`` builds from scratch in ``build-ci`` and runs every check: the 35
+test scripts with Tcl and Python side by side, parity, the name matcher against
+Tcl, two tasks in one process, the viewer, and a wheel that installs into an
+isolated directory and solves there without ``LD_LIBRARY_PATH``.
+
+It takes about twenty minutes, which is the cost of testing against the Tcl
+front end rather than against itself. ``ci/check.sh --full`` adds the 29
+realworld pipelines, another hour, and is what the nightly job runs.
+
+GitHub Actions calls exactly this script, so what runs on a push is what you can
+run locally. Windows and MSVC are not covered.
+
 Documentation figures
 ---------------------
 

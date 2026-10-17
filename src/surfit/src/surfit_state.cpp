@@ -117,6 +117,11 @@ surfit_state * state_active() {
 surfit_state * state_create() {
 	surfit_state * state = new surfit_state();
 
+	// Settings are inherited from the library's own state rather than repeated
+	// here: a default typed twice is a default that can disagree with itself.
+	*state = *state_origin();
+
+	// What a task owns is new and empty.
 	state->areas = new areas_container();
 	state->cntrs = new cntrs_container();
 	state->curvs = new curvs_container();
@@ -128,22 +133,6 @@ surfit_state * state_create() {
 	state->functionals = new std::vector<functional *>;
 	state->grid = NULL;
 
-	// The same defaults surfit_init_all() installs.
-	state->tol = float(1e-5);
-	state->undef_value = FLT_MAX;
-	state->sor_omega = REAL(1.6);
-	state->ssor_omega = REAL(1.6);
-	state->write_mat = false;
-	state->map_name = NULL;
-	state->solver_name = NULL;
-	state->reproject_faults = 1;
-	state->reproject_undef_areas = 0;
-	state->process_isolated_areas = 1;
-	state->penalty_max_iter = 99;
-	state->penalty_weight = REAL(1);
-	state->penalty_weight_mult = REAL(10);
-	state->stop_execution = false;
-
 	state->method_grid = NULL;
 	state->method_prev_grid = NULL;
 	state->method_X = NULL;
@@ -154,6 +143,7 @@ surfit_state * state_create() {
 	state->method_phase_counter = 0;
 	state->basis_cnt = GRID_START_SIZE;
 	state->penalty_iter_counter = 0;
+	state->stop_execution = false;
 
 	return state;
 }

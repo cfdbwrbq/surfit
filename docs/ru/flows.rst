@@ -36,8 +36,17 @@ press_points.py
 База: давление в скважине 200 атмосфер, расход не задан, поэтому поле
 интерполируется между двумя давлениями.
 
-.. literalinclude:: ../../examples/python/press_points.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/press_points.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/points.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-press-points.svg
    :alt: Поле давления от границы 250 атм и скважины 200 атм
@@ -52,8 +61,17 @@ flow_points.py
 Теперь скважина задана расходом: -0.00159 м3/с в центре. Давление в скважине
 становится результатом закона сохранения массы, а не входным данным.
 
-.. literalinclude:: ../../examples/python/flow_points.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_points.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_points.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-points.svg
    :alt: Поле давления от границы и расхода в точке
@@ -70,8 +88,17 @@ flow_points2.py
 ``points_add`` сохраняет измерение 200 атм с весом, ``flow_points`` добавляет
 расход, и решение оказывается компромиссом.
 
-.. literalinclude:: ../../examples/python/flow_points2.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_points2.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_points2.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-points2.svg
    :alt: Поле давления от границы, давления и расхода в скважине
@@ -87,8 +114,17 @@ flow_area.py
 Тот же суммарный расход, распределённый по квадрату 200 x 200 м вместо точки.
 Внутри квадрата давление почти постоянно.
 
-.. literalinclude:: ../../examples/python/flow_area.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_area.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_area.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-area.svg
    :alt: Поле давления от расхода, распределённого по площади
@@ -102,8 +138,17 @@ flow_curve.py
 
 Тот же суммарный расход вдоль вертикальной линии через центр:
 
-.. literalinclude:: ../../examples/python/flow_curve.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_curve.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_curve.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-curve.svg
    :alt: Поле давления от расхода вдоль кривой
@@ -119,8 +164,17 @@ flow_cntr.py
 -7.95e-6 м3/с на метр, что на её 200 м даёт тот же суммарный расход, что и в
 вариантах с точкой, площадью и кривой:
 
-.. literalinclude:: ../../examples/python/flow_cntr.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_cntr.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_cntr.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-cntr.svg
    :alt: Поле давления от расхода вдоль изолинии
@@ -145,8 +199,17 @@ map_hor_frac.py
 
 Трещина идёт горизонтально. Полный пример:
 
-.. literalinclude:: ../../examples/python/map_hor_frac.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/map_hor_frac.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press2/map_hor_frac.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-hor-frac.svg
    :alt: Поле давления с горизонтальной трещиной
@@ -161,8 +224,17 @@ map_ver_frac.py
 
 То же поле с вертикальной линией:
 
-.. literalinclude:: ../../examples/python/map_ver_frac.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/map_ver_frac.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press2/map_ver_frac.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-ver-frac.svg
    :alt: Поле давления с вертикальной трещиной

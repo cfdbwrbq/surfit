@@ -124,8 +124,17 @@ area_bln.py
 Пять полигонов читаются, ``area1`` пишется в ``areas.bln``, данные
 сбрасываются, файл читается обратно и снова пишется как ``areas2.bln``:
 
-.. literalinclude:: ../../examples/python/area_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/area_bln.tcl
+         :language: tcl-src
 
 cntr_bln.py
 ~~~~~~~~~~~
@@ -133,8 +142,17 @@ cntr_bln.py
 Пять изолиний вместе со своими значениями Z уходят в один BLN-файл и
 возвращаются из него:
 
-.. literalinclude:: ../../examples/python/cntr_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/cntr_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/cntr_bln.tcl
+         :language: tcl-src
 
 curv_bln.py
 ~~~~~~~~~~~
@@ -142,8 +160,17 @@ curv_bln.py
 Четыре кривые записываются, а три загружаются обратно по шаблону имени —
 шаблон файла и шаблон имени независимы:
 
-.. literalinclude:: ../../examples/python/curv_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curv_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/curv_bln.tcl
+         :language: tcl-src
 
 area_shp.py
 ~~~~~~~~~~~
@@ -152,16 +179,34 @@ area_shp.py
 ``.shx`` и ``.dbf``; читатель принимает шаблон файла, поэтому оба вызова
 называют файл ``.shp``:
 
-.. literalinclude:: ../../examples/python/area_shp.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_shp.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/shp/area_shp.tcl
+         :language: tcl-src
 
 curv_shp.py
 ~~~~~~~~~~~
 
 То же для четырёх кривых, три загружаются обратно:
 
-.. literalinclude:: ../../examples/python/curv_shp.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curv_shp.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/shp/curv_shp.tcl
+         :language: tcl-src
 
 Два исходных скрипта не перенесены. ``cntr_shp.tcl`` смешивает плоскую
 2D-изолинию с 3D, а ``cntr_save_shp`` фиксирует тип шейпа по первой изолинии,

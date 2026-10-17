@@ -123,16 +123,34 @@ area_bln.py
 The five polygons are read, ``area1`` is written to ``areas.bln``, the data is
 dropped, the file is read back and written again as ``areas2.bln``:
 
-.. literalinclude:: ../../examples/python/area_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/area_bln.tcl
+         :language: tcl-src
 
 cntr_bln.py
 ~~~~~~~~~~~
 
 Five contours, with their Z values, go into one BLN file and come back:
 
-.. literalinclude:: ../../examples/python/cntr_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/cntr_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/cntr_bln.tcl
+         :language: tcl-src
 
 curv_bln.py
 ~~~~~~~~~~~
@@ -140,8 +158,17 @@ curv_bln.py
 Four curves are written and three are loaded back by name pattern -- the file
 pattern and the name pattern are independent:
 
-.. literalinclude:: ../../examples/python/curv_bln.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curv_bln.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/bln/curv_bln.tcl
+         :language: tcl-src
 
 area_shp.py
 ~~~~~~~~~~~
@@ -150,16 +177,34 @@ A shapefile is three files. The saver takes a base name and writes ``.shp``,
 ``.shx`` and ``.dbf``; the loader takes a file pattern, so both calls name the
 ``.shp`` file:
 
-.. literalinclude:: ../../examples/python/area_shp.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_shp.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/shp/area_shp.tcl
+         :language: tcl-src
 
 curv_shp.py
 ~~~~~~~~~~~
 
 The same for four curves, loading three back:
 
-.. literalinclude:: ../../examples/python/curv_shp.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curv_shp.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/shp/curv_shp.tcl
+         :language: tcl-src
 
 Two shipped scripts are not ported. ``cntr_shp.tcl`` mixes a flat 2D contour
 with 3D ones, and ``cntr_save_shp`` fixes the shape type by the first contour,

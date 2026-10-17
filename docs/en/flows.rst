@@ -37,8 +37,17 @@ press_points.py
 The baseline: the well pressure is 200 atmospheres and no rate is given, so the
 field is interpolated between the two pressures.
 
-.. literalinclude:: ../../examples/python/press_points.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/press_points.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/points.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-press-points.svg
    :alt: Pressure field from a 250-atm boundary and a 200-atm well
@@ -53,8 +62,17 @@ flow_points.py
 The well is given as a rate instead: -0.00159 m3/s at the centre. The pressure
 at the well is now an output of the conservation law rather than an input.
 
-.. literalinclude:: ../../examples/python/flow_points.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_points.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_points.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-points.svg
    :alt: Pressure field from a boundary and a rate at one point
@@ -71,8 +89,17 @@ Both the pressure and the rate at the well are known, and they disagree.
 ``points_add`` keeps the 200-atm measurement with a weight, ``flow_points`` adds
 the rate, and the solution is a compromise between them.
 
-.. literalinclude:: ../../examples/python/flow_points2.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_points2.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_points2.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-points2.svg
    :alt: Pressure field from a boundary, a pressure and a rate at one well
@@ -88,8 +115,17 @@ flow_area.py
 The same total rate, spread over the 200 x 200 m square instead of concentrated
 at a point. The pressure inside the square is almost flat.
 
-.. literalinclude:: ../../examples/python/flow_area.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_area.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_area.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-area.svg
    :alt: Pressure field from a rate spread over an area
@@ -103,8 +139,17 @@ flow_curve.py
 
 The same total rate along the vertical line through the centre:
 
-.. literalinclude:: ../../examples/python/flow_curve.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_curve.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_curve.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-curve.svg
    :alt: Pressure field from a rate along a curve
@@ -120,8 +165,17 @@ The rate per unit length comes from the contour's Z value. This contour carries
 -7.95e-6 m3/s per unit length, which over its 200 m is the same total as in the
 point, area and curve versions:
 
-.. literalinclude:: ../../examples/python/flow_cntr.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/flow_cntr.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press1/flow_cntr.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-flow-cntr.svg
    :alt: Pressure field from a rate along a contour
@@ -146,8 +200,17 @@ map_hor_frac.py
 
 The fracture runs horizontally. The full example:
 
-.. literalinclude:: ../../examples/python/map_hor_frac.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/map_hor_frac.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press2/map_hor_frac.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-hor-frac.svg
    :alt: Pressure field with a horizontal fracture
@@ -162,8 +225,17 @@ map_ver_frac.py
 
 The same field with the vertical line:
 
-.. literalinclude:: ../../examples/python/map_ver_frac.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/map_ver_frac.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/freeflow/press2/map_ver_frac.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-ver-frac.svg
    :alt: Pressure field with a vertical fracture

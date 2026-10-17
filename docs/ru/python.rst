@@ -300,8 +300,17 @@ area.py
 внутри ``area5`` остаётся неопределённой; ``area2`` и ``area4`` приближаются с
 весом, а ``completer`` сглаживает пространство между ними.
 
-.. literalinclude:: ../../examples/python/area.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area.svg
    :alt: Карта примера с площадями, заливка по изолиниям
@@ -319,8 +328,17 @@ completer с анизотропией (угол 30 градусов, ``w=2``) в
 обычный ``completer`` действует в остальной области. Одиннадцать точек
 удерживают поверхность на данных.
 
-.. literalinclude:: ../../examples/python/area_completer.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_completer.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_completer.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-completer.svg
    :alt: Карта примера area_completer, заливка по изолиниям
@@ -338,8 +356,17 @@ area_ineq.py
 Неравенство изгибает остальную часть ``area6``, а сам скрипт сообщает, что
 максимум внутри неё — 30.
 
-.. literalinclude:: ../../examples/python/area_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-ineq.svg
    :alt: Карта примера area_ineq, заливка по изолиниям
@@ -357,8 +384,17 @@ area_mean.py
 внутри ``area6`` и 30 по всей карте. Оба условия оставляют значение в каждом
 отдельном узле свободным, поэтому карта глаже, чем вариант с точными значениями.
 
-.. literalinclude:: ../../examples/python/area_mean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_mean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_mean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-mean.svg
    :alt: Карта примера area_mean, заливка по изолиниям
@@ -375,8 +411,17 @@ area_wmean.py
 равна 30, а весом служит ``test_func``, поэтому среднее смещается туда, где эта
 поверхность велика.
 
-.. literalinclude:: ../../examples/python/area_wmean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_wmean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_wmean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-wmean.svg
    :alt: Карта примера area_wmean, заливка по изолиниям
@@ -393,8 +438,17 @@ area_surf.py
 внутри ``area6`` и приближённо — внутри площадей 1–4, со своим весом для каждого
 полигона.
 
-.. literalinclude:: ../../examples/python/area_surf.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_surf.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_surf.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-surf.svg
    :alt: Карта примера area_surf, заливка по изолиниям
@@ -410,8 +464,17 @@ area_surf_ineq.py
 и 5, ниже — в площадях 2, 4 и 6. Результат лежит внутри этого «бутерброда» и
 гладок между площадями.
 
-.. literalinclude:: ../../examples/python/area_surf_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/area_surf_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/area_surf_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-area-surf-ineq.svg
    :alt: Карта примера area_surf_ineq, заливка по изолиниям
@@ -430,8 +493,17 @@ contour.py
 Три изолинии: малая и центральная учитываются точно, большая — с весом 0.5.
 Изолиния несёт своё значение вдоль линии, и этим отличается от кривой.
 
-.. literalinclude:: ../../examples/python/contour.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/contour.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/contour.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-contour.svg
    :alt: Карта примера с изолиниями, заливка по изолиниям
@@ -448,8 +520,17 @@ contour_ineq.py
 сдвинутый на 0.2, — верхнюю, поэтому поверхности достаточно оставаться между
 ними, а не касаться каждой.
 
-.. literalinclude:: ../../examples/python/contour_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/contour_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/contour_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-contour-ineq.svg
    :alt: Карта примера contour_ineq, заливка по изолиниям
@@ -469,8 +550,17 @@ curve.py
 добавлена с весом 0.5. Кривая двумерна, поэтому значение берётся из правила, а
 не из линии, — этим она и отличается от изолинии.
 
-.. literalinclude:: ../../examples/python/curve.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curve.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/curve.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-curve.svg
    :alt: Карта примера с кривыми, заливка по изолиниям
@@ -487,8 +577,17 @@ curve_ineq.py
 становятся нижними и верхними границами, поэтому результат обязан соблюдать
 только их порядок.
 
-.. literalinclude:: ../../examples/python/curve_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curve_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/curve_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-curve-ineq.svg
    :alt: Карта примера curve_ineq, заливка по изолиниям
@@ -505,8 +604,17 @@ curve_surf.py
 вдоль ``spiral`` и делает это с весом 0.5 вдоль ``spiral2``. Сетка строится по
 данным, поэтому покрывает обе спирали.
 
-.. literalinclude:: ../../examples/python/curve_surf.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curve_surf.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/curve_surf.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-curve-surf.svg
    :alt: Карта примера curve_surf, заливка по изолиниям
@@ -523,8 +631,17 @@ curve_surf_ineq.py
 ``spiral2`` и ниже неё вдоль ``spiral``. Две спирали чередуются, поэтому
 результат продет между ними.
 
-.. literalinclude:: ../../examples/python/curve_surf_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/curve_surf_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/curve_surf_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-curve-surf-ineq.svg
    :alt: Карта примера curve_surf_ineq, заливка по изолиниям
@@ -543,8 +660,17 @@ faults.py
 Одиннадцать точек и четыре линии разрывов. Поверхность обязана скачком
 переходить через каждую линию, а не сглаживать её.
 
-.. literalinclude:: ../../examples/python/faults.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/faults.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/fault.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-faults.svg
    :alt: Карта примера с разрывами, заливка по изолиниям
@@ -560,8 +686,17 @@ fault_aniso.py
 каждого блока поверхность сглаживается вдоль 45 градусов, а не одинаково во всех
 направлениях (угол анизотропии 45 градусов, аргумент веса 2).
 
-.. literalinclude:: ../../examples/python/fault_aniso.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/fault_aniso.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/fault_aniso.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-fault-aniso.svg
    :alt: Карта примера fault_aniso, заливка по изолиниям
@@ -577,8 +712,17 @@ fault_approx.py
 Пример с разрывами без точного условия в точках: они добавлены с весом, поэтому
 поверхность может немного промахиваться мимо каждого замера.
 
-.. literalinclude:: ../../examples/python/fault_approx.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/fault_approx.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/fault_approx.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-fault-approx.svg
    :alt: Карта примера fault_approx, заливка по изолиниям
@@ -598,8 +742,17 @@ ineq.py
 120 и completer между ними. Поверхность проходит через точки и всюду остаётся
 внутри полосы.
 
-.. literalinclude:: ../../examples/python/ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-ineq.svg
    :alt: Карта примера ineq, заливка по изолиниям
@@ -614,8 +767,17 @@ points_ineq.py
 Два набора измеренных точек как границы: поверхность должна оставаться выше
 каждой точки одного набора и ниже каждой точки другого.
 
-.. literalinclude:: ../../examples/python/points_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/points_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/points_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-points-ineq.svg
    :alt: Карта примера points_ineq, заливка по изолиниям
@@ -634,8 +796,17 @@ mask.py
 Растровая маска вырезает в поверхности дыру: там, где маска истинна, поверхность
 остаётся неопределённой, а везде ещё следует ``test_func``.
 
-.. literalinclude:: ../../examples/python/mask.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask.svg
    :alt: Карта примера с маской, заливка по изолиниям
@@ -651,8 +822,17 @@ mask_add.py
 Правило значения, ограниченное маской: там, где маска истинна, поверхность
 тянется к 3 с весом 0.2, а в остальном, как и раньше, следует ``test_func``.
 
-.. literalinclude:: ../../examples/python/mask_add.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_add.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_add.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-add.svg
    :alt: Карта примера mask_add, заливка по изолиниям
@@ -669,8 +849,17 @@ Completer, действующий только внутри маски, с ан�
 истинна, поверхность сглаживается вдоль 30 градусов, а не одинаково во всех
 направлениях (угол анизотропии 30 градусов, аргумент веса 2).
 
-.. literalinclude:: ../../examples/python/mask_completer.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_completer.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_completer.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-completer.svg
    :alt: Карта примера mask_completer, заливка по изолиниям
@@ -686,8 +875,17 @@ mask_ineq.py
 Неравенство под маской: там, где маска истинна, поверхность должна быть не ниже
 -10, а в остальном она следует ``test_func``.
 
-.. literalinclude:: ../../examples/python/mask_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-ineq.svg
    :alt: Карта примера mask_ineq, заливка по изолиниям
@@ -703,8 +901,17 @@ mask_mean.py
 Среднее под маской: там, где маска истинна, поверхность в среднем равна -2, а
 точки в остальной области учитываются точно.
 
-.. literalinclude:: ../../examples/python/mask_mean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_mean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_mean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-mean.svg
    :alt: Карта примера mask_mean, заливка по изолиниям
@@ -720,8 +927,17 @@ mask_surf.py
 Правило поверхности под маской: там, где маска истинна, результат равен
 ``test_func``, а в остальном работает completer.
 
-.. literalinclude:: ../../examples/python/mask_surf.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_surf.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_surf.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-surf.svg
    :alt: Карта примера mask_surf, заливка по изолиниям
@@ -737,8 +953,17 @@ mask_surf_add.py
 Взвешенное правило поверхности под маской: сначала идёт completer, а
 ``test_func`` добавляется к нему с весом 1 там, где маска истинна.
 
-.. literalinclude:: ../../examples/python/mask_surf_add.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_surf_add.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_surf_add.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-surf-add.svg
    :alt: Карта примера mask_surf_add, заливка по изолиниям
@@ -754,8 +979,17 @@ mask_surf_ineq.py
 Неравенство относительно поверхности под маской: там, где маска истинна,
 результат остаётся не выше ``test_func``, а точки задают его в остальной области.
 
-.. literalinclude:: ../../examples/python/mask_surf_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_surf_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_surf_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-surf-ineq.svg
    :alt: Карта примера mask_surf_ineq, заливка по изолиниям
@@ -771,8 +1005,17 @@ mask_wmean.py
 Взвешенное среднее под маской: поверхность в среднем равна 2 там, где истинна
 ``mask_not``, с весом ``test_func``, а точки учитываются точно.
 
-.. literalinclude:: ../../examples/python/mask_wmean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mask_wmean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mask_wmean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mask-wmean.svg
    :alt: Карта примера mask_wmean, заливка по изолиниям
@@ -791,8 +1034,17 @@ mean.py
 Среднее как условие гриддинга: поверхность проходит через семь точек, а её
 среднее по всей карте равно 30.
 
-.. literalinclude:: ../../examples/python/mean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/mean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/mean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-mean.svg
    :alt: Карта примера mean, заливка по изолиниям
@@ -809,8 +1061,17 @@ wmean.py
 30 с весом ``test_func``, поэтому среднее смещается туда, где эта поверхность
 велика.
 
-.. literalinclude:: ../../examples/python/wmean.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/wmean.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/wmean.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-wmean.svg
    :alt: Карта примера wmean, заливка по изолиниям
@@ -829,8 +1090,17 @@ surface.py
 Поверхность как данные: результат следует за ``test_func`` в смысле наименьших
 квадратов и стремится к плоскости там, где поверхность ничего не подсказывает.
 
-.. literalinclude:: ../../examples/python/surface.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/surface.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/surface.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-surface.svg
    :alt: Карта примера с поверхностью, заливка по изолиниям
@@ -846,8 +1116,17 @@ surface_add.py
 Поверхность, добавленная с малым весом: один completer дал бы плоскость, а
 ``test_func`` слегка изгибает её к своей форме.
 
-.. literalinclude:: ../../examples/python/surface_add.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/surface_add.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/surface_add.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-surface-add.svg
    :alt: Карта примера surface_add, заливка по изолиниям
@@ -865,8 +1144,17 @@ surface_ineq.py
 точно. Вторая копия, сдвинутая на 90, загружается скриптом, но ни одно правило
 её не использует.
 
-.. literalinclude:: ../../examples/python/surface_ineq.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/surface_ineq.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/surface_ineq.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-surface-ineq.svg
    :alt: Карта примера surface_ineq, заливка по изолиниям
@@ -886,8 +1174,17 @@ trend.py
 обязан на крупном масштабе походить на ``test_func``. Разрывы не дают тренду
 остаться непрерывным.
 
-.. literalinclude:: ../../examples/python/trend.py
-   :language: python
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/trend.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit/tests/trend.tcl
+         :language: tcl-src
 
 .. figure:: ../_static/map-trend.svg
    :alt: Карта примера с трендом и разрывами, заливка по изолиниям

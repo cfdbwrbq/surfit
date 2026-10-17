@@ -2,6 +2,8 @@
 
     python3 examples/python/faults.py [output.html]
 
+The Tcl original is examples/surfit/tests/fault.tcl.
+
 Eleven points and four fault lines.  Without the faults the surface would be
 smooth; with them it jumps across each line, which is the point of the feature
 and why the map below the code in the documentation has visible steps.

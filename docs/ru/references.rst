@@ -80,6 +80,10 @@
   *Computers & Geosciences* 1, 231–240.
   `doi:10.1016/0098-3004(76)90071-6 <https://doi.org/10.1016/0098-3004(76)90071-6>`_
 
+* M. D. Buhmann (2003). *Radial Basis Functions: Theory and
+  Implementations*. Cambridge University Press.
+  `doi:10.1017/CBO9780511543241 <https://doi.org/10.1017/CBO9780511543241>`_
+
 Геостатистика
 -------------
 
@@ -217,6 +221,36 @@
 * J. R. Shewchuk (1996). Triangle: engineering a 2D quality mesh generator and
   Delaunay triangulator. *Lecture Notes in Computer Science* 1148, 203–222.
   `doi:10.1007/BFb0014497 <https://doi.org/10.1007/BFb0014497>`_
+
+* Y. Saad (2003). *Iterative Methods for Sparse Linear Systems*. SIAM.
+  `doi:10.1137/1.9780898718003 <https://doi.org/10.1137/1.9780898718003>`_
+* T. A. Davis (2006). *Direct Methods for Sparse Linear Systems*. SIAM.
+  `doi:10.1137/1.9780898718881 <https://doi.org/10.1137/1.9780898718881>`_
+* W. L. Briggs, V. E. Henson, S. F. McCormick (2000). *A Multigrid Tutorial*.
+  SIAM.
+  `doi:10.1137/1.9780898719505 <https://doi.org/10.1137/1.9780898719505>`_
+* J. Nocedal, S. J. Wright (1999). *Numerical Optimization*. Springer.
+  `doi:10.1007/b98874 <https://doi.org/10.1007/b98874>`_
+
+Вычислительная геометрия
+------------------------
+
+* M. de Berg, O. Cheong, M. van Kreveld, M. Overmars (2008). *Computational
+  Geometry: Algorithms and Applications*. Springer.
+  `doi:10.1007/978-3-540-77974-2_1 <https://doi.org/10.1007/978-3-540-77974-2_1>`_
+* S. Fortune (1987). A sweepline algorithm for Voronoi diagrams. *Algorithmica*
+  2, 153-174.
+  `doi:10.1007/BF01840357 <https://doi.org/10.1007/BF01840357>`_
+* L. J. Guibas, J. Stolfi (1985). Primitives for the manipulation of general
+  subdivisions and the computation of Voronoi diagrams. *ACM Transactions on
+  Graphics* 4, 74-123.
+  `doi:10.1145/282918.282923 <https://doi.org/10.1145/282918.282923>`_
+* J. Ruppert (1995). A Delaunay refinement algorithm for quality 2-dimensional
+  mesh generation. *Journal of Algorithms* 18, 548-585.
+  `doi:10.1006/jagm.1995.1021 <https://doi.org/10.1006/jagm.1995.1021>`_
+* C. L. Lawson (1977). Software for C1 surface interpolation. In *Mathematical
+  Software III*, Academic Press, 161-194.
+  `doi:10.1016/B978-0-12-587260-7.50011-X <https://doi.org/10.1016/B978-0-12-587260-7.50011-X>`_
 
 Программное обеспечение
 -----------------------

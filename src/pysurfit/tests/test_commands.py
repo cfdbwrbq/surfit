@@ -77,6 +77,25 @@ def python_points():
     print("after_del=%d" % surfit.pnts_size())
 
 
+def tcl_pnts_to_cntrs():
+    return LOAD + """
+pnts_read "data/7points.txt" "wells"
+puts "converted=[lindex [pnts_to_cntrs "wells"] 0]"
+puts "cntrs=[cntr_size]"
+"""
+
+
+def python_pnts_to_cntrs():
+    surfit.clear_data()
+    surfit.pnts_read(os.path.join("data", "7points.txt"), "wells")
+    result = surfit.pnts_to_cntrs("wells")
+    assert result == [True], result
+    print("converted=%d" % int(result == [True]))
+    print("cntrs=%d" % surfit.cntr_size())
+    assert surfit.cntr_size() > 0
+    assert surfit.pnts_to_cntrs("nosuch") in (None, [])
+
+
 def tcl_minmax():
     return LOAD + """
 pnts_read "data/minmax.txt" "mm"
@@ -263,6 +282,7 @@ CASES = (
     ("settings", tcl_settings, python_settings, ()),
     ("hist datafile", tcl_hist_datafile, python_hist_datafile, ("task.dat",)),
     ("minmax", tcl_minmax, python_minmax, ()),
+    ("pnts to cntrs", tcl_pnts_to_cntrs, python_pnts_to_cntrs, ()),
 )
 
 
@@ -281,6 +301,7 @@ def prepare(directory, scratch):
 
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
+           "converted=", "cntrs=",
            "empty=", "names=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",

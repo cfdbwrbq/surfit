@@ -853,7 +853,7 @@ bool _pnts_to_cntrs(const d_points * input_pnts)
 	Z->release();
 
 	pnts->release();
-	return false;
+	return (cnt > 0);
 };
 
 }; // namespace surfit;

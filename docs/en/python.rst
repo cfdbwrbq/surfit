@@ -162,9 +162,12 @@ Two things are worth knowing:
 * ``dem_load_hgt_zip`` needs zlib. The CMake build enables it when
   ``find_package(ZLIB)`` succeeds; otherwise the command reports
   "zlib not detected" and returns nothing.
-* DEMs live in a container of their own, outside the state a Session owns, so
-  two Sessions in one process share them. The finite-element rules the
-  ``freeflow`` commands create are ordinary rules and are per-Session.
+* DEMs belong to the task. Each Session gets a container of its own, so two
+  Sessions may load different rasters under the same name and closing one leaves
+  the other's DEMs alone. The module-level calls above use the library's own
+  container, which is where a DEM loaded outside a Session lives; a new Session
+  starts with none. The finite-element rules the ``freeflow`` commands create are
+  ordinary rules and are per-Session.
 
 The flow examples, with maps and the story of what each rule does, are on the
 :doc:`flows` page; the terrain examples are on :doc:`terrain`.

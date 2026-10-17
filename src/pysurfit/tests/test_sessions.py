@@ -141,6 +141,36 @@ def main():
     assert surfit.Session("fresh").surf_names() == [], "a closed state left data"
     print("PASS: creating and releasing other tasks changed nothing")
 
+    # DEMs belong to the task as well.  The two tasks load different rasters
+    # under the same name, so a shared container would make one of them read the
+    # other's values; freeing the first must leave the second's DEM intact.
+    first = surfit.Session("dem_first")
+    second = surfit.Session("dem_second")
+    assert first.dem_load_dtm(os.path.join(DATA, "dtm4.hdr"), "dtm4") == [True]
+    assert first.dem_setName("shared", "dtm4") == [True]
+    assert second.dem_load(os.path.join(DATA, "wave.dat"), "wave") == [True]
+    assert second.dem_setName("shared", "wave") == [True]
+    assert (first.dem_size(), second.dem_size()) == (1, 1), "a DEM leaked"
+    assert float(first.dem_getValue(44.0, 43.0, "shared")[0]) == 13.0
+    assert float(second.dem_getValue(0.0, 0.0, "shared")[0]) == 0.0
+    first.close()
+    assert second.dem_size() == 1, "releasing a task freed another task's DEM"
+    assert float(second.dem_getValue(3.0, 3.0, "shared")[0]) == 15.0
+    second.close()
+    assert surfit.dem_size() == 0, "a closed task left a DEM behind"
+
+    # A DEM loaded outside a Session lives in the library's own container: a new
+    # Session starts with none of its own, and the library's DEM is back once
+    # that Session is closed.
+    assert surfit.dem_load_dtm(os.path.join(DATA, "dtm4.hdr"), "outside") == [True]
+    inside = surfit.Session("inside")
+    assert inside.dem_size() == 0, "a task inherited the library's DEMs"
+    inside.close()
+    assert surfit.dem_size() == 1, "the library's DEMs did not come back"
+    assert float(surfit.dem_minz("outside")[0]) == 1.0
+    surfit.clear_data()
+    print("PASS: DEMs belong to the task that loaded them")
+
     # Naming the solver and the map frees the previous name, so a name shared
     # between states would be freed by one task and then again by the task it
     # was borrowed from.  A run of short-lived tasks is what exposed it: the

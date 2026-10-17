@@ -22,6 +22,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <cstdint>
 #include <string>
 
 // The export/visibility macros live in these headers and must come first,
@@ -36,6 +37,7 @@
 #include "real.h"
 
 // globe: the digital elevation model
+#include "dem.h"
 #include "globe.h"
 #include "globe_variables.h"
 #include "dem_tcl.h"
@@ -329,4 +331,23 @@ void bind_freeflow(py::module_ & m) {
 	   py::arg("perm"), py::arg("visc"), py::arg("mult"),
 	   py::arg("surface_name") = "*",
 	   "flow rate through a rectangle of the surface");
+
+	// --- the DEM container of one task -----------------------------------
+	// The DEM commands work on one container; a Session creates its own, so
+	// two tasks can load different rasters under the same name.  The handles
+	// are opaque, like state_create(), and the Python side owns the lifetime.
+	m.def("globe_dems_create", []() {
+		return reinterpret_cast<std::uintptr_t>(surfit::globe_dems_create());
+	}, "a new empty DEM container, as a handle");
+	m.def("globe_dems_install", [](std::uintptr_t handle) {
+		surfit::globe_dems_install(
+			reinterpret_cast<surfit::dems_container *>(handle));
+	}, py::arg("handle"), "makes that DEM container the active one");
+	m.def("globe_dems_origin", []() {
+		return reinterpret_cast<std::uintptr_t>(surfit::globe_dems_origin());
+	}, "the library's own DEM container, as a handle");
+	m.def("globe_dems_release", [](std::uintptr_t handle) {
+		surfit::globe_dems_release(
+			reinterpret_cast<surfit::dems_container *>(handle));
+	}, py::arg("handle"), "frees a DEM container and its DEMs");
 }

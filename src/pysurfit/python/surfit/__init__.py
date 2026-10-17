@@ -270,6 +270,11 @@ class Session:
         first.read_areas(...)    # each call switches to that task
         second.read_areas(...)
 
+    The DEMs belong to the task as well: a Session starts with none of its own
+    and gets a fresh container, so two tasks may load different rasters under
+    the same name.  The module-level functions keep using the library's own
+    container, which is where a DEM loaded outside a Session lives.
+
     Only one state is active at a time.  Interleaving is fine, and so are two
     Sessions in two threads: every call holds a process-wide lock across the
     state switch and the command, so the calls are serialized rather than
@@ -280,16 +285,20 @@ class Session:
     def __init__(self, map_name="map", tol=None):
         with _STATE_LOCK:
             self._state = _core.state_create()
+            self._dems = _core.globe_dems_create()
             self._activate()
             set_map_name(map_name)
             if tol is not None:
                 set_tol(tol)
 
     def _activate(self):
-        """Makes this task's state the one the engine works on."""
+        """Makes this task's state and DEM container the active ones."""
         state = getattr(self, "_state", 0)
         if state:
             _core.state_install(state)
+        dems = getattr(self, "_dems", 0)
+        if dems:
+            _core.globe_dems_install(dems)
 
     def _call(self, target, *args, **kwargs):
         with _STATE_LOCK:
@@ -297,11 +306,20 @@ class Session:
             return target(*args, **kwargs)
 
     def close(self):
-        """Frees this task's state and everything it holds."""
+        """Frees this task's state and everything it holds.
+
+        The rules are freed before the DEMs: a DEM rule keeps a pointer to its
+        DEM but does not own it, so the two orders do not crash, while freeing
+        the DEMs first would leave the rules pointing at freed rasters.
+        """
         state = getattr(self, "_state", 0)
         if state:
             _core.state_release(state)
             self._state = 0
+        dems = getattr(self, "_dems", 0)
+        if dems:
+            _core.globe_dems_release(dems)
+            self._dems = 0
 
     def __enter__(self):
         with _STATE_LOCK:

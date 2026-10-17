@@ -192,10 +192,10 @@ original. The levels are kept, so the original values come back exactly.
 
 Two things are worth knowing: the DEM loaders take a file *pattern* rather than
 one path, and ``dem_load_hgt_zip`` needs zlib (the CMake build enables it when
-found). DEMs also
-live outside the Session state and are shared by all tasks in the process;
-:doc:`python` explains why. :doc:`terrain` reads an SRTM tile in both front ends
-and shows what the two rules produce.
+found). DEMs also belong to the task: each Session owns a container, so two tasks
+may load different rasters under the same name, and the module-level calls use
+the library's own container; :doc:`python` has the details. :doc:`terrain` reads
+an SRTM tile in both front ends and shows what the two rules produce.
 
 What they have in common
 ------------------------

@@ -201,6 +201,18 @@ public:
 //! storage for dems
 extern GLOBE_EXPORT dems_container * globe_dems;
 
+//! creates an empty DEM container for one task; the caller owns it
+GLOBE_EXPORT dems_container * globe_dems_create();
+
+//! makes a container the one the DEM commands work on
+GLOBE_EXPORT void globe_dems_install(dems_container * container);
+
+//! the library's own container, used by commands that run outside a task
+GLOBE_EXPORT dems_container * globe_dems_origin();
+
+//! frees a container made by globe_dems_create() and restores the library's own
+GLOBE_EXPORT void globe_dems_release(dems_container * container);
+
 }; // namespace surfit;
 
 #endif

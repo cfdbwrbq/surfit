@@ -38,6 +38,18 @@ Interpolation and splines
   environmental sciences: a review. *Environmental Modelling & Software*.
   `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_
 
+* R. Franke (1985). Thin plate splines with tension. *Computer Aided
+  Geometric Design* 2, 87–95.
+  `doi:10.1016/0167-8396(85)90011-1 <https://doi.org/10.1016/0167-8396(85)90011-1>`_
+* L. Mitáš, H. Mitášová (1988). General variational approach to the
+  interpolation problem. *Computers & Mathematics with Applications* 16,
+  983–992.
+  `doi:10.1016/0898-1221(88)90255-6 <https://doi.org/10.1016/0898-1221(88)90255-6>`_
+* O. Dubrule (1983). Two methods with different objectives: splines and
+  kriging. *Journal of the International Association for Mathematical Geology*
+  15, 245–257.
+  `doi:10.1007/BF01036069 <https://doi.org/10.1007/BF01036069>`_
+
 Geostatistics
 -------------
 
@@ -56,6 +68,13 @@ Geostatistics
 * R. O. Hansen (1993). Interpretive gridding by anisotropic kriging.
   *Geophysics* 58, 1491–1497.
   `doi:10.1190/1.1443363 <https://doi.org/10.1190/1.1443363>`_
+
+* G. Matheron (1963). Principles of geostatistics. *Economic Geology* 58,
+  1246–1266.
+  `doi:10.2113/gsecongeo.58.8.1246 <https://doi.org/10.2113/gsecongeo.58.8.1246>`_
+* O. Dubrule (1984). Comparing splines and kriging. *Computers & Geosciences*
+  10, 327–338.
+  `doi:10.1016/0098-3004(84)90030-X <https://doi.org/10.1016/0098-3004(84)90030-X>`_
 
 Rules and applications
 ----------------------
@@ -92,6 +111,15 @@ Terrain and data sources
 * P. Wessel, W. H. F. Smith (1998). New, improved version of Generic Mapping
   Tools released. *Eos, Transactions American Geophysical Union* 79.
   `doi:10.1029/98EO00426 <https://doi.org/10.1029/98EO00426>`_
+
+* M. F. Hutchinson (1989). A new procedure for gridding elevation and stream
+  line data with automatic removal of spurious pits. *Journal of Hydrology*
+  106, 211–232.
+  `doi:10.1016/0022-1694(89)90073-5 <https://doi.org/10.1016/0022-1694(89)90073-5>`_
+* I. D. Moore, R. B. Grayson, A. R. Ladson (1991). Digital terrain modelling: a
+  review of hydrological, geomorphological, and biological applications.
+  *Hydrological Processes* 5, 3–30.
+  `doi:10.1002/hyp.3360050103 <https://doi.org/10.1002/hyp.3360050103>`_
 
 Numerical methods
 -----------------

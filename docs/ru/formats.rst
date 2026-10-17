@@ -89,7 +89,7 @@ DEM приходят из библиотеки ``globe``, которую Tcl-ф�
    * - собственный surfit
      - ``dem_load``
      - ``dem_save``
-   * - сетка Surfer
+   * - сетка Surfer (ASCII, ``DSAA``)
      - ``dem_load_grd``
      - ``dem_save_grd``
    * - DTM

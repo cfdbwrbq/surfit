@@ -87,7 +87,7 @@ the loader keeps the tile's origin and step.
    * - surfit native
      - ``dem_load``
      - ``dem_save``
-   * - Surfer grid
+   * - Surfer grid (ASCII, ``DSAA``)
      - ``dem_load_grd``
      - ``dem_save_grd``
    * - DTM

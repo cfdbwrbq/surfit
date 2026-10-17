@@ -164,6 +164,17 @@ a figure cannot drift from what ``save_viewer()`` produces. Regenerate them with
 ``docs/make_images.py`` after changing the viewer or an example; it needs node,
 d3 and jsdom.
 
+Command reference
+-----------------
+
+The page under *Command reference* is generated, not written:
+``docs/make_command_reference.py`` reads the command list from the SWIG
+interface files under ``src`` and the syntax, description, parameters and
+examples from the Doxygen comments in the headers. ``docs/check_docs.py`` fails
+when the page is stale, so a new command or an edited header cannot leave the
+reference behind. The command names and the descriptions are the same in both
+languages; only the title and the introduction are translated.
+
 Why byte equality
 -----------------
 

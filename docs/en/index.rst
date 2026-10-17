@@ -40,6 +40,7 @@ the resulting data files byte for byte.
    flows
    tcl
    formats
+   commands
    development
 
 Where to start

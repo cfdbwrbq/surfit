@@ -42,6 +42,7 @@ surfit
    flows
    tcl
    formats
+   commands
    development
 
 С чего начать

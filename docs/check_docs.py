@@ -14,6 +14,7 @@ Exit status is 1 when the trees differ.
 """
 import os
 import re
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +77,15 @@ def main():
         if en_entries != ru_entries:
             problems.append("%s: toctree differs (%r vs %r)"
                             % (name, en_entries, ru_entries))
+
+    # The command reference is generated from the interface files and headers;
+    # a source change without a regeneration is exactly the kind of quiet drift
+    # this check is for.
+    generator = os.path.join(HERE, "make_command_reference.py")
+    result = subprocess.run([sys.executable, generator, "--check"],
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        problems.append("commands.rst is stale: run %s" % generator)
 
     for line in problems:
         print("FAIL " + line)

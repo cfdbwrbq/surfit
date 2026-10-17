@@ -157,6 +157,12 @@ void minmax_value(iter begin, iter end, val & min_value, val & max_value, val un
 //! calculates minimum and maximum values for all vector values
 template<class iter, class val>
 void minmax_value(iter begin, iter end, val & min_value, val & max_value) {
+	// An empty range has no first element: dereferencing begin() there reads
+	// the null data pointer of a vec that was never filled.  Callers either
+	// check size() first or initialize min/max to their sentinels.
+	if (begin == end)
+		return;
+
 	max_value = *begin;
 	min_value = *begin;
 	iter ptr;

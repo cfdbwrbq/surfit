@@ -5,13 +5,31 @@ into a Python script - so the two sides cannot drift apart, and every result is
 printed with the same marker.  Comparing a transcript is stricter than counting
 that a command exists: it says the two engines computed the same thing.
 
+Three things are compared, not one:
+
+* every printed result, numerically where possible (`same`);
+* every diagnostic either side printed - the lines the core marks with
+  `Warning!` or `Error!`.  A command that returns nothing cannot be checked by
+  its return value alone, and a command that silently matched no object does
+  not differ between the ends - it just does nothing twice.  The diagnostics
+  are where that shows up, so the two transcripts must agree on them too;
+* every file both sides write, byte for byte.  The same table writes the same
+  `.dat` and text files on both sides, and a save that rounds differently or
+  serialises memory it never initialised shows up here and nowhere else.
+
 A step whose call fails prints `R=ERROR` on that side, so one broken command
-does not hide the rest; the failing names are listed at the end.
+does not hide the rest; the failing names are listed at the end.  A side that
+stops early is a failure, not a pass: the steps after it never ran.
+
+Loading is by name *inside the file*, not by new name: `area_load file name`
+looks for an area called `name` in the file, and `surf_load` treats its second
+argument as a Tcl pattern over the surfaces stored there.  That is why the
+round-trip steps below delete an object before loading it back instead of
+renaming it on the way in.
 """
 
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -27,6 +45,9 @@ sys.path.insert(0, BIN)
 import surfit  # noqa: E402
 
 #: Everything is built in sequence, so the state accumulates as a script would.
+#: Each object is created before the command that needs it, and names are the
+#: ones the engine really stores (a mask made from a surface takes the
+#: surface's name; a grid is only loadable by name if it was created with one).
 STEPS = (
     # --- settings and library utilities -------------------------------
     ("map_name", []),
@@ -71,8 +92,11 @@ STEPS = (
     ("get_basis_cnt", []),
 
     # --- points -------------------------------------------------------
+    #: Two sets of the *same* size: pnts_plus/minus/mult/div/set are pairwise
+    #: and return false when the sizes differ, so unequal files would leave
+    #: five steps silently doing nothing.
     ("pnts_read", ["data/7points.txt", "wells"]),
-    ("pnts_read", ["data/11points.txt", "other"]),
+    ("pnts_read", ["data/7points.txt", "other"]),
     ("pnts_size", []),
     ("pnts_info", []),
     ("pnts_minx", ["wells"]),
@@ -101,13 +125,22 @@ STEPS = (
     ("pnts_rotate", [0.0, 0.0, 90.0, "wells"]),
     ("pnts_to_cntrs", ["wells"]),
     ("cntr_size", []),
+
+    #: round trip: save, delete, load back by the name stored in the file
+    ("pnts_save", ["pnts.dat", "wells"]),
+    ("pnts_write", ["pnts.txt", "wells"]),
+    ("pnts_del", ["wells"]),
+    ("pnts_size", []),
+    ("pnts_load", ["pnts.dat", "wells"]),
+    ("pnts_size", []),
+    ("pnts_minz", ["wells"]),
     ("curv_size", []),
 
     # --- rules over points --------------------------------------------
-    ("grid_get", [-12, 12, 0.2, -12, 12, 0.2]),
+    ("grid_get", [-12, 12, 0.2, -12, 12, 0.2, "g_base"]),
     ("grid_check", []),
     ("grid2", [0.1, 0.1, 2, "g_fine"]),
-    ("grid_get", [-12, 12, 0.2, -12, 12, 0.2]),
+    ("grid_get", [-12, 12, 0.2, -12, 12, 0.2, "g_base"]),
     ("points", ["wells"]),
     ("points_add", [0.5, "wells"]),
     ("points_geq", ["wells", 0]),
@@ -157,15 +190,23 @@ STEPS = (
     ("surf_minus", ["map", "map"]),
     ("surf_mult", ["map", "map"]),
     ("surf_div", ["map", "map"]),
-    ("surf_set", ["map", "coarse"]),
     ("surf_swapxy", ["map"]),
+
+    #: A second surface on the same grid (so surf_set can copy into it), and a
+    #: surface on another grid (so surf_project has something to project onto).
     ("surf_gradient", ["map", "grad"]),
+    ("surf_set", ["grad", "map"]),
+    ("grid2", [1.0, 1.0, 2, "g_coarse"]),
     ("surf_project", ["map", "coarse"]),
+
+    # --- the rest of the surface operations ----------------------------
     ("surf_filter_by_surf", [0.0, "map", "coarse"]),
-    ("surf_filter_by_mask", ["map", "m1"]),
-    ("surf_filter_in_area", ["map", "area1"]),
-    ("surf_filter_out_area", ["map", "area1"]),
-    ("surf_to_mask", [0.0, 100.0, "map"]),
+    #: in-area then out-area on the same surface leaves nothing defined, which
+    #: is exactly the edge case the grid step below has to survive: converting
+    #: it to points yields a set with no points.
+    ("surf_filter_in_area", ["coarse", "area1"]),
+    ("surf_filter_out_area", ["coarse", "area1"]),
+    ("surf_to_pnts", ["coarse"]),
     ("surf_to_pnts", ["map"]),
     ("surf_trace_cntr", ["map", 5.0, 0.0, 50.0]),
     ("surf_add_noise", [0.0, "map"]),
@@ -176,67 +217,101 @@ STEPS = (
     ("surf_full_recons", ["map"]),
     ("surf_adj_hist", ["map"]),
     ("surf_resid", ["resid.txt", "map", "wells"]),
-    ("surf_save", ["map.dat", "map"]),
-    ("surf_load", ["map.dat", "loaded"]),
-    ("surf_info", ["loaded"]),
+
+    # --- points and surfaces together ----------------------------------
+    ("pnts_update_by_surf", ["wells", "map"]),
+    ("pnts_plus_surf", ["wells", "map"]),
+    ("pnts_minus_surf", ["wells", "map"]),
+    ("pnts_mult_surf", ["wells", "map"]),
+    ("pnts_set_surf", ["wells", "map"]),
+    ("pnts_div_surf", ["wells", "map"]),
+    ("pnts_filter_by_surf", [0.0, "wells", "map"]),
 
     # --- masks ---------------------------------------------------------
-    ("mask_from_surf", ["loaded"]),
+    ("surf_to_mask", [0.0, 100.0, "map"]),
     ("mask_size", []),
-    ("mask_info", ["m1"]),
-    ("mask_from_surf", ["coarse"]),
-    ("mask_and", ["m1", "m2"]),
-    ("mask_or", ["m1", "m2"]),
-    ("mask_xor", ["m1", "m2"]),
-    ("mask_not", ["m1", "m3"]),
-    ("mask_add", [1.0, 1, "m1"]),
-    ("mask_geq", [10.0, "m1", 0]),
-    ("mask_leq", [10.0, "m1", 0]),
-    ("mask_mean", [10.0, "m1"]),
-    ("mask_surf", ["map", "m1"]),
-    ("mask_surf_add", ["map", 1, "m1"]),
-    ("mask_surf_geq", ["map", "m1", 0]),
-    ("mask_surf_leq", ["map", "m1", 0]),
-    ("mask_wmean", [10.0, "m1", "map"]),
-    ("mask_apply_to_surf", ["m1", "map"]),
-    ("mask_to_surf", ["m1"]),
-    ("mask_completer", ["m1", 1, 2, 0, 1]),
-    ("mask_completer_add", [1, "m1", 1, 2, 0, 1]),
+    ("mask_info", ["map"]),
+    ("mask_from_surf", ["grad"]),
+    ("mask_size", []),
+    ("mask_and", ["map", "grad"]),
+    ("mask_or", ["map", "grad"]),
+    ("mask_xor", ["map", "grad"]),
+    ("mask_not", ["map", "grad"]),
+    ("mask_info", ["map"]),
+    ("surf_mask_mean", ["map", "map"]),
+    ("surf_mask_wmean", ["map", "map", "map"]),
+    ("mask_apply_to_surf", ["map", "map"]),
     ("mask_save", ["masks.dat"]),
-    ("mask_load", ["masks.dat", "loaded_mask"]),
-    ("mask_del", ["m3"]),
+    ("mask_del", ["grad"]),
     ("mask_size", []),
+    ("mask_load", ["masks.dat", "grad"]),
+    ("mask_size", []),
+    ("surf_filter_by_mask", ["map", "map"]),
+    ("pnts_filter_by_mask", ["wells", "map"]),
+
+    #: the filters above may leave few points; start again from the file
+    ("pnts_del", ["wells"]),
+    ("pnts_read", ["data/7points.txt", "wells"]),
+    ("pnts_filter_in_area", ["wells", "area1"]),
+    ("pnts_filter_out_area", ["wells", "area1"]),
+    ("pnts_del", ["wells"]),
+    ("pnts_read", ["data/7points.txt", "wells"]),
+
+    #: the mask becomes a surface again, after the surface it came from is
+    #: gone - otherwise both would carry the same name.
+    ("surf_del", ["grad"]),
+    ("mask_to_surf", ["grad"]),
+    ("surf_info", ["grad"]),
+
+    #: surface round trip, by the name stored in the file
+    ("surf_save", ["map.dat", "map"]),
+    ("surf_del", ["map"]),
+    ("surf_size", []),
+    ("surf_load", ["map.dat", "map"]),
+    ("surf_size", []),
+    ("surf_info", ["map"]),
 
     # --- histograms ----------------------------------------------------
-    ("hist_from_pnts", ["wells"]),
+    ("hist_from_pnts", ["wells", 64, 0.0, 200.0, "h_wells"]),
     ("hist_size", []),
     ("hists_info", []),
-    ("hist_from_surf", ["map"]),
+    ("hist_from_surf", ["map", 64, 0.0, 20.0, "h_map"]),
+    ("hist_size", []),
     ("hist_write", ["hist.txt", "*"]),
     ("hist_read", ["hist.txt", 0.0, 200.0, "read_hist"]),
     ("hist_size", []),
-    ("hist_del", ["*"]),
+    ("hist_del", ["h_wells"]),
     ("hist_size", []),
 
     # --- contours and curves -------------------------------------------
     ("cntr_read", ["data/cntr_center.xyz", "c1"]),
     ("cntr_size", []),
+    ("cntrs_info", []),
     ("cntr_plus_real", [1.0, "c1"]),
     ("cntr_minus_real", [1.0, "c1"]),
+    ("cntr_mult_real", [2.0, "c1"]),
     ("cntr_div_real", [2.0, "c1"]),
     ("cntr_smooth", ["c1", 1]),
+    ("cntr_to_pnts", [1.0, "c1"]),
     ("cntr_to_curv", ["c1"]),
     ("curv_size", []),
     ("cntr_save", ["cntr.dat", "c1"]),
     ("cntr_write", ["cntr.txt", "c1"]),
-    ("cntr_del", ["*"]),
+    ("cntr_del", ["c1"]),
+    ("cntr_size", []),
+    ("cntr_load", ["cntr.dat", "c1"]),
+    ("cntr_size", []),
 
     ("curv_read", ["data/flt_line1.txt", "line"]),
     ("curv_size", []),
     ("curvs_info", []),
+    ("curv_to_cntr", [0.0, "line"]),
     ("curv_save", ["curv.dat", "line"]),
     ("curv_write", ["curv.txt", "line"]),
-    ("curv_del", ["*"]),
+    ("curv_del", ["line"]),
+    ("curv_size", []),
+    ("curv_load", ["curv.dat", "line"]),
+    ("curv_size", []),
 
     # --- areas ---------------------------------------------------------
     ("area_read", ["data/area2.txt", "area2"]),
@@ -244,38 +319,119 @@ STEPS = (
     ("areas_info", []),
     ("area_invert", ["area2"]),
     ("area_save", ["areas.dat"]),
-    ("area_load", ["areas.dat", "loaded_area"]),
+    ("area_del", ["area2"]),
+    ("area_size", []),
+    ("area_load", ["areas.dat", "area2"]),
+    ("area_size", []),
     ("area_write", ["areas.txt"]),
     ("area_del", ["area2"]),
     ("area_size", []),
 
     # --- grids ---------------------------------------------------------
     ("grid_get_for_pnts", [50, 50, "wells", "g_pnts"]),
+    ("grid_info", []),
     ("grid_save", ["grid.dat"]),
-    ("grid_load", ["grid.dat", "g_loaded"]),
     ("grid_unload", []),
+    ("grid_check", []),
+    ("grid_load", ["grid.dat", "g_pnts"]),
+    ("grid_check", []),
     ("grid_get_from_surf", ["map", "g_surf"]),
+    ("grid_get2", [0.0, 10.0, 1.0, 0.0, 10.0, 1.0, "g_fixed"]),
+    ("grid_get_for_pnts_step", [0.5, 0.5, "wells", "g_step"]),
+    ("grid", [0.3, 0.3, 2, "g_auto"]),
+    ("grid_info", []),
 
-    # --- more rule commands ---------------------------------------------
+    # --- rules over areas, masks, curves, contours and surfaces --------
+    #: The result goes to a new name, so the surface the rules use as data
+    #: ("map") is not replaced by the rule result.
+    ("set_map_name", ["solved"]),
     ("area", [10, "area1"]),
     ("completer", [1, 1.6]),
-    ("surfit", []),
+    ("completer_add", [1, 1, 1.6, 0, 1]),
+    ("area_add", [10, 1, "area1"]),
+    ("area_geq", [0, "area1", 0, 1]),
+    ("area_leq", [100, "area1", 0, 1]),
+    ("area_mean", [10, "area1", -2, 1]),
+    ("area_wmean", [10, "area1", "map", -2, 1]),
+    ("area_surf", ["map", "area1", 1]),
+    ("area_surf_add", ["map", 1, "area1", 1]),
+    ("area_surf_geq", ["map", "area1", 0, 1]),
+    ("area_surf_leq", ["map", "area1", 0, 1]),
+    ("area_completer", ["area1", 1, 2, 0, 1, 1]),
+    ("area_completer_add", [1, "area1", 1, 2, 0, 1, 1]),
+    ("area_hist", ["area1", "h_map", -1, 1]),
+    ("hist", ["h_map", -1, 5]),
+    ("mask", [10, "map"]),
+    ("mask_add", [10, 1, "map"]),
+    ("mask_geq", [10, "map", 0]),
+    ("mask_leq", [10, "map", 0]),
+    ("mask_mean", [10, "map", -2]),
+    ("mask_wmean", [10, "map", "map", -2]),
+    ("mask_surf", ["map", "map"]),
+    ("mask_surf_add", ["map", 1, "map"]),
+    ("mask_surf_geq", ["map", "map", 0]),
+    ("mask_surf_leq", ["map", "map", 0]),
+    ("mask_completer", ["map", 1, 2, 0, 1]),
+    ("mask_completer_add", [1, "map", 1, 2, 0, 1]),
+    ("contour", ["c1"]),
+    ("contour_add", [50, "c1"]),
+    #: smooth_contour_add() attaches to the last modifiable rule, so it belongs
+    #: right after contour(), not after smooth_contour(), which pushes a
+    #: non-modifiable condition of its own.
+    ("smooth_contour_add", [1, "c1"]),
+    ("contour_geq", ["c1", 0]),
+    ("contour_leq", ["c1", 0]),
+    ("curve", [10, "line"]),
+    ("curve_add", [10, 1, "line"]),
+    ("curve_geq", [10, "line", 0]),
+    ("curve_leq", [10, "line", 0]),
+    ("curve_surf", ["map", "line"]),
+    ("curve_surf_add", ["map", 1, "line"]),
+    ("curve_surf_geq", ["map", "line", 0]),
+    ("curve_surf_leq", ["map", "line", 0]),
+    ("fault", ["line"]),
     ("surface", ["map"]),
     ("surface_add", [1, "map"]),
-    ("surface_geq", [0.0, "map", 0]),
-    ("surface_leq", [100.0, "map", 0]),
-    ("trend", ["map"]),
-    ("trend_add", [1, "map"]),
-    ("mean", ["map"]),
-    ("value", [10.0, "map"]),
-    ("value_add", [1, 10.0, "map"]),
-    ("wmean", ["map"]),
-    ("leq", [0.0, "map", 0]),
-    ("geq", [0.0, "map", 0]),
-    ("smooth_contour", ["line", 0, 0]),
-    ("smooth_contour_add", [1, "line", 0, 0]),
-    ("triangulate", ["wells"]),
+    ("surface_geq", ["map", 0]),
+    ("surface_leq", ["map", 100]),
+    ("trend", [1, 2, "map"]),
+    ("trend_add", [1, 1, 0, "map"]),
+    ("mean", [10, -2]),
+    ("value", ["undef"]),
+    ("value_add", [1, 10]),
+    ("wmean", [10, "map", -2]),
+    ("leq", [0, 0]),
+    ("geq", [0, 0]),
+    ("smooth_contour", ["c1", 0]),
+    ("triangulate", []),
+    ("surfit", []),
     ("clear_rules", []),
+
+    # --- the whole task in one datafile --------------------------------
+    #: The task file carries the grid, surfaces, masks, points, contours, curves
+    #: and areas.  Histograms are not part of it - hist_write/hist_read are
+    #: their own path - so hist_size is 0 after the reload.  Recorded here
+    #: deliberately instead of being hidden by an omission.
+    ("file_save", ["all.dat"]),
+    ("file_info", ["all.dat"]),
+    ("clear_data", []),
+    ("pnts_size", []),
+    ("surf_size", []),
+    ("area_size", []),
+    ("mask_size", []),
+    ("hist_size", []),
+    ("cntr_size", []),
+    ("curv_size", []),
+    ("grid_check", []),
+    ("file_load", ["all.dat"]),
+    ("pnts_size", []),
+    ("surf_size", []),
+    ("area_size", []),
+    ("mask_size", []),
+    ("hist_size", []),
+    ("cntr_size", []),
+    ("curv_size", []),
+    ("grid_check", []),
 )
 
 
@@ -322,7 +478,12 @@ def render_tcl(steps):
             call = TCL_INSTEAD[command](args)
         else:
             call = " ".join([command] + [tcl_quote(a) for a in args])
-        lines.append('if {[catch {%s} _r]} { puts "R%d=ERROR" } else { puts "R%d=$_r" }'
+        # The leading newline separates the marker from output that a command
+        # left without a trailing newline (file_info writes its listing that
+        # way), and a multi-line result is folded onto one line so that the
+        # transcript stays parseable.
+        lines.append('if {[catch {%s} _r]} { puts "\nR%d=ERROR" }'
+                     ' else { puts "\nR%d=[string map [list "\n" "|" "\r" "|"] $_r]" }'
                      % (call, index, index))
     return "\n".join(lines) + "\n"
 
@@ -354,9 +515,10 @@ def render_python(steps):
         rendered = ", ".join(repr(a) for a in args)
         lines.append("try:")
         lines.append("    _r = surfit.%s(%s)" % (command, rendered))
-        lines.append('    print("R%d=" + _format(_r))' % index)
+        lines.append('    print("\\nR%d=" + _format(_r)'
+                     '.replace("\\r", "|").replace("\\n", "|"))' % index)
         lines.append("except Exception:")
-        lines.append('    print("R%d=ERROR")' % index)
+        lines.append('    print("\\nR%d=ERROR")' % index)
     return "\n".join(lines) + "\n"
 
 
@@ -373,6 +535,7 @@ def prepare(directory):
 
 
 def run(script, directory, interpreter, env_extra):
+    """Runs one side, returning its results and the output it produced."""
     path = os.path.join(directory, "script" + (".tcl" if interpreter == "tclsh" else ".py"))
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(script)
@@ -390,7 +553,43 @@ def run(script, directory, interpreter, env_extra):
         found = re.match(r"R(\d+)=(.*)$", line)
         if found:
             out[int(found.group(1))] = found.group(2)
-    return out
+    return out, result.stdout.decode()
+
+
+#: Files each side writes that are either the script itself or a log carrying
+#: wall-clock timestamps; everything else must be identical.
+NOT_AN_ARTEFACT = ("script.tcl", "script.py", "surfit.log")
+
+
+def artefacts(directory):
+    """The files a side wrote, as name -> content."""
+    found = {}
+    for name in sorted(os.listdir(directory)):
+        path = os.path.join(directory, name)
+        if name in NOT_AN_ARTEFACT or os.path.islink(path):
+            continue
+        if not os.path.isfile(path):
+            continue
+        with open(path, "rb") as handle:
+            found[name] = handle.read()
+    return found
+
+
+#: The core tags diagnostics with these prefixes; the tclsh wrapper adds one
+#: more when it catches the exception an error raises.  Lines are compared
+#: without their timestamp.
+DIAGNOSTIC = re.compile(r"(Warning!|Error!)")
+WRAPPER_ONLY = "Error! Execution stopped"
+
+
+def diagnostics(output):
+    """The warning and error lines a side printed, in order."""
+    found = []
+    for line in output.splitlines():
+        line = re.sub(r"^\d\d/\d\d/\d\d \d\d:\d\d:\d\d : ", "", line)
+        if DIAGNOSTIC.search(line) and line.strip() != WRAPPER_ONLY:
+            found.append(line)
+    return found
 
 
 def same(left, right):
@@ -431,9 +630,16 @@ def main():
             tempfile.TemporaryDirectory() as python_dir:
         prepare(tcl_dir)
         prepare(python_dir)
-        tcl = run(render_tcl(STEPS), tcl_dir, "tclsh", {"LD_LIBRARY_PATH": BIN})
-        python = run(render_python(STEPS), python_dir, sys.executable,
-                     {"SURFIT_BIN": BIN})
+        tcl, tcl_output = run(render_tcl(STEPS), tcl_dir, "tclsh",
+                              {"LD_LIBRARY_PATH": BIN})
+        python, python_output = run(render_python(STEPS), python_dir, sys.executable,
+                                    {"SURFIT_BIN": BIN})
+        # Both sides write the same files from the same table.  Comparing the
+        # bytes is stricter than comparing the printed results: a save that
+        # rounds differently, or writes memory it never initialised, shows up
+        # here and nowhere else.
+        tcl_files = artefacts(tcl_dir)
+        python_files = artefacts(python_dir)
 
     problems, errors = [], []
     lost_python = [i for i in range(len(STEPS)) if i not in python]
@@ -444,7 +650,6 @@ def main():
         if lost:
             print("STOPPED on the %s side at step %d (%s); %d step(s) not run"
                   % (side, lost[0], STEPS[lost[0]][0], len(lost)))
-            lost = lost[1:]
 
     for index, (command, args) in enumerate(STEPS):
         if index in lost_python or index in lost_tcl or command in NOT_IN_TCL:
@@ -453,15 +658,50 @@ def main():
             continue
         left, right = tcl[index], python[index]
         if "ERROR" in (left, right):
-            errors.append((index, command, "tcl" if "ERROR" in left else "python"))
+            sides = [name for name, value in (("tcl", left), ("python", right))
+                     if "ERROR" in value]
+            errors.append((index, command, "/".join(sides)))
             continue
         if not same(left, right):
             problems.append((index, command, left, right))
 
     for index, command, side in errors:
-        print("ERROR %-22s on the %s side" % (command, side))
+        print("ERROR %-22s step %3d on the %s side" % (command, index, side))
     for index, command, left, right in problems:
         print("DIFF  %-22s\n      tcl    %s\n      python %s" % (command, left, right))
+
+    # Diagnostics are compared as well: a command can return nothing, or
+    # match nothing on both sides, and only the warnings and errors say so.
+    tcl_problems = diagnostics(tcl_output)
+    python_problems = diagnostics(python_output)
+    if tcl_problems != python_problems:
+        print("DIFF  diagnostics")
+        for line in unified(tcl_problems, python_problems):
+            print("      " + line)
+    elif tcl_problems:
+        print("\n%d warning/error line(s), the same on both sides:" % len(tcl_problems))
+        for line in tcl_problems:
+            print("  " + line)
+
+    only_tcl = sorted(set(tcl_files) - set(python_files))
+    only_python = sorted(set(python_files) - set(tcl_files))
+    file_diffs = []
+    for name in sorted(set(tcl_files) & set(python_files)):
+        if tcl_files[name] != python_files[name]:
+            file_diffs.append(name)
+
+    for name in only_tcl:
+        print("FILE  %-22s only tcl wrote it" % name)
+    for name in only_python:
+        print("FILE  %-22s only python wrote it" % name)
+    for name in file_diffs:
+        offset = next((i for i, (a, b) in enumerate(zip(tcl_files[name],
+                                                        python_files[name]))
+                       if a != b), min(len(tcl_files[name]), len(python_files[name])))
+        print("FILE  %-22s differs at byte %d (%d vs %d bytes)"
+              % (name, offset, len(tcl_files[name]), len(python_files[name])))
+    if not (only_tcl or only_python or file_diffs):
+        print("%d written file(s), byte-identical on both sides" % len(tcl_files))
 
     print("\n%d step(s): %d differ, %d errored, %d missing from python, %d from tcl"
           % (len(STEPS), len(problems), len(errors), len(lost_python), len(lost_tcl)))
@@ -473,7 +713,19 @@ def main():
             print("  " + " ".join("%-22s" % n for n in missing[start_at:start_at + 6]))
     else:
         print("every bound command is exercised")
-    return 1 if (problems or errors or missing) else 0
+
+    # A side that stopped early is a crash, not a pass: the steps after it
+    # were never run, so there is nothing to compare.
+    failed = bool(problems or errors or missing or lost_python or lost_tcl
+                  or tcl_problems != python_problems
+                  or only_tcl or only_python or file_diffs)
+    return 1 if failed else 0
+
+
+def unified(left, right):
+    """A readable line diff without pulling in difflib, which reports fuzzily."""
+    import difflib
+    return list(difflib.unified_diff(left, right, "tcl", "python", lineterm="", n=2))
 
 
 if __name__ == "__main__":

@@ -347,6 +347,13 @@ void f_points_user::create_f_points()
 			functional * add = (*functionals_add)[i];
 			f_pnts->add_functional(add, (*weights)[i]);
 		}
+		// f_pnts now owns these children and releases them in its destructor.
+		// Keeping them in this rule as well made every _add child a second
+		// (and, because create_f_points() runs once per solve phase, a third
+		// and fourth) owner, so cleanup() freed the same object again and
+		// aborted in the allocator.
+		functionals_add->clear();
+		weights->clear();
 	}
 };
 

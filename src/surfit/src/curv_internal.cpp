@@ -92,8 +92,9 @@ bool _curv_save_df(const d_curv * contour, datafile * df) {
 		writelog(LOG_MESSAGE,"saving curv \"%s\" to file %s", contour->getName(), df->get_filename());
 	
 	if (contour->size() == 0) {
-		writelog(LOG_WARNING, "Empty contour");
-		return false;
+		// Nothing to write is not an error; see _cntr_save_df.
+		writelog(LOG_MESSAGE, "Empty curv: nothing to save");
+		return true;
 	};
 
 	bool res = true;

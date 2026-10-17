@@ -85,8 +85,12 @@ boolvec * curv_load(const char * filename, const char * curvname)
 			res->push_back(true);
 		} else
 			res->push_back(false);
+		// Without this the loop never leaves the first file: every loader
+		// that uses find_first() advances it once per file.
+		fname = find_next();
 	}
 
+	find_close();
 	return res;
 };
 

@@ -116,37 +116,37 @@ size_t d_points::size() const {
 };
 
 REAL d_points::minx() const {
-	if (X)
+	if (X && X->size() > 0)
 		return *std::min_element(X->begin(), X->end());
 	return FLT_MAX;
 };
 
 REAL d_points::maxx() const {
-	if (X)
+	if (X && X->size() > 0)
 		return *std::max_element(X->begin(), X->end());
 	return -FLT_MAX;
 };
 
 REAL d_points::miny() const {
-	if (Y)
+	if (Y && Y->size() > 0)
 		return *std::min_element(Y->begin(), Y->end());
 	return FLT_MAX;
 };
 
 REAL d_points::maxy() const {
-	if (Y)
+	if (Y && Y->size() > 0)
 		return *std::max_element(Y->begin(), Y->end());
 	return -FLT_MAX;
 };
 
 REAL d_points::minz() const {
-	if (Z)
+	if (Z && Z->size() > 0)
 		return *std::min_element(Z->begin(), Z->end());
 	return FLT_MAX;
 };
 
 REAL d_points::maxz() const {
-	if (Z)
+	if (Z && Z->size() > 0)
 		return *std::max_element(Z->begin(), Z->end());
 	return -FLT_MAX;
 };
@@ -275,7 +275,9 @@ REAL d_points::std(REAL mean) const {
 };
 
 bool d_points::bounds(REAL & minx, REAL & maxx, REAL & miny, REAL & maxy) const {
-	if (X && Y) {
+	// An empty set has no bounds; asking for them used to dereference a null
+	// vector buffer (a surface with no defined values converts to one).
+	if (X && Y && X->size() > 0 && Y->size() > 0) {
 		minmax_value(X->begin(), X->end(), minx, maxx);
 		minmax_value(Y->begin(), Y->end(), miny, maxy);
 		return true;
@@ -284,7 +286,7 @@ bool d_points::bounds(REAL & minx, REAL & maxx, REAL & miny, REAL & maxy) const 
 };
 
 bool d_points::getMinMaxZ(REAL & minz, REAL & maxz) const {
-	if (Z) {
+	if (Z && Z->size() > 0) {
 		minmax_value(Z->begin(), Z->end(), minz, maxz);
 		return true;
 	}

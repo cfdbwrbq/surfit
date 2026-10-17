@@ -304,12 +304,20 @@ PYBIND11_MODULE(_surfit, m) {
 	// a separate shared library.
 	ensure_io_manager();
 
-	// Without a Tcl interpreter the core suppresses console output; log_open()
-	// still writes the log file.  A real logging bridge is the next L1 step.
-	// NB: the log levels are macros, so LOG_MESSAGE cannot be namespace-qualified.
+	// The Tcl front end runs surfit_init_variables() when the module loads,
+	// which calls log_open() and so raises the level to LOG_WARNING.  Python
+	// does not run it, and the core's own default (LOG_MESSAGE) would hide
+	// warnings and errors - and, because writelog() returns early when a
+	// message is filtered, it would also suppress the exception that
+	// stop_on_error raises for an error.  Start where the Tcl side starts.
+	surfit::loglevel = LOG_WARNING;
+
+	// The default level is the one the SWIG interface declares for Tcl
+	// (src/tclsurfit/src/fileio.i: `int level = 3`).
+	// NB: the log levels are macros, so LOG_WARNING cannot be namespace-qualified.
 	m.def("log_open", [](int level, const std::string & path) {
 		return surfit::log_open(level, path.empty() ? NULL : path.c_str());
-	}, py::arg("level") = 1 /* LOG_MESSAGE */, py::arg("path") = std::string());
+	}, py::arg("level") = LOG_WARNING, py::arg("path") = std::string());
 
 	m.def("clear_data", &clear_data, "drop all loaded data and gridding rules");
 

@@ -85,8 +85,10 @@ bool _cntr_save_df(const d_cntr * contour, datafile * df) {
 	
 	
 	if (contour->size() == 0) {
-		writelog(LOG_WARNING,"Empty contour");
-		return false;
+		// Nothing to write is not an error: skipping keeps a whole-task save
+		// going when one contour happens to be empty.
+		writelog(LOG_MESSAGE,"Empty contour: nothing to save");
+		return true;
 	}
 
 	bool res = true;

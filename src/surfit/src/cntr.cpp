@@ -65,19 +65,19 @@ d_cntr::~d_cntr() {
 };
 
 REAL d_cntr::minz() const {
-	if (Z)
+	if (Z && Z->size() > 0)
 		return *std::min_element(Z->begin(), Z->end());
 	return FLT_MAX;
 };
 
 REAL d_cntr::maxz() const {
-	if (Z)
+	if (Z && Z->size() > 0)
 		return *std::max_element(Z->begin(), Z->end());
 	return -FLT_MAX;
 };
 
 bool d_cntr::getMinMaxZ(REAL & minz, REAL & maxz) const {
-	if (Z) {
+	if (Z && Z->size() > 0) {
 		minmax_value(Z->begin(), Z->end(), minz, maxz);
 		return true;
 	}

@@ -63,7 +63,7 @@ d_curv::~d_curv() {
 };
 
 bool d_curv::bounds(REAL & minx, REAL & maxx, REAL & miny, REAL & maxy) const {
-	if (X && Y) {
+	if (X && Y && X->size() > 0 && Y->size() > 0) {
 		minx = *std::min_element(X->begin(), X->end());
 		maxx = *std::max_element(X->begin(), X->end());
 		miny = *std::min_element(Y->begin(), Y->end());
@@ -105,25 +105,25 @@ void d_curv::close() {
 };
 
 REAL d_curv::minx() const {
-	if (X)
+	if (X && X->size() > 0)
 		return *std::min_element(X->begin(), X->end());
 	return FLT_MAX;
 };
 
 REAL d_curv::maxx() const {
-	if (X)
+	if (X && X->size() > 0)
 		return *std::max_element(X->begin(), X->end());
 	return -FLT_MAX;
 };
 
 REAL d_curv::miny() const {
-	if (Y)
+	if (Y && Y->size() > 0)
 		return *std::min_element(Y->begin(), Y->end());
 	return FLT_MAX;
 };
 
 REAL d_curv::maxy() const {
-	if (Y)
+	if (Y && Y->size() > 0)
 		return *std::max_element(Y->begin(), Y->end());
 	return -FLT_MAX;
 };

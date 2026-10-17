@@ -114,6 +114,10 @@ void f_method::create_f_surf()
 			functional * add = (*functionals_add)[i];
 			f_srf->add_functional(add, (*weights)[i]);
 		}
+		// f_srf owns these children now; keeping them here as well released
+		// them twice (see f_points_user::create_f_points).
+		functionals_add->clear();
+		weights->clear();
 	}
 };
 

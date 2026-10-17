@@ -702,7 +702,10 @@ bool datafile::writeBoolArray(const char * name, const boolvec * data) {
 
 bool datafile::writeBitArray(const char * name, const bitvec * data) {
 	size_t r = writeBinaryString("array");
-	surfit_int32 int_size =(surfit_int32)( data->int_size() + 1 );
+	// int_size() is the number of 32-bit words that carry bits; the extra word
+	// the bitvec allocates is slack and was never initialised, so writing it
+	// put heap garbage in the file (and made two saves of one state differ).
+	surfit_int32 int_size =(surfit_int32)( data->int_size() );
 	surfit_int32 size = (surfit_int32)data->size();
 	r += writeBinaryString("bit");
 	r += writeBinaryString(name);

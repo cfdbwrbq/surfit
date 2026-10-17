@@ -78,6 +78,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_all_commands.py``
+     - every bound command is run through both front ends from one table, and
+       the values, the warnings, and the files written must all agree
    * - ``python3 src/pysurfit/tests/check_stringmatch.py``
      - the local name matcher agrees with Tcl on every well-formed pattern
    * - ``python3 gil_check.py``

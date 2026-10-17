@@ -276,8 +276,11 @@ bool _pnts_save(const d_points * pnts, const char * filename) {
 bool _pnts_save_df(const d_points * pnts, datafile * df) {
 
 	if (pnts->size() == 0) {
+		// An empty point set is legal data (a filter can remove every point),
+		// and it contributes nothing to the file.  Reporting a failure here
+		// aborted the whole-task save at its first empty object.
 		writelog(LOG_MESSAGE,"No points to save");
-		return false;
+		return true;
 	}
 
 	if (!pnts->getName()) 

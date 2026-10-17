@@ -227,10 +227,11 @@ struct match_mask_apply_to_surf
 				res = create_boolvec();
 			match_mask_apply_to_surf2 ss(mask, surf_pos);
 			ss = std::for_each(surfit_surfs->begin(), surfit_surfs->end(), ss);
-			if (ss.res) {
+			// push_back(boolvec *) copies the flags and releases its argument,
+			// so releasing it here as well frees the same vector twice and
+			// aborts the process in the allocator.
+			if (ss.res)
 				res->push_back(ss.res);
-				ss.res->release();
-			}
 		}
 	};
 	const char * def_pos;

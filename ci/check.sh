@@ -3,8 +3,9 @@
 # Builds surfit and runs every check, the way continuous integration does.
 #
 #   ci/check.sh            build, the 35 test scripts, parity, the name matcher,
-#                          the viewer, sessions, and a wheel that installs and
-#                          solves on its own (about twenty minutes)
+#                          the viewer, sessions, every command against Tcl, and
+#                          a wheel that installs and solves on its own (about
+#                          twenty minutes)
 #   ci/check.sh --full     the same, plus the 29 realworld pipelines (an hour
 #                          more), for the nightly run
 #
@@ -74,6 +75,9 @@ run sessions "$PYTHON" "$TESTS/test_sessions.py"
 
 step "the object and settings commands, against Tcl"
 run commands "$PYTHON" "$TESTS/test_commands.py"
+
+step "every command, against Tcl"
+run all-commands "$PYTHON" "$TESTS/test_all_commands.py"
 
 step "the viewer"
 run viewer "$PYTHON" "$TESTS/test_viewer.py"

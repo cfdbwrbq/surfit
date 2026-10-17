@@ -47,7 +47,11 @@ bitvec * create_bitvec(const bitvec * src) {
 bitvec::bitvec(size_t size) {
 	data = NULL;
 	byte_size = (size + bits_per_byte - 1)/bits_per_byte;
-	data = (surfit_int32*)malloc((byte_size+1)*sizeof(surfit_int32));
+	// Zeroed, not merely allocated: the bits past the last one share a word
+	// with real data, and a caller that sets every bit it knows about leaves
+	// those spare bits as heap garbage.  That garbage reached the .dat file,
+	// so two saves of the same state were not byte-identical.
+	data = (surfit_int32*)calloc(byte_size+1, sizeof(surfit_int32));
 	datasize = size;
 };
 
@@ -384,7 +388,11 @@ void bitvec::NOT() {
 };
 
 size_t bitvec::write_file(int file) const {
-	return write(file, data, datasize*sizeof(surfit_int32));
+	// byte_size words carry every bit (the constructor's spare word is slack
+	// and is never initialised).  datasize counts *bits*, so using it here
+	// wrote 32 times more than the buffer holds: an out-of-bounds read into
+	// the file, and a reader that could never find the next tag.
+	return write(file, data, byte_size*sizeof(surfit_int32));
 };
 
 size_t bitvec::read_file(int file, size_t size) {

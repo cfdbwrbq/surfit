@@ -1376,8 +1376,112 @@ bool _dem_save_xyz(const d_dem * srf, const char * filename) {
 
 bool _dem_save_dtm(const d_dem * srf, const char * filename)
 {
-	writelog(LOG_ERROR,"dem_save_dtm: Not implemented!");
-	return false;
+	if (!filename)
+		return false;
+
+	if (!srf) {
+		writelog(LOG_ERROR, "dem_save_dtm : no dem loaded");
+		return false;
+	}
+
+	if (strlen(filename) < 4) {
+		writelog(LOG_ERROR, "dem_save_dtm : %s - the file name is too short, "
+		         "the binary's name is the header's last three characters "
+		         "replaced by bin", filename);
+		return false;
+	}
+
+	// The reader derives the binary's name from the header's: the last three
+	// characters become "bin", so usa.hdr is read together with usa.bin.
+	// Write the binary under the name it will look for.
+	char * bin_name = strdup(filename);
+	char * ext = bin_name + strlen(bin_name) - 3;
+	ext[0] = 'b';
+	ext[1] = 'i';
+	ext[2] = 'n';
+
+	if (strcmp(bin_name, filename) == 0) {
+		writelog(LOG_ERROR, "dem_save_dtm : %s - the binary would get the "
+		         "header's name; use another extension", filename);
+		free(bin_name);
+		return false;
+	}
+
+	FILE * hdr = fopen(filename, "w");
+	if (!hdr) {
+		writelog(LOG_ERROR, "dem_save_dtm : the file %s was not opened: %s",
+		         filename, strerror(errno));
+		free(bin_name);
+		return false;
+	}
+
+	const char * name = srf->getName();
+
+	// Native DTM header: the reader wants "KEY = VALUE", two tokens after the
+	// key.  The coordinates are the grid's corners, so the registration is the
+	// node itself and the reader restores the same start and step.  The
+	// precision is that of a double, which is what REAL is.
+	fprintf(hdr, "FILE_TITLE = %s\n", name ? name : "");
+	fprintf(hdr, "UPPER_MAP_Y = %.17g\n", srf->grd->endY);
+	fprintf(hdr, "LOWER_MAP_Y = %.17g\n", srf->grd->startY);
+	fprintf(hdr, "LEFT_MAP_X = %.17g\n", srf->grd->startX);
+	fprintf(hdr, "RIGHT_MAP_X = %.17g\n", srf->grd->endX);
+	fprintf(hdr, "NUMBER_OF_ROWS = %d\n", (int)srf->getCountY());
+	fprintf(hdr, "NUMBER_OF_COLUMNS = %d\n", (int)srf->getCountX());
+	fprintf(hdr, "GRID_SIZE(X) = %.17g\n", srf->grd->stepX);
+	fprintf(hdr, "GRID_SIZE(Y) = %.17g\n", srf->grd->stepY);
+	fprintf(hdr, "MISSING_FLAG = %d\n", (int)srf->undef_value);
+
+	bool ok = !ferror(hdr);
+	fclose(hdr);
+
+	if (!ok) {
+		writelog(LOG_ERROR, "dem_save_dtm : error while writing file: %s",
+		         filename);
+		free(bin_name);
+		return false;
+	}
+
+	FILE * bin = fopen(bin_name, "wb");
+	if (!bin) {
+		writelog(LOG_ERROR, "dem_save_dtm : the file %s was not opened: %s",
+		         bin_name, strerror(errno));
+		free(bin_name);
+		return false;
+	}
+
+	writelog(LOG_MESSAGE, "saving dem \"%s\" to DTM files %s and %s",
+	         name ? name : "", filename, bin_name);
+
+	const int nx = (int)srf->getCountX();
+	const int ny = (int)srf->getCountY();
+	short * row = (short *)malloc(sizeof(short) * nx);
+	if (!row) {
+		writelog(LOG_ERROR, "dem_save_dtm : not enough memory");
+		ok = false;
+	}
+
+	// The reader maps file row r to DEM row (ny - 1 - r): rows go from the
+	// north edge.  The shorts are written in the byte order the reader expects
+	// for a native header, which is the host's.
+	for (int r = 0; ok && r < ny; r++) {
+		const int j = ny - 1 - r;
+		for (int i = 0; i < nx; i++)
+			row[i] = (short)(*(srf->coeff))(i + nx*j);
+		if (fwrite(row, sizeof(short), nx, bin) != (size_t)nx)
+			ok = false;
+	}
+
+	if (row)
+		free(row);
+	fclose(bin);
+
+	if (!ok)
+		writelog(LOG_ERROR, "dem_save_dtm : error while writing file: %s",
+		         bin_name);
+
+	free(bin_name);
+	return ok;
 };
 
 d_points * _dem_to_points(const d_dem * srf) {

@@ -147,7 +147,10 @@ boolvec * dem_save_xyz(const char * filename, const char * dem_name = "*");
     dem_save_dtm "filename" \ref str "dem_name"
 
     \par Description:
-    saves \ref d_dem "DEM" to DTM files (hdr + bin)
+    saves \ref d_dem "DEM" to DTM files (hdr + bin). The header is written to
+    "filename"; the binary is written next to it under the name the reader
+    derives, the header's last three characters replaced by "bin" (usa.hdr
+    gives usa.bin). Rows go from the north edge, as the reader expects.
 */
 boolvec * dem_save_dtm(const char * filename, const char * dem_name = "*");
 

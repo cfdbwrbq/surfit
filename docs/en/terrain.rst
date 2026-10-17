@@ -106,11 +106,13 @@ What else the DEM commands do
 -----------------------------
 
 A DEM is not only a source of data: ``surf_to_dem`` makes one from a solved
-surface, ``dem_to_surf`` projects one onto the grid, ``dem_save_grd`` and
-``dem_load_grd`` round-trip the ASCII grid format of Golden Software Surfer
-(``.grd``, the ``DSAA`` header), and ``dem_decomp``/``dem_recons`` walk the
-coarse levels of the storage. :doc:`data_types` describes what each of them
-keeps, and :doc:`commands` has the full list.
+surface, ``dem_to_surf`` projects one onto the grid, ``dem_save_dtm`` and
+``dem_load_dtm`` write and read the DTM pair (a text header plus a binary of
+16-bit samples), ``dem_save_grd`` and ``dem_load_grd`` round-trip the ASCII grid
+format of Golden Software Surfer (``.grd``, the ``DSAA`` header), and
+``dem_decomp``/``dem_recons`` walk the coarse levels of the storage.
+:doc:`data_types` describes what each of them keeps, and :doc:`commands` has the
+full list.
 
 Not ported: the canyon pipeline
 -------------------------------

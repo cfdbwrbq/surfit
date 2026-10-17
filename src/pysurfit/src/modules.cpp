@@ -131,7 +131,7 @@ void bind_globe(py::module_ & m) {
 	m.def("dem_save_dtm", [](const std::string & path, const std::string & name) {
 		return drain_boolvec(surfit::dem_save_dtm(path.c_str(), name.c_str()));
 	}, py::arg("filename"), py::arg("dem_name") = "*",
-	   "write DEMs as DTM (not implemented upstream)");
+	   "write DEMs as a DTM header plus binary");
 
 	// --- arithmetic and statistics --------------------------------------
 	m.def("dem_getValue", [](double x, double y, const std::string & name) {

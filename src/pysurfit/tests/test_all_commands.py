@@ -553,9 +553,9 @@ STEPS = (
     ("dem_save_grd", ["dem.grd", "map"]),
     ("dem_save_xyz", ["dem.xyz", "map"]),
     ("dem_resid", ["dem_resid.txt", "map", "wells"]),
-    #: not implemented upstream: it logs "Not implemented!" and fails.  Listed
-    #: in EXPECTED_FAILURE, so the step still has to fail on both sides.
-    ("dem_save_dtm", ["dem.dtm"]),
+    #: the header goes to dem.dtm, the binary to dem.bin next to it (the reader
+    #: derives the binary's name from the header's); both files are compared
+    ("dem_save_dtm", ["dem.dtm", "map"]),
     ("dem_decomp", ["map"]),
     ("dem_get_details_level", ["map"]),
     ("dem_recons", ["map"]),
@@ -864,7 +864,6 @@ NOT_BOUND = {
 #: the table: a call that stops failing - or starts failing on one side only -
 #: is a change worth failing on.
 EXPECTED_FAILURE = {
-    "dem_save_dtm": "not implemented: _dem_save_dtm() logs and returns false",
     "dem_load_hgt": "needs a real SRTM tile: the grid comes from the file name "
                     "and the size",
     "dem_load_globe": "needs a real GTOPO30 tile: 10800 x 4800 or 6000 cells",

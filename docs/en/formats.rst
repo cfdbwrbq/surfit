@@ -92,7 +92,7 @@ the loader keeps the tile's origin and step.
      - ``dem_save_grd``
    * - DTM
      - ``dem_load_dtm``
-     - ``dem_save_dtm`` (not implemented)
+     - ``dem_save_dtm``
    * - SRTM HGT tile
      - ``dem_load_hgt``
      - --
@@ -106,12 +106,15 @@ the loader keeps the tile's origin and step.
      - --
      - ``dem_save_xyz``
 
-Two caveats belong to the formats themselves. ``dem_load_hgt_zip`` needs zlib:
-the CMake build detects it with ``find_package(ZLIB)`` and enables the loader; a
+One caveat belongs to a format itself: ``dem_load_hgt_zip`` needs zlib. The
+CMake build detects it with ``find_package(ZLIB)`` and enables the loader; a
 build without zlib reports "zlib not detected" and returns nothing.
-``dem_save_dtm`` is declared in the headers, but the implementation logs
-"Not implemented!" and returns false, so a DTM tile can be read and not
-written.
+
+A DTM tile is a pair of files: a text header and a binary of 16-bit samples. The
+reader takes the header and finds the binary by replacing the header's last three
+characters with ``bin`` (``usa.hdr`` is read with ``usa.bin``), and the writer
+uses the same rule, so ``dem_save_dtm "dem.dtm"`` writes ``dem.dtm`` and
+``dem.bin``. Rows go from the north edge, as in an HGT tile.
 
 The DEM loaders take a file pattern and find the tile by its name; for an HGT
 tile the name also carries the coordinates. :doc:`python` has the details, and

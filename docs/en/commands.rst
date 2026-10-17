@@ -934,7 +934,10 @@ D
 ``dem_save_dtm``
     **Syntax:** ``dem_save_dtm "filename" dem_name``
 
-    saves DEM to DTM files (hdr + bin)
+    saves DEM to DTM files (hdr + bin). The header is written to "filename";
+    the binary is written next to it under the name the reader derives, the
+    header's last three characters replaced by "bin" (usa.hdr gives
+    usa.bin). Rows go from the north edge, as the reader expects.
 
 ``dem_save_grd``
     **Syntax:** ``dem_save_grd "filename" dem_name``

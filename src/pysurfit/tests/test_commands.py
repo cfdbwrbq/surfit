@@ -142,6 +142,54 @@ def python_dem_wave():
     print("wave_value=%g" % surfit.dem_getValue(1.0, 1.0, "wave")[0])
 
 
+def tcl_dem_dtm():
+    return LOAD + """
+load libglobe[info sharedlibextension]
+dem_load_dtm "data/dtm4.hdr" "dtm4"
+puts "dtm_save=[lindex [dem_save_dtm "dtm4.dtm" dtm4] 0]"
+puts "dtm_load=[lindex [dem_load_dtm "dtm4.dtm" copy] 0]"
+puts "dtm_rows=[lindex [dem_getCountY copy] 0]"
+puts "dtm_cols=[lindex [dem_getCountX copy] 0]"
+puts "dtm_minz=[lindex [dem_minz copy] 0]"
+puts "dtm_maxz=[lindex [dem_maxz copy] 0]"
+set values {}
+for {set j 0} {$j < 4} {incr j} {
+    for {set i 0} {$i < 4} {incr i} {
+        lappend values [lindex [dem_getValue [expr {44 + 2*$i}] \
+            [expr {43 + 2*$j}] copy] 0]
+    }
+}
+puts "dtm_values=$values"
+"""
+
+
+def python_dem_dtm():
+    surfit.clear_data()
+    assert surfit.dem_load_dtm(os.path.join("data", "dtm4.hdr"),
+                               "dtm4") == [True]
+    assert surfit.dem_save_dtm("dtm4.dtm", "dtm4") == [True]
+    assert os.path.exists("dtm4.bin"), os.listdir(".")
+    assert surfit.dem_load_dtm("dtm4.dtm", "copy") == [True]
+    print("dtm_save=1")
+    print("dtm_load=1")
+    print("dtm_rows=%d" % surfit.dem_getCountY("copy")[0])
+    print("dtm_cols=%d" % surfit.dem_getCountX("copy")[0])
+    print("dtm_minz=%g" % surfit.dem_minz("copy")[0])
+    print("dtm_maxz=%g" % surfit.dem_maxz("copy")[0])
+    # Every node has to survive the round trip exactly; the grid itself has to
+    # come back with the same start and step, which min/max alone would miss.
+    for j in range(4):
+        for i in range(4):
+            x, y = 44.0 + 2 * i, 43.0 + 2 * j
+            before = surfit.dem_getValue(x, y, "dtm4")[0]
+            after = surfit.dem_getValue(x, y, "copy")[0]
+            assert before == after, (x, y, before, after)
+    values = ["%.1f" % surfit.dem_getValue(44.0 + 2 * i, 43.0 + 2 * j,
+                                           "copy")[0]
+              for j in range(4) for i in range(4)]
+    print("dtm_values=%s" % " ".join(values))
+
+
 def tcl_dem_zip():
     return LOAD + """
 load libglobe[info sharedlibextension]
@@ -378,6 +426,7 @@ CASES = (
     ("pnts to cntrs", tcl_pnts_to_cntrs, python_pnts_to_cntrs, ()),
     ("surf debit", tcl_surf_debit, python_surf_debit, ()),
     ("dem zip", tcl_dem_zip, python_dem_zip, ()),
+    ("dem dtm", tcl_dem_dtm, python_dem_dtm, ("dtm4.dtm", "dtm4.bin")),
     ("dem wave", tcl_dem_wave, python_dem_wave, ()),
 )
 
@@ -400,6 +449,8 @@ MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
            "converted=", "cntrs=", "debit=", "rect=", "dems=", "dem_x=",
            "dem_y=", "dem_minz=", "dem_maxz=", "wave_level=", "wave_value=",
            "empty=", "names=",
+           "dtm_save=", "dtm_load=", "dtm_rows=", "dtm_cols=", "dtm_minz=",
+           "dtm_maxz=", "dtm_values=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",
            "threads_positive=", "types=")

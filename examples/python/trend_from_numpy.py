@@ -23,7 +23,8 @@ Y0, Y1 = -6.0, 8.0
 STEP = 0.25
 
 
-def main():
+def build():
+    """Solves the example and returns (session, trend array)."""
     task = surfit.Session(map_name="map_trend", tol=1e-6)
 
     # A regional trend: a plane, sampled coarsely and handed over as an array.
@@ -45,7 +46,11 @@ def main():
     task.surface("regional")      # and follow the regional trend
     task.completer(1, 2)          # without letting it kink
     task.solve()
+    return task, trend
 
+
+def main():
+    task, trend = build()
     result = task.values()
     defined = surfit.defined_mask(result)
     print("trend %s -> result %s" % (trend.shape, result.shape))

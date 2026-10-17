@@ -218,30 +218,70 @@ under node, and renders into a real DOM with jsdom.
 Runnable examples
 -----------------
 
+All of these live under ``examples/python/`` and run as written. Each map is that
+example's own output: ``docs/make_images.py`` imports the example and renders the
+grid it produces, so a figure cannot drift from the code.
+
+area.py
+~~~~~~~
+
+Five polygons: the surface equals 10 inside ``area1``, 30 inside ``area3`` and
+stays undefined inside ``area5``; ``area2`` and ``area4`` are approximated with a
+weight, and ``completer`` smooths the space between them.
+
 .. figure:: ../_static/map-area.svg
    :alt: Filled contour map of the area example
-   :width: 70%
+   :width: 80%
    :align: center
 
-   The area example. Five areas hold fixed values and ``completer`` fills the
-   space between them; the cells that stay undefined are left blank, which is
-   the white wedge in the middle. Drawn by ``save_viewer()`` from the same run
-   as the script.
+   Values run from 10 to 39.8. The white square in the middle is ``area5``,
+   undefined on purpose, and the cells outside every area are undefined too.
+
+faults.py
+~~~~~~~~~
+
+Eleven points and four fault lines. The surface has to jump across each line
+instead of smoothing over it.
 
 .. figure:: ../_static/map-faults.svg
    :alt: Filled contour map of the faults example
-   :width: 70%
+   :width: 80%
    :align: center
 
-   The fault example: eleven points and four fault lines. The surface jumps
-   across each line instead of smoothing over it.
+   The jumps are the abrupt colour changes along the polygon edges.
 
-* ``examples/python/area.py`` — the area example above, end to end.
-* ``examples/python/faults.py`` — points and faults, breaking the surface along
-  four lines.
-* ``examples/python/trend_from_numpy.py`` — an array used as a regional trend.
-* ``examples/python/progress.py`` — the tqdm progress bar.
-* ``examples/python/viewer.py`` — the interactive HTML map.
+trend_from_numpy.py
+~~~~~~~~~~~~~~~~~~~
+
+A regional trend handed over as a numpy array, seven wells honoured exactly, and
+the result read back into an array.
+
+.. figure:: ../_static/map-trend.svg
+   :alt: Filled contour map of the trend example
+   :width: 80%
+   :align: center
+
+   The plane runs from 67 to 140. The small dark diamonds are the wells: their
+   measurements sit off the plane, so each pulls the surface down locally rather
+   than being smoothed away.
+
+progress.py
+~~~~~~~~~~~
+
+Reports the solver's progress while it runs; the Progress section above explains
+the two styles. Its output is text, not a map:
+
+.. code-block:: text
+
+   -- cg (65536 cells)
+      cg (65536 cells): iter 33, err 4.92211E-06
+
+viewer.py
+~~~~~~~~~
+
+Writes the interactive HTML page. It is the same solve as ``area.py`` — only the
+output differs — so the first map above is what it draws, with a pointer readout
+and the undefined cells clipped out.
 
 Development notes on how the bindings are built and checked are in
 :doc:`development`.

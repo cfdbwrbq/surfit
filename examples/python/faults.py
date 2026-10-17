@@ -18,7 +18,8 @@ DATA = os.path.join(HERE, os.pardir, "surfit", "tests", "data")
 LINES = ("flt_line1", "flt_line2", "flt_line3", "flt_line4")
 
 
-def main(output="faults.html"):
+def build():
+    """Solves the example and returns the session."""
     task = surfit.Session(map_name="map_faults", tol=1e-005)
     task.set_solver("cg")
 
@@ -34,7 +35,11 @@ def main(output="faults.html"):
     task.completer(0.5, 2)
 
     task.solve()
+    return task
 
+
+def main(output="faults.html"):
+    task = build()
     grid = task.values()
     print("solved %s, %d of %d nodes defined"
           % (grid.shape, surfit.defined_mask(grid).sum(), grid.size))

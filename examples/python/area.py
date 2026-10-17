@@ -18,7 +18,8 @@ DATA = os.path.join(HERE, os.pardir, "surfit", "tests", "data")
 AREAS = ("area1", "area2", "area3", "area4", "area5")
 
 
-def main():
+def build():
+    """Solves the example and returns the session."""
     task = surfit.Session(map_name="map_area", tol=5.01187e-006)
 
     for name in AREAS:
@@ -34,6 +35,11 @@ def main():
     task.area_add(40, 0.07, "area4")
 
     task.solve()
+    return task
+
+
+def main():
+    task = build()
     task.save("area.dat")
 
     grid = task.values()

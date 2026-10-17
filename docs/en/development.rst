@@ -190,6 +190,33 @@ Scripts that need a command the bindings do not expose are reported as
 ``SKIP`` with the name of that command. Coverage is stated as a count, never as
 a bare "all good".
 
+Why the solver stays in C++
+----------------------------
+
+A separate prototype reimplemented the core problem in numpy/scipy: the same
+``d1·D1 + d2·D2`` system, the same five-point and fourth-order stencils, the
+same grid ladder, direct and conjugate-gradient solvers. It is a measurement
+tool, not a second engine.
+
+The formulation reproduces. Seven points and a completer agree with the engine
+to ``4·10⁻⁵`` of the value range at ``tol=1e-8``, a surface used as data agrees
+to ``10⁻¹⁵``, and the ``.dat`` writer round-trips byte for byte. The speed does
+not: the direct solve is competitive only up to about 160x160 (81x81: 0.15 s
+against 0.31 s; 161x161: 1.0 s against 0.68 s), at 321x321 it is 6.7 s against
+1.4 s, and at 641x641 the sparse factorisation does not fit while the engine
+takes 2.2 s. Conjugate gradients in numpy/scipy is 20-130 times slower (about
+10 ms per iteration against 0.1 ms at 321x321; 290 s against 2.2 s at
+641x641). The penalty loops (``mean``, ``wmean``, ``ineq``) stop on a change of
+the solution norm, not on a residual, and at the examples' ``tol=1e-6`` leave
+14-21% of the range; at ``1e-10`` they agree with the exact penalty solution.
+
+So the prototype stays a reference and a playground, not a replacement.
+Reimplementing 35 functional classes, CMOFS and the data managers would create
+a second semantics to keep in sync, for no speed. The measurements are useful
+for the engine itself: ``tol`` is a step of the CG, not an error bound (see the
+known issues below), and the penalty loops need a stopping rule tied to the
+residual.
+
 Known issues
 ------------
 
@@ -203,6 +230,11 @@ Known issues
   names not colliding.
 * ``surf_plot`` still writes PostScript through CreEPS for the Tcl front end.
   It is not bound in Python, where the viewer covers output.
+* **``tol`` is not an error bound.** The CG stops on ``max|alpha·p|``, so at
+  ``tol=1e-6`` the result can be off by about 0.7% of the value range; the
+  penalty loops (``mean``, ``wmean``, ``ineq``) stop on a change of the norm and
+  can leave 14-21% at the same tolerance. Compare solutions by the residual, or
+  use a tolerance well below the accuracy that is needed.
 
 Working on the project
 ----------------------

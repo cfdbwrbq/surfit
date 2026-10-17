@@ -33,6 +33,10 @@
 #include "fileio.h"
 #include "interp.h"
 #include "surfit_state.h"
+#include "free_elements.h"
+#include "grid_user.h"
+#include "data_manager.h"
+#include "license.h"
 
 #include "other_tcl.h"
 #include "others_tcl.h"
@@ -324,6 +328,159 @@ PYBIND11_MODULE(_surfit, m) {
 	      "tolerance for the iterative solver");
 	m.def("get_tol", []() { return surfit::tol; });
 
+	// The rest of the settings the Tcl front end exposes as traced variables.
+	// Python takes them as accessor pairs: a module-level variable would be
+	// silently out of step with the engine's own copy.
+	m.def("set_sor_omega", [](double value) { surfit::sor_omega = REAL(value); },
+	      "over-relaxation factor for the SOR solver");
+	m.def("get_sor_omega", []() { return double(surfit::sor_omega); });
+	m.def("set_ssor_omega", [](double value) { surfit::ssor_omega = REAL(value); },
+	      "over-relaxation factor for the symmetric SOR solver");
+	m.def("get_ssor_omega", []() { return double(surfit::ssor_omega); });
+	m.def("set_undef_value", [](double value) { surfit::undef_value = REAL(value); },
+	      "what an undefined node holds");
+	m.def("get_undef_value", []() { return double(surfit::undef_value); });
+	m.def("set_stop_execution", [](bool value) { surfit::stop_execution = value; },
+	      "stop the running solve at the next check");
+	m.def("get_stop_execution", []() { return surfit::stop_execution; });
+	m.def("set_reproject_faults", [](int value) { surfit::reproject_faults = value; });
+	m.def("get_reproject_faults", []() { return surfit::reproject_faults; });
+	m.def("set_reproject_undef_areas", [](int value) { surfit::reproject_undef_areas = value; });
+	m.def("get_reproject_undef_areas", []() { return surfit::reproject_undef_areas; });
+	m.def("set_process_isolated_areas", [](int value) { surfit::process_isolated_areas = value; });
+	m.def("get_process_isolated_areas", []() { return surfit::process_isolated_areas; });
+	m.def("set_penalty_max_iter", [](size_t value) { surfit::penalty_max_iter = value; });
+	m.def("get_penalty_max_iter", []() { return surfit::penalty_max_iter; });
+	m.def("set_penalty_weight", [](double value) { surfit::penalty_weight = REAL(value); });
+	m.def("get_penalty_weight", []() { return double(surfit::penalty_weight); });
+	m.def("set_penalty_weight_mult", [](double value) { surfit::penalty_weight_mult = REAL(value); });
+	m.def("get_penalty_weight_mult", []() { return double(surfit::penalty_weight_mult); });
+	m.def("set_basis_cnt", [](size_t value) { surfit::basis_cnt = value; },
+	      "size of the solver's own grid in the first phase");
+	m.def("get_basis_cnt", []() { return surfit::basis_cnt; });
+
+	// Library utilities that the Tcl front end also offers.
+	m.def("clear_rules", &surfit::clear_rules, "drop the gridding rules only");
+	m.def("types_info", []() {
+		char * info = surfit::types_info();
+		std::string text = info ? std::string(info) : std::string();
+		if (info)
+			surfit::surfit_free_char(info);
+		return text;
+	}, "the object types file_load can read");
+	m.def("putlog", [](const std::string & text) { surfit::putlog(text.c_str()); },
+	      py::arg("text"), "writes a line to the log file");
+	m.def("log_clear", &surfit::log_clear, "truncate the log file");
+	m.def("show_c", &surfit::show_c, "print the copying conditions");
+	m.def("show_w", &surfit::show_w, "print the warranty notice");
+	m.def("init_threads", &surfit::init_threads, py::arg("count"),
+	      "size of the thread pool");
+	m.def("get_threads", &surfit::get_threads, "size of the thread pool");
+	// `get_solver_short_name(pos)` and `get_solver_long_name(pos)` list the
+	// available solvers; these report the one a solve would use.
+	m.def("get_current_solver_short_name", []() {
+		const char * name = surfit::get_current_solver_short_name();
+		return name ? std::string(name) : std::string();
+	}, "short name of the solver a solve would use");
+	m.def("get_current_solver_long_name", []() {
+		const char * name = surfit::get_current_solver_long_name();
+		return name ? std::string(name) : std::string();
+	}, "description of the solver a solve would use");
+
+	// --- object collections -------------------------------------------
+	// Counts and deletion per type.  `*` means every object of that type,
+	// which is what the Tcl front end does with an omitted name.
+	m.def("area_size", &surfit::area_size, "number of areas in memory");
+	m.def("cntr_size", &surfit::cntr_size, "number of contours in memory");
+	m.def("curv_size", &surfit::curv_size, "number of curves in memory");
+	m.def("hist_size", &surfit::hist_size, "number of histograms in memory");
+	m.def("mask_size", &surfit::mask_size, "number of masks in memory");
+	m.def("pnts_size", &surfit::pnts_size, "number of point sets in memory");
+	m.def("surf_size", &surfit::surf_size, "number of surfaces in memory");
+
+	m.def("area_del", [](const std::string & n) { surfit::area_del(n.c_str()); },
+	      py::arg("name") = "*", "unload areas");
+	m.def("cntr_del", [](const std::string & n) { surfit::cntr_del(n.c_str()); },
+	      py::arg("name") = "*", "unload contours");
+	m.def("curv_del", [](const std::string & n) { surfit::curv_del(n.c_str()); },
+	      py::arg("name") = "*", "unload curves");
+	m.def("hist_del", [](const std::string & n) { surfit::hist_del(n.c_str()); },
+	      py::arg("name") = "*", "unload histograms");
+	m.def("mask_del", [](const std::string & n) { surfit::mask_del(n.c_str()); },
+	      py::arg("name") = "*", "unload masks");
+	m.def("pnts_del", [](const std::string & n) { surfit::pnts_del(n.c_str()); },
+	      py::arg("name") = "*", "unload point sets");
+	m.def("surf_del", [](const std::string & n) { surfit::surf_del(n.c_str()); },
+	      py::arg("name") = "*", "unload surfaces");
+
+	m.def("area_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::area_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write areas to a .dat file");
+	m.def("cntr_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::cntr_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write contours to a .dat file");
+	m.def("curv_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::curv_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write curves to a .dat file");
+	m.def("mask_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::mask_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write masks to a .dat file");
+	m.def("pnts_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::pnts_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write point sets to a .dat file");
+	m.def("surf_save", [](const std::string & p, const std::string & n) {
+		return drain_boolvec(surfit::surf_save(p.c_str(), n.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", "write surfaces to a .dat file");
+
+	m.def("area_write", [](const std::string & p, const std::string & n,
+	                       const std::string & d) {
+		return drain_boolvec(surfit::area_write(p.c_str(), n.c_str(), d.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t",
+	   "write areas as text");
+	m.def("cntr_write", [](const std::string & p, const std::string & n,
+	                       const std::string & d) {
+		return drain_boolvec(surfit::cntr_write(p.c_str(), n.c_str(), d.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t",
+	   "write contours as text");
+	m.def("curv_write", [](const std::string & p, const std::string & n,
+	                       const std::string & d) {
+		return drain_boolvec(surfit::curv_write(p.c_str(), n.c_str(), d.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t",
+	   "write curves as text");
+	m.def("pnts_write", [](const std::string & p, const std::string & n,
+	                       const std::string & d) {
+		return drain_boolvec(surfit::pnts_write(p.c_str(), n.c_str(), d.c_str()));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t",
+	   "write point sets as text");
+	m.def("hist_write", [](const std::string & p, const std::string & n,
+	                       bool three_columns) {
+		return drain_boolvec(surfit::hist_write(p.c_str(), n.c_str(), three_columns));
+	}, py::arg("path"), py::arg("name") = "*", py::arg("three_columns") = true,
+	   "write histograms as text");
+
+	m.def("area_invert", [](const std::string & n) {
+		return drain_boolvec(surfit::area_invert(n.c_str()));
+	}, py::arg("name") = "*", "swap inside and outside of areas");
+
+	m.def("area_completer_add",
+	      [](double weight, const std::string & name, double d1, double d2,
+	         double alpha, double w, int inside) {
+		return drain_boolvec(surfit::area_completer_add(REAL(weight), name.c_str(),
+		                                        REAL(d1), REAL(d2), REAL(alpha),
+		                                        REAL(w), inside));
+	}, py::arg("weight") = 1, py::arg("name") = "*", py::arg("d1") = 1,
+	   py::arg("d2") = 2, py::arg("alpha") = 0, py::arg("w") = 1,
+	   py::arg("inside") = 1, "rule: complete inside or outside an area");
+	m.def("mask_completer_add",
+	      [](double weight, const std::string & name, double d1, double d2,
+	         double alpha, double w) {
+		return drain_boolvec(surfit::mask_completer_add(REAL(weight), name.c_str(),
+		                                        REAL(d1), REAL(d2), REAL(alpha),
+		                                        REAL(w)));
+	}, py::arg("weight") = 1, py::arg("name") = "*", py::arg("d1") = 1,
+	   py::arg("d2") = 2, py::arg("alpha") = 0, py::arg("w") = 1,
+	   "rule: complete inside a mask");
+
 	m.def("area_read", [](const std::string & path, py::object name) {
 		std::string storage;
 		return drain_boolvec(area_read(path.c_str(), opt_cstr(name, storage)));
@@ -373,7 +530,7 @@ PYBIND11_MODULE(_surfit, m) {
 	      py::call_guard<py::gil_scoped_release>());
 
 	m.def("surf_save", [](const std::string & path, const std::string & name) {
-		return drain_boolvec(surf_save(path.c_str(), name.c_str()));
+		return drain_boolvec(surfit::surf_save(path.c_str(), name.c_str()));
 	}, py::arg("path"), py::arg("name") = "*");
 
 	m.def("surf_count", &surf_count, "number of surfaces in memory");
@@ -394,6 +551,8 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("set_solver", &surfit::set_solver, py::arg("short_name"));
 	m.def("get_solvers_count", &surfit::get_solvers_count);
 	m.def("get_solver_short_name", &surfit::get_solver_short_name, py::arg("pos"));
+	m.def("get_solver_long_name", &surfit::get_solver_long_name, py::arg("pos"),
+	      "description of the pos-th solver");
 	m.def("get_current_solver_short_name",
 	      &surfit::get_current_solver_short_name);
 	m.def("get_current_solver_long_name",

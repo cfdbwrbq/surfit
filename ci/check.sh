@@ -72,6 +72,9 @@ run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 step "two tasks in one process"
 run sessions "$PYTHON" "$TESTS/test_sessions.py"
 
+step "the object and settings commands, against Tcl"
+run commands "$PYTHON" "$TESTS/test_commands.py"
+
 step "the viewer"
 run viewer "$PYTHON" "$TESTS/test_viewer.py"
 

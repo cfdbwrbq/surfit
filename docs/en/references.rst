@@ -84,6 +84,9 @@ Interpolation and splines
   Implementations*. Cambridge University Press.
   `doi:10.1017/CBO9780511543241 <https://doi.org/10.1017/CBO9780511543241>`_
 
+* C. de Boor (1978). *A Practical Guide to Splines*. Springer.
+  `doi:10.1007/978-1-4612-6333-3 <https://doi.org/10.1007/978-1-4612-6333-3>`_
+
 Geostatistics
 -------------
 
@@ -124,6 +127,10 @@ Geostatistics
 * P. J. Kitanidis (1997). *Introduction to Geostatistics: Applications in
   Hydrogeology*. Cambridge University Press.
   `doi:10.1017/CBO9780511626166 <https://doi.org/10.1017/CBO9780511626166>`_
+
+* L. Liang, D. Hale, M. Maučec (2010). Estimating fault displacements in
+  seismic images. *SEG Technical Program Expanded Abstracts*, 1357-1361.
+  `doi:10.1190/1.3513094 <https://doi.org/10.1190/1.3513094>`_
 
 Rules and applications
 ----------------------
@@ -204,6 +211,18 @@ Terrain and data sources
   area model of basin hydrology. *Hydrological Sciences Bulletin* 24, 43–69.
   `doi:10.1080/02626667909491834 <https://doi.org/10.1080/02626667909491834>`_
 
+* E. Rabus, M. Eineder, A. Roth, R. Bamler (2003). The shuttle radar
+  topography mission - a new class of digital elevation models acquired by
+  spaceborne radar. *ISPRS Journal of Photogrammetry and Remote Sensing* 57,
+  241-262.
+  `doi:10.1016/S0924-2716(02)00124-7 <https://doi.org/10.1016/S0924-2716(02)00124-7>`_
+* R. G. Heerdegen, M. A. Beran (1982). Quantifying source areas through land
+  surface curvature and shape. *Journal of Hydrology* 57, 359-373.
+  `doi:10.1016/0022-1694(82)90155-X <https://doi.org/10.1016/0022-1694(82)90155-X>`_
+* M. Neteler, H. Mitasova (2008). *Open Source GIS: A GRASS GIS Approach*.
+  Springer.
+  `doi:10.1007/978-0-387-68574-8 <https://doi.org/10.1007/978-0-387-68574-8>`_
+
 Data formats and standards
 --------------------------
 
@@ -232,6 +251,15 @@ Numerical methods
 * J. Nocedal, S. J. Wright (1999). *Numerical Optimization*. Springer.
   `doi:10.1007/b98874 <https://doi.org/10.1007/b98874>`_
 
+* X. S. Li (2005). An overview of SuperLU: algorithms, implementation, and
+  user interface. *ACM Transactions on Mathematical Software* 31, 302-325.
+  `doi:10.1145/1089014.1089017 <https://doi.org/10.1145/1089014.1089017>`_
+* C. B. Barber, D. P. Dobkin, H. Huhdanpaa (1996). The Quickhull algorithm for
+  convex hulls. *ACM Transactions on Mathematical Software* 22, 469-483.
+  `doi:10.1145/235815.235821 <https://doi.org/10.1145/235815.235821>`_
+* R. B. Lehoucq, D. C. Sorensen, C. Yang (1998). *ARPACK Users' Guide*. SIAM.
+  `doi:10.1137/1.9780898719628 <https://doi.org/10.1137/1.9780898719628>`_
+
 Computational geometry
 ----------------------
 
@@ -254,6 +282,16 @@ Computational geometry
 
 Software
 --------
+
+* S. van der Walt, S. C. Colbert, G. Varoquaux (2011). The NumPy array: a
+  structure for efficient numerical computation. *Computing in Science &
+  Engineering* 13, 22-30.
+  `doi:10.1109/MCSE.2011.37 <https://doi.org/10.1109/MCSE.2011.37>`_
+* T. E. Oliphant (2007). Python for scientific computing. *Computing in
+  Science & Engineering* 9, 10-20.
+  `doi:10.1109/MCSE.2007.58 <https://doi.org/10.1109/MCSE.2007.58>`_
+
+
 
 * C. R. Harris et al. (2020). Array programming with NumPy. *Nature* 585,
   357–362.

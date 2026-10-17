@@ -50,6 +50,36 @@ Interpolation and splines
   15, 245–257.
   `doi:10.1007/BF01036069 <https://doi.org/10.1007/BF01036069>`_
 
+* R. Franke (1982). Smooth interpolation of scattered data by local thin plate
+  splines. *Computers & Mathematics with Applications* 8, 273–281.
+  `doi:10.1016/0898-1221(82)90009-8 <https://doi.org/10.1016/0898-1221(82)90009-8>`_
+* G. M. Nielson, R. Franke (1984). A method for construction of surfaces under
+  tension. *Rocky Mountain Journal of Mathematics* 14, 203–221.
+  `doi:10.1216/RMJ-1984-14-1-203 <https://doi.org/10.1216/RMJ-1984-14-1-203>`_
+* R. J. Renka, A. K. Cline (1984). A triangle-based C1 interpolation method.
+  *Rocky Mountain Journal of Mathematics* 14, 223–237.
+  `doi:10.1216/RMJ-1984-14-1-223 <https://doi.org/10.1216/RMJ-1984-14-1-223>`_
+* R. J. Renka (1987). Interpolatory tension splines with automatic selection of
+  tension factors. *SIAM Journal on Scientific and Statistical Computing* 8,
+  393–415.
+  `doi:10.1137/0908041 <https://doi.org/10.1137/0908041>`_
+* J. Meinguet (1979). Multivariate interpolation at arbitrary points made
+  simple. *Zeitschrift für Angewandte Mathematik und Physik* 30, 292–304.
+  `doi:10.1007/BF01601941 <https://doi.org/10.1007/BF01601941>`_
+* G. H. Harder, R. N. Desmarais (1972). Interpolation using surface splines.
+  *Journal of Aircraft* 9, 189–191.
+  `doi:10.2514/3.44330 <https://doi.org/10.2514/3.44330>`_
+* H. Akima (1970). A new method of interpolation and smooth curve fitting
+  based on local procedures. *Journal of the ACM* 17, 589–602.
+  `doi:10.1145/321607.321609 <https://doi.org/10.1145/321607.321609>`_
+* F. N. Fritsch, R. E. Carlson (1980). Monotone piecewise cubic interpolation.
+  *SIAM Journal on Numerical Analysis* 17, 238–246.
+  `doi:10.1137/0717021 <https://doi.org/10.1137/0717021>`_
+* C. J. Swain (1976). A FORTRAN IV program for interpolating irregularly
+  spaced data using the difference equations for minimum curvature.
+  *Computers & Geosciences* 1, 231–240.
+  `doi:10.1016/0098-3004(76)90071-6 <https://doi.org/10.1016/0098-3004(76)90071-6>`_
+
 Geostatistics
 -------------
 
@@ -76,6 +106,21 @@ Geostatistics
   10, 327–338.
   `doi:10.1016/0098-3004(84)90030-X <https://doi.org/10.1016/0098-3004(84)90030-X>`_
 
+* G. Matheron (1973). The intrinsic random functions and their applications.
+  *Advances in Applied Probability* 5, 439–468.
+  `doi:10.2307/1425829 <https://doi.org/10.2307/1425829>`_
+* A. Maréchal (1984). Kriging seismic data in presence of faults. In
+  *Geostatistics for Natural Resources Characterization*, Reidel.
+  `doi:10.1007/978-94-009-3699-7_17 <https://doi.org/10.1007/978-94-009-3699-7_17>`_
+* H. Wackernagel (2003). *Multivariate Geostatistics*. Springer.
+  `doi:10.1007/978-3-662-05294-5 <https://doi.org/10.1007/978-3-662-05294-5>`_
+* P. J. Diggle, P. J. Ribeiro (2007). *Model-based Geostatistics*. Springer.
+  `doi:10.1007/978-0-387-48536-2 <https://doi.org/10.1007/978-0-387-48536-2>`_
+
+* P. J. Kitanidis (1997). *Introduction to Geostatistics: Applications in
+  Hydrogeology*. Cambridge University Press.
+  `doi:10.1017/CBO9780511626166 <https://doi.org/10.1017/CBO9780511626166>`_
+
 Rules and applications
 ----------------------
 
@@ -100,6 +145,18 @@ Rules and applications
   a review. *Computational Geosciences*.
   `doi:10.1007/s10596-010-9194-2 <https://doi.org/10.1007/s10596-010-9194-2>`_
 
+* G. S. Watson (1971). Trend-surface analysis. *Journal of the International
+  Association for Mathematical Geology* 3, 215–226.
+  `doi:10.1007/BF02045792 <https://doi.org/10.1007/BF02045792>`_
+* P. O. D. Ardiansyah, R. Yokoyama (2002). DEM generation method from contour
+  lines based on the steepest slope segment chain and a monotone interpolation
+  function. *ISPRS Journal of Photogrammetry and Remote Sensing* 57, 86–101.
+  `doi:10.1016/S0924-2716(02)00117-X <https://doi.org/10.1016/S0924-2716(02)00117-X>`_
+* J. Hofierka, T. Cebecauer (2007). Spatial interpolation of elevation data
+  with variable density: a new methodology to derive quality DEMs. *IEEE
+  Geoscience and Remote Sensing Letters* 4, 117–121.
+  `doi:10.1109/LGRS.2006.887055 <https://doi.org/10.1109/LGRS.2006.887055>`_
+
 Terrain and data sources
 ------------------------
 
@@ -120,6 +177,35 @@ Terrain and data sources
   review of hydrological, geomorphological, and biological applications.
   *Hydrological Processes* 5, 3–30.
   `doi:10.1002/hyp.3360050103 <https://doi.org/10.1002/hyp.3360050103>`_
+
+* J. F. O'Callaghan, D. M. Mark (1984). The extraction of drainage networks
+  from digital elevation data. *Computer Vision, Graphics, and Image
+  Processing* 28, 323–344.
+  `doi:10.1016/S0734-189X(84)80011-0 <https://doi.org/10.1016/S0734-189X(84)80011-0>`_
+* L. E. Band (1986). Topographic partition of watersheds with digital elevation
+  models. *Water Resources Research* 22, 15–24.
+  `doi:10.1029/WR022i001p00015 <https://doi.org/10.1029/WR022i001p00015>`_
+* D. M. Mark (1984). Automated detection of drainage networks from digital
+  elevation models. *Cartographica* 21, 168–178.
+  `doi:10.3138/10LM-4435-6310-251R <https://doi.org/10.3138/10LM-4435-6310-251R>`_
+* I. D. Moore, E. M. O'Loughlin, G. J. Burch (1988). A contour-based
+  topographic model for hydrological and ecological applications. *Earth
+  Surface Processes and Landforms* 13, 305–320.
+  `doi:10.1002/esp.3290130404 <https://doi.org/10.1002/esp.3290130404>`_
+* L. E. Palacios-Vélez, B. Cuevas-Renaud (1986). Automated river-course, ridge
+  and basin delineation from digital elevation data. *Journal of Hydrology*
+  86, 299–314.
+  `doi:10.1016/0022-1694(86)90169-1 <https://doi.org/10.1016/0022-1694(86)90169-1>`_
+* K. J. Beven, M. J. Kirkby (1979). A physically based, variable contributing
+  area model of basin hydrology. *Hydrological Sciences Bulletin* 24, 43–69.
+  `doi:10.1080/02626667909491834 <https://doi.org/10.1080/02626667909491834>`_
+
+Data formats and standards
+--------------------------
+
+* R. Rew, G. Davis (1990). NetCDF: an interface for scientific data access.
+  *IEEE Computer Graphics and Applications* 10, 76–82.
+  `doi:10.1109/38.56302 <https://doi.org/10.1109/38.56302>`_
 
 Numerical methods
 -----------------

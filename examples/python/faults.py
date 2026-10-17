@@ -40,8 +40,9 @@ def build():
 
 def main(output="faults.html"):
     task = build()
+    task.save("fault.dat")
     grid = task.values()
-    print("solved %s, %d of %d nodes defined"
+    print("saved fault.dat, %s, %d of %d nodes defined"
           % (grid.shape, surfit.defined_mask(grid).sum(), grid.size))
 
     task.save_viewer(output, title="fault example")

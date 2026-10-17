@@ -128,6 +128,24 @@ def main():
     keeper.close()
     assert surfit.Session("fresh").surf_names() == [], "a closed state left data"
     print("PASS: creating and releasing other tasks changed nothing")
+
+    # Naming the solver and the map frees the previous name, so a name shared
+    # between states would be freed by one task and then again by the task it
+    # was borrowed from.  A run of short-lived tasks is what exposed it: the
+    # process aborted with "double free detected" on the tenth or twentieth
+    # solve, which a crash makes a failure of this test.
+    for index in range(20):
+        extra = build("named", 10)
+        extra.set_solver("cg")
+        extra.set_map_name("named_%d" % index)
+        extra.solve()
+        del extra
+    surfit.Session("probe").close()
+    surfit.set_solver("cg")          # the library state is active here
+    extra = build("after_module_level", 99)
+    extra.solve()
+    assert digest(extra.values()) == solo[1], "a named task changed the result"
+    print("PASS: naming solver and map on many short-lived tasks is safe")
     return 0
 
 

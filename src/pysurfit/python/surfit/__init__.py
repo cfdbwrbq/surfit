@@ -331,6 +331,15 @@ class Session:
         """Creates the target grid; all rules are defined on it."""
         return grid_get(start_x, end_x, step_x, start_y, end_y, step_y, name)
 
+    def grid_auto(self, step_x=0, step_y=0, percent=2, name=None):
+        """Creates the target grid over the bounds of the loaded data.
+
+        This is the Tcl ``grid`` command; :meth:`grid` is ``grid_get``.  With
+        no step the grid is 255 cells across, and `percent` widens the data
+        bounds by that much before the grid is fitted.
+        """
+        return self._call(_core.grid, step_x, step_y, percent, name)
+
     def area(self, value, name="*"):
         """Rule: the surface equals `value` inside the area.
 

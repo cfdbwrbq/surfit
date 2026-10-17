@@ -84,6 +84,11 @@ Testing
        data files
    * - ``... run_tcl_suite.py --sequential examples/surfit/realworld``
      - the same for the 29 real-world scripts, run as pipelines
+   * - ``python3 src/pysurfit/tests/test_examples.py``
+     - every Python example in ``examples/python`` runs as the reader runs it
+       and writes the same ``.dat`` as its Tcl original, byte for byte; a Tcl
+       script with no port fails the check unless it is listed as deliberately
+       unported
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
@@ -138,9 +143,10 @@ Continuous integration
 ----------------------
 
 ``ci/check.sh`` builds from scratch in ``build-ci`` and runs every check: the 35
-test scripts with Tcl and Python side by side, parity, the name matcher against
-Tcl, two tasks in one process, the viewer, and a wheel that installs into an
-isolated directory and solves there without ``LD_LIBRARY_PATH``.
+test scripts with Tcl and Python side by side, the 33 Python examples against
+their Tcl originals, parity, the name matcher against Tcl, two tasks in one
+process, the viewer, and a wheel that installs into an isolated directory and
+solves there without ``LD_LIBRARY_PATH``.
 
 It takes about twenty minutes, which is the cost of testing against the Tcl
 front end rather than against itself. ``ci/check.sh --full`` adds the 29

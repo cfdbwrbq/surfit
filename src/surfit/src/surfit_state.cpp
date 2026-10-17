@@ -40,6 +40,8 @@
 #include "variables_internal.h"
 
 #include <float.h>
+#include <stdlib.h>
+#include <string.h>
 
 namespace surfit {
 
@@ -115,11 +117,28 @@ surfit_state * state_active() {
 }
 
 surfit_state * state_create() {
+	surfit_state * origin = state_origin();
+
+	// The origin holds the library's defaults, but while it is the active state
+	// the globals are where the settings actually live.  Sync it so a new task
+	// starts from the settings in force, not from the values the origin was
+	// created with.
+	if (active_state == origin)
+		globals_to_state(origin);
+
 	surfit_state * state = new surfit_state();
 
 	// Settings are inherited from the library's own state rather than repeated
 	// here: a default typed twice is a default that can disagree with itself.
-	*state = *state_origin();
+	*state = *origin;
+
+	// The two names are the exception.  set_map_name() and set_solver() free the
+	// old pointer before storing the new one, so a borrowed pointer would be
+	// freed by the next task that sets a name and then freed again by the task
+	// it was borrowed from.  Copy them here, and release the copies in
+	// state_release().
+	state->map_name = origin->map_name ? strdup(origin->map_name) : NULL;
+	state->solver_name = origin->solver_name ? strdup(origin->solver_name) : NULL;
 
 	// What a task owns is new and empty.
 	state->areas = new areas_container();
@@ -230,6 +249,17 @@ void state_release(surfit_state * state) {
 		state->method_mask_solved->release();
 	if (state->method_mask_undefined)
 		state->method_mask_undefined->release();
+
+	// The names are this state's own copies (see state_create); the switch to
+	// the origin above has already moved the globals off them.
+	if (state->map_name) {
+		free(state->map_name);
+		state->map_name = NULL;
+	}
+	if (state->solver_name) {
+		free(state->solver_name);
+		state->solver_name = NULL;
+	}
 
 	delete state;
 }

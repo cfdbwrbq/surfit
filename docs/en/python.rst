@@ -32,12 +32,14 @@ A task has three phases, and they must happen in this order:
 #. **Load data.** ``read_areas``, ``read_points``, ``read_curves``,
    ``read_contours``, ``surf_load``, ``mask_load``, or an array through
    ``add_surface``.
-#. **Set the grid** with ``grid`` (or ``grid_get`` for an explicit extent) and
-   then add rules.
+#. **Set the grid** with ``grid`` for an explicit extent, or ``grid_auto`` to fit
+   it to the loaded data (Tcl's ``grid``), and then add rules.
 #. **Solve** with ``solve``, then read or save the result.
 
 Every command of the Tcl front end is also a method on the session, under the
 same name, so ``task.points("wells")`` means the same as ``points("wells")``.
+The one exception is ``grid``: the method of that name builds an explicit grid
+(Tcl's ``grid_get``), and ``grid_auto`` is Tcl's ``grid``.
 
 Rules
 -----
@@ -275,13 +277,20 @@ All of these live under ``examples/python/`` and run as written. Each map is tha
 example's own output: ``docs/make_images.py`` imports the example and renders the
 grid it produces, so a figure cannot drift from the code.
 
-Four of the examples below — ``area``, ``faults``, ``surface`` and ``contour`` —
-are ports of Tcl scripts under ``examples/surfit/tests``, and each produces a
-grid byte-identical to the one its script produces. ``trend_from_numpy`` has no
-Tcl original: it shows the numpy interface.
+Thirty-three of them are ports of the scripts under ``examples/surfit/tests``,
+and each writes a ``.dat`` file byte-identical to the one its Tcl script writes:
+``src/pysurfit/tests/test_examples.py`` runs both and compares them. The two
+scripts the original manual never documented, ``aniso.tcl`` and
+``area_hist.tcl``, are the only ones without a port. ``trend_from_numpy``,
+``progress`` and ``viewer`` have no Tcl original.
+
+The headings follow the grouping of the original manual.
+
+Areas
+~~~~~
 
 area.py
-~~~~~~~
+^^^^^^^
 
 Five polygons: the surface equals 10 inside ``area1``, 30 inside ``area3`` and
 stays undefined inside ``area5``; ``area2`` and ``area4`` are approximated with a
@@ -295,35 +304,103 @@ weight, and ``completer`` smooths the space between them.
    Values run from 10 to 39.8. The white square in the middle is ``area5``,
    undefined on purpose, and the cells outside every area are undefined too.
 
-faults.py
-~~~~~~~~~
+area_completer.py
+^^^^^^^^^^^^^^^^^
 
-Eleven points and four fault lines. The surface has to jump across each line
-instead of smoothing over it.
+The same smoothing rule, applied inside one polygon: ``area_completer`` puts the
+completer with anisotropy (angle 30 degrees, ``w=2``) inside ``some_area``, while
+the plain ``completer`` covers the rest. Eleven points keep the surface tied to
+the data.
 
-.. figure:: ../_static/map-faults.svg
-   :alt: Filled contour map of the faults example
+.. figure:: ../_static/map-area-completer.svg
+   :alt: Filled contour map of the area_completer example
    :width: 80%
    :align: center
 
-   The jumps are the abrupt colour changes along the polygon edges.
+   Values run from -10 to 35.5. Inside the central area the contours stretch
+   along one direction, because the smoothing there prefers it.
 
-surface.py
-~~~~~~~~~~
+area_ineq.py
+^^^^^^^^^^^^
 
-A surface used as data: the result follows ``test_func`` in least squares and
-tends to a plane where the surface gives no guidance.
+The area example with bounds added: ``area6`` asks for 15 to 20, but it also
+overlaps ``area1`` and ``area3``, whose exact values (10 and 30) take precedence.
+The inequality bends the rest of ``area6``, and the script's own report of the
+maximum inside it is 30.
 
-.. figure:: ../_static/map-surface.svg
-   :alt: Filled contour map of the surface example
+.. figure:: ../_static/map-area-ineq.svg
+   :alt: Filled contour map of the area_ineq example
    :width: 80%
    :align: center
 
-   The surface is smooth but not flat: the contour lines bunch up where
-   ``test_func`` changes fastest, and the map runs from -27.5 to 82.3.
+   Values run from 10 to 39.3. The banding that the inequality adds is visible
+   between the exact areas, while the maximum inside ``area6`` is still set by
+   ``area3``.
+
+area_mean.py
+^^^^^^^^^^^^
+
+Averages instead of exact values: the surface should average 40 inside ``area6``
+and 30 over the whole map. Both conditions leave the value at any single node
+free, so the map is smoother than the exact-value version.
+
+.. figure:: ../_static/map-area-mean.svg
+   :alt: Filled contour map of the area_mean example
+   :width: 80%
+   :align: center
+
+   Values run from 6.3 to 61.7. Both averages are met, and ``area6`` is no
+   longer pinned to one number.
+
+area_wmean.py
+^^^^^^^^^^^^^
+
+The same average with a weight surface: inside ``area6`` the surface averages 30
+with ``test_func`` as the weight, so the average is biased towards the places
+where that surface is high.
+
+.. figure:: ../_static/map-area-wmean.svg
+   :alt: Filled contour map of the area_wmean example
+   :width: 80%
+   :align: center
+
+   Values run from 10 to 45.2; the weighted average sits lower than the
+   unweighted one because the weight is large where ``test_func`` is high.
+
+area_surf.py
+^^^^^^^^^^^^
+
+A surface as data inside areas: the result follows ``test_func`` exactly inside
+``area6`` and approximately inside areas 1 to 4, with a separate weight for each
+polygon.
+
+.. figure:: ../_static/map-area-surf.svg
+   :alt: Filled contour map of the area_surf example
+   :width: 80%
+   :align: center
+
+   Values run from -22.7 to 82.3, the range of ``test_func`` itself.
+
+area_surf_ineq.py
+^^^^^^^^^^^^^^^^^
+
+Brackets the surface between two copies of ``test_func``: above it in areas 1, 3
+and 5, below it in areas 2, 4 and 6. The result lies inside that sandwich and is
+smooth between the areas.
+
+.. figure:: ../_static/map-area-surf-ineq.svg
+   :alt: Filled contour map of the area_surf_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -22.8 to 82.9. The two halves of the map are pushed in
+   opposite directions, and the completer joins them.
+
+Contours
+~~~~~~~~
 
 contour.py
-~~~~~~~~~~
+^^^^^^^^^^
 
 Three contours: the small one and the centre one are honoured exactly, the big
 one follows with a weight of 0.5. A contour carries its value along the line,
@@ -337,14 +414,395 @@ which is what separates it from a curve.
    Values run from -0.7 to 1. The three rings are the contours themselves; the
    space between them is filled in by ``completer``.
 
+contour_ineq.py
+^^^^^^^^^^^^^^^
+
+Two sets of contours instead of one: the lower set is a lower bound and the upper
+set, shifted by 0.2, an upper bound, so the surface only has to stay between them
+rather than touch either.
+
+.. figure:: ../_static/map-contour-ineq.svg
+   :alt: Filled contour map of the contour_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -0.9 to 1.1, a wider range than the equality version: the
+   bounds let the surface go past each ring by the distance between the sets.
+
+Curves
+~~~~~~
+
+curve.py
+^^^^^^^^
+
+Four isolines used as data: three carry an exact value (10, 50 and 30), and the
+fourth is added with a weight of 0.5. A curve is 2D, so the value comes from the
+rule, not from the line, which separates it from a contour.
+
+.. figure:: ../_static/map-curve.svg
+   :alt: Filled contour map of the curve example
+   :width: 80%
+   :align: center
+
+   Values run from 8.8 to 50. The surface reaches the highest curve and is
+   pulled towards the weighted one without being forced onto it.
+
+curve_ineq.py
+^^^^^^^^^^^^^
+
+The curve example with inequalities: the values along the same four isolines
+become lower and upper bounds, so the result only has to respect their order.
+
+.. figure:: ../_static/map-curve-ineq.svg
+   :alt: Filled contour map of the curve_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from 9.1 to 50.2, close to the equality version, but the surface is
+   free to avoid the lines instead of passing through them.
+
+curve_surf.py
+^^^^^^^^^^^^^
+
+Curves take their values from another surface: the result follows ``test_func``
+along ``spiral`` and does so with a weight of 0.5 along ``spiral2``. The grid is
+derived from the data, so it covers both spirals.
+
+.. figure:: ../_static/map-curve-surf.svg
+   :alt: Filled contour map of the curve_surf example
+   :width: 80%
+   :align: center
+
+   Values run from -21.2 to 81.8. The spiral is the ridge where ``test_func`` is
+   followed exactly.
+
+curve_surf_ineq.py
+^^^^^^^^^^^^^^^^^^
+
+Inequalities with values taken from another surface: above ``test_func`` along
+``spiral2`` and below it along ``spiral``. The two spirals interleave, so the
+result is threaded between them.
+
+.. figure:: ../_static/map-curve-surf-ineq.svg
+   :alt: Filled contour map of the curve_surf_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -21.2 to 81.4. The surface passes between the spirals rather
+   than on them.
+
+Faults
+~~~~~~
+
+faults.py
+^^^^^^^^^
+
+Eleven points and four fault lines. The surface has to jump across each line
+instead of smoothing over it.
+
+.. figure:: ../_static/map-faults.svg
+   :alt: Filled contour map of the faults example
+   :width: 80%
+   :align: center
+
+   The jumps are the abrupt colour changes along the polygon edges.
+
+fault_aniso.py
+^^^^^^^^^^^^^^
+
+The faults example on a coarser grid, with anisotropy added to the completer:
+inside each block the surface is smoothed along 45 degrees rather than uniformly
+(the anisotropy angle is 45 degrees, its weight argument 2).
+
+.. figure:: ../_static/map-fault-aniso.svg
+   :alt: Filled contour map of the fault_aniso example
+   :width: 80%
+   :align: center
+
+   Values run from -14.1 to 38.8. The jumps along the fault lines are still
+   sharp, while the smoothing inside each block prefers one direction.
+
+fault_approx.py
+^^^^^^^^^^^^^^^
+
+The faults example without the exact condition at the points: they are added
+with a weight, so the surface may miss each measurement a little.
+
+.. figure:: ../_static/map-fault-approx.svg
+   :alt: Filled contour map of the fault_approx example
+   :width: 80%
+   :align: center
+
+   Values run from -6.6 to 33.3. Compared with the exact version the surface is
+   flatter, and the points no longer sit exactly on it.
+
+Inequalities
+~~~~~~~~~~~~
+
+ineq.py
+^^^^^^^
+
+The simplest inequality example: seven points, a lower bound of 80, an upper
+bound of 120, and a completer in between. The surface passes through the points
+and stays inside the band everywhere.
+
+.. figure:: ../_static/map-ineq.svg
+   :alt: Filled contour map of the ineq example
+   :width: 80%
+   :align: center
+
+   Values run from 80 to 120: both bounds are reached but never exceeded.
+
+points_ineq.py
+^^^^^^^^^^^^^^
+
+Two sets of measured points used as bounds: the surface has to stay above every
+point of one set and below every point of the other.
+
+.. figure:: ../_static/map-points-ineq.svg
+   :alt: Filled contour map of the points_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -0.2 to 1. The two point sets bracket the surface, which stays
+   between them without passing through either.
+
+Masks
+~~~~~
+
+mask.py
+^^^^^^^
+
+A raster mask cuts a hole in the surface: where the mask is true the surface is
+left undefined, everywhere else it follows ``test_func``.
+
+.. figure:: ../_static/map-mask.svg
+   :alt: Filled contour map of the mask example
+   :width: 80%
+   :align: center
+
+   Values run from -3.3 to 61.6 over 3031 of 5151 nodes: the missing nodes are
+   the mask, not a failed solve.
+
+mask_add.py
+^^^^^^^^^^^
+
+A value rule restricted to a mask: where the mask is true the surface is pulled
+towards 3 with a weight of 0.2, and elsewhere it follows ``test_func`` as before.
+
+.. figure:: ../_static/map-mask-add.svg
+   :alt: Filled contour map of the mask_add example
+   :width: 80%
+   :align: center
+
+   Values run from -6.7 to 61.6. The weighted rule lowers the surface inside the
+   mask without erasing the underlying shape.
+
+mask_completer.py
+^^^^^^^^^^^^^^^^^
+
+The completer applied inside a mask only, with anisotropy: where the mask is true
+the surface is smoothed along 30 degrees rather than uniformly (the anisotropy
+angle is 30 degrees, its weight argument 2).
+
+.. figure:: ../_static/map-mask-completer.svg
+   :alt: Filled contour map of the mask_completer example
+   :width: 80%
+   :align: center
+
+   Values run from 0 to 0.5. The points alone would give a noisy map; inside the
+   mask the anisotropic completer smooths it out.
+
+mask_ineq.py
+^^^^^^^^^^^^
+
+An inequality under a mask: where the mask is true the surface has to be at least
+-10, and elsewhere it follows ``test_func``.
+
+.. figure:: ../_static/map-mask-ineq.svg
+   :alt: Filled contour map of the mask_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -10.0 to 82.3. The floor is reached exactly inside the mask,
+   while the rest of the map follows ``test_func``.
+
+mask_mean.py
+^^^^^^^^^^^^
+
+An average under a mask: where the mask is true the surface averages -2, while
+the points elsewhere are honoured exactly.
+
+.. figure:: ../_static/map-mask-mean.svg
+   :alt: Filled contour map of the mask_mean example
+   :width: 80%
+   :align: center
+
+   Values run from -7.6 to 0.6. The points sit near zero, and the mask drags the
+   average down to -2.
+
+mask_surf.py
+^^^^^^^^^^^^
+
+A surface rule under a mask: where the mask is true the result equals
+``test_func``, elsewhere the completer fills in.
+
+.. figure:: ../_static/map-mask-surf.svg
+   :alt: Filled contour map of the mask_surf example
+   :width: 80%
+   :align: center
+
+   Values run from -27.5 to 82.3. The mask keeps ``test_func``, and the completer
+   extends it smoothly over the rest of the grid.
+
+mask_surf_add.py
+^^^^^^^^^^^^^^^^
+
+A weighted surface rule under a mask: the completer comes first and ``test_func``
+is added to it with a weight of 1 where the mask is true.
+
+.. figure:: ../_static/map-mask-surf-add.svg
+   :alt: Filled contour map of the mask_surf_add example
+   :width: 80%
+   :align: center
+
+   Values run from -26.3 to 78.5, slightly less extreme than the exact rule,
+   because the completer still has a say.
+
+mask_surf_ineq.py
+^^^^^^^^^^^^^^^^^
+
+An inequality against a surface under a mask: where the mask is true the result
+stays at or below ``test_func``, and the points pin it down elsewhere.
+
+.. figure:: ../_static/map-mask-surf-ineq.svg
+   :alt: Filled contour map of the mask_surf_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from -27.5 to 1.9. The masked region is capped by ``test_func``
+   while the points hold the rest near zero.
+
+mask_wmean.py
+^^^^^^^^^^^^^
+
+A weighted average under a mask: the surface averages 2 where ``mask_not`` is
+true, weighted by ``test_func``, while the points are honoured exactly.
+
+.. figure:: ../_static/map-mask-wmean.svg
+   :alt: Filled contour map of the mask_wmean example
+   :width: 80%
+   :align: center
+
+   Values run from 0 to 6.2. The weighted average lifts the near-zero points
+   towards 2.
+
+Averages
+~~~~~~~~
+
+mean.py
+^^^^^^^
+
+An average as a gridding condition: the surface passes through seven points and
+its mean value over the whole map is 30.
+
+.. figure:: ../_static/map-mean.svg
+   :alt: Filled contour map of the mean example
+   :width: 80%
+   :align: center
+
+   Values run from -57.0 to 140. The wide range is what it takes to average 30
+   while still passing through the points.
+
+wmean.py
+^^^^^^^^
+
+A weighted average: the surface passes through seven points and its average is 30
+with ``test_func`` as the weight, so the average is biased towards the places
+where that surface is high.
+
+.. figure:: ../_static/map-wmean.svg
+   :alt: Filled contour map of the wmean example
+   :width: 80%
+   :align: center
+
+   Values run from -71.7 to 140. The weighted average reaches further down than
+   the unweighted one, to compensate for the high values where the weight is
+   large.
+
+Surfaces
+~~~~~~~~
+
+surface.py
+^^^^^^^^^^
+
+A surface used as data: the result follows ``test_func`` in least squares and
+tends to a plane where the surface gives no guidance.
+
+.. figure:: ../_static/map-surface.svg
+   :alt: Filled contour map of the surface example
+   :width: 80%
+   :align: center
+
+   The surface is smooth but not flat: the contour lines bunch up where
+   ``test_func`` changes fastest, and the map runs from -27.5 to 82.3.
+
+surface_add.py
+^^^^^^^^^^^^^^
+
+A surface added with a small weight: the completer alone would give a plane, and
+``test_func`` bends it slightly towards its own shape.
+
+.. figure:: ../_static/map-surface-add.svg
+   :alt: Filled contour map of the surface_add example
+   :width: 80%
+   :align: center
+
+   Values run from -12.5 to 27.7, a much narrower range than ``test_func``
+   itself: the weight of 0.01 keeps the result close to the plane.
+
+surface_ineq.py
+^^^^^^^^^^^^^^^
+
+The surface example with an inequality: ``test_func`` shifted up by 80 is a lower
+bound, so the result sits above that floor while seven points are honoured
+exactly. A second copy shifted up by 90 is loaded by the script but no rule uses
+it.
+
+.. figure:: ../_static/map-surface-ineq.svg
+   :alt: Filled contour map of the surface_ineq example
+   :width: 80%
+   :align: center
+
+   Values run from 72.4 to 162.3. The floor is ``test_func`` plus 80, and the
+   highest point of the result lies exactly on it.
+
+Trends
+~~~~~~
+
+trend.py
+^^^^^^^^
+
+Faults under a regional trend: seven points and two fault lines, with the result
+required to look like ``test_func`` at a large scale. The faults keep the trend
+from being continuous across them.
+
+.. figure:: ../_static/map-trend.svg
+   :alt: Filled contour map of the trend example
+   :width: 80%
+   :align: center
+
+   Values run from 29.0 to 142.7. The trend dominates the shape, and the two
+   fault lines show up as steps in it.
+
 trend_from_numpy.py
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 A regional trend handed over as a numpy array, seven wells honoured exactly, and
 the result read back into an array.
 
-.. figure:: ../_static/map-trend.svg
-   :alt: Filled contour map of the trend example
+.. figure:: ../_static/map-trend-from-numpy.svg
+   :alt: Filled contour map of the numpy trend example
    :width: 80%
    :align: center
 
@@ -352,8 +810,11 @@ the result read back into an array.
    measurements sit off the plane, so each pulls the surface down locally rather
    than being smoothed away.
 
+Other
+~~~~~
+
 progress.py
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 Reports the solver's progress while it runs; the Progress section above explains
 the two styles. Its output is text, not a map:
@@ -364,7 +825,7 @@ the two styles. Its output is text, not a map:
       cg (65536 cells): iter 33, err 4.92211E-06
 
 viewer.py
-~~~~~~~~~
+^^^^^^^^^
 
 Writes the interactive HTML page. It is the same solve as ``area.py`` — only the
 output differs — so the first map above is what it draws, with a pointer readout

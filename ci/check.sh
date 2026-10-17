@@ -2,10 +2,10 @@
 #
 # Builds surfit and runs every check, the way continuous integration does.
 #
-#   ci/check.sh            build, the 35 test scripts, parity, the name matcher,
-#                          the viewer, sessions, every command against Tcl, and
-#                          a wheel that installs and solves on its own (about
-#                          twenty minutes)
+#   ci/check.sh            build, the 35 test scripts, the 33 Python examples,
+#                          parity, the name matcher, the viewer, sessions, every
+#                          command against Tcl, and a wheel that installs and
+#                          solves on its own (about twenty minutes)
 #   ci/check.sh --full     the same, plus the 29 realworld pipelines (an hour
 #                          more), for the nightly run
 #
@@ -63,6 +63,9 @@ export SURFIT_BIN
 
 step "the 35 test scripts, Tcl and Python side by side"
 run tests "$PYTHON" "$TESTS/run_tcl_suite.py"
+
+step "every Python example, against its Tcl original"
+run examples "$PYTHON" "$TESTS/test_examples.py"
 
 step "parity and numpy round trip"
 run parity "$PYTHON" "$TESTS/test_parity.py"

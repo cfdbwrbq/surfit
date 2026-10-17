@@ -26,6 +26,7 @@
 
 #include "interp.h"
 #include <algorithm>
+#include <vector>
 #include <errno.h>
 
 namespace surfit {
@@ -132,37 +133,35 @@ boolvec * cntr_load_shp(const char * filename, const char * cntrname, const char
 	return res;
 };
 
-struct match_cntr_save_shp
-{
-	match_cntr_save_shp(const char * ifilename, const char * icntr_pos)
-	{
-		filename = ifilename;
-		cntr_pos = icntr_pos;
-		res = NULL;
+boolvec * cntr_save_shp(const char * filename, const char * cntr_pos) {
+	// The shape type belongs to the file, not to one contour: a flat contour
+	// must not create an ARC file that the next, varying-Z contour cannot join.
+	// Decide the type over the whole match first, then write every contour
+	// with that type.  Without this, a set that mixes a flat contour with a 3D
+	// one fails halfway and leaves a partial file.
+	std::vector<d_cntr *> matched;
+	bool use_arcz = false;
+	size_t i;
+	for (i = 0; i < surfit_cntrs->size(); i++) {
+		d_cntr * cntr = (*surfit_cntrs)[i];
+		if (!cntr || !cntr->getName())
+			continue;
+		if (StringMatch(cntr_pos, cntr->getName()) == false)
+			continue;
+		matched.push_back(cntr);
+		REAL minz, maxz;
+		cntr->getMinMaxZ(minz, maxz);
+		if (maxz != minz)
+			use_arcz = true;
 	}
 
-	void operator()(d_cntr * crv)
-	{
-		if (res == NULL)
-			res = create_boolvec();
+	if (matched.empty())
+		return NULL;
 
-		if ( StringMatch(cntr_pos, crv->getName()) )
-		{
-			writelog(LOG_MESSAGE,"saving contour \"%s\" to ESRI shape file %s",
-				 crv->getName(), filename);
-			res->push_back( _cntr_save_shp(crv, filename) );
-		}
-	};
-
-	const char * filename;
-	const char * cntr_pos;
-	boolvec * res;
-};
-
-boolvec * cntr_save_shp(const char * filename, const char * cntr_pos) {
-	match_cntr_save_shp saver(filename, cntr_pos);
-	saver = std::for_each(surfit_cntrs->begin(), surfit_cntrs->end(), saver);
-	return saver.res;
+	boolvec * res = create_boolvec();
+	for (i = 0; i < matched.size(); i++)
+		res->push_back(_cntr_save_shp_as(matched[i], filename, use_arcz));
+	return res;
 };
 
 struct match_cntr_save_bln

@@ -107,7 +107,7 @@ was given.
 Worked examples
 ---------------
 
-Five round trips under ``examples/python/`` show the plugin from the Python side.
+Six round trips under ``examples/python/`` show the plugin from the Python side.
 Each reads text data, writes a file, drops the data and reads the file back, so
 the second write is the evidence that the reader and the writer agree.
 ``test_examples.py`` runs each of them and its Tcl original and compares every
@@ -206,11 +206,36 @@ The same for four curves, loading three back:
       .. literalinclude:: ../../examples/surfit_io/shp/curv_shp.tcl
          :language: tcl-src
 
-Two shipped scripts are not ported. ``cntr_shp.tcl`` mixes a flat 2D contour
-with 3D ones, and ``cntr_save_shp`` fixes the shape type by the first contour,
-so the set cannot be written to one file -- an open defect. ``const_cntr.tcl``
-reads a shapefile that is not part of the repository. The two shapefile
-examples above were repaired as well: the shipped scripts named the output
-``.bln``, and because the loader treats the name as a file pattern it silently
-loaded nothing. Both now name the ``.shp`` file, and a generated ``curvs.bln``
-that the distribution carried was removed so the BLN example starts clean.
+cntr_shp.py
+~~~~~~~~~~~
+
+Five contours are read and the three named ``cntr_*`` are written to one
+shapefile and loaded back with their Z values. The set mixes flat contours with
+a varying-Z one, which is the case the saver used to fail on:
+
+.. tabs::
+
+   .. tab:: Python
+
+      .. literalinclude:: ../../examples/python/cntr_shp.py
+         :language: python
+
+   .. tab:: Tcl
+
+      .. literalinclude:: ../../examples/surfit_io/shp/cntr_shp.tcl
+         :language: tcl-src
+
+One shipped script is not ported: ``const_cntr.tcl`` reads a shapefile that is
+not part of the repository. Two of the shapefile examples above were repaired as
+well: ``area_shp`` and ``curv_shp`` named the output ``.bln``, and because the
+loader treats the name as a file pattern they silently loaded nothing. Both now
+name the ``.shp`` file, and a generated ``curvs.bln`` that the distribution
+carried was removed so the BLN example starts clean.
+
+``cntr_shp.py`` also exercises a fix in the saver. It used to choose the shape
+type from the first contour, so a set that mixes flat contours with a varying-Z
+one failed halfway and left a partial file. ``cntr_save_shp`` now decides the
+type over all matched contours first -- ARCZ if any of them varies -- and then
+writes them all with that type; a flat contour is written as ARCZ with its
+constant Z. Loading such a file needs no ``zfield``; the argument remains for 2D
+files written by older versions.

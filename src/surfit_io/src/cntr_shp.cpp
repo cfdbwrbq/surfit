@@ -40,21 +40,33 @@ namespace surfit {
 
 bool _cntr_save_shp(const d_cntr * contour, const char * filename)
 {
+	if (!contour) {
+		writelog(LOG_WARNING, "NULL pointer to contour.");
+		return false;
+	}
+
+	REAL minz, maxz;
+	contour->getMinMaxZ(minz, maxz);
+
+	return _cntr_save_shp_as(contour, filename, maxz != minz);
+}
+
+bool _cntr_save_shp_as(const d_cntr * contour, const char * filename,
+		       bool use_arcz)
+{
+	if (!contour) {
+		writelog(LOG_WARNING, "NULL pointer to contour.");
+		return false;
+	}
 
 	if (!contour->getName())
 		writelog(LOG_MESSAGE,"saving contour to ERSI shape file %s", filename);
 	else
 		writelog(LOG_MESSAGE,"saving contour \"%s\" to ERSI shape file %s", contour->getName(), filename);
 
-	if (!contour) {
-		writelog(LOG_WARNING, "NULL pointer to curv.");
-		return false;
-	};
-
 	REAL minz, maxz;
 	contour->getMinMaxZ(minz, maxz);
-
-	bool use_arcz = (maxz != minz);
+	(void)maxz;
 
 	DBFHandle hDBF;
 	SHPHandle hSHP;

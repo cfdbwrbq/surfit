@@ -47,8 +47,6 @@ CORPORA = (
     }),
     (os.path.join("examples", "surfit_io", "bln"), {}),
     (os.path.join("examples", "surfit_io", "shp"), {
-        "cntr_shp": "needs the shapefile saver to decide the type over all "
-                    "contours (known defect)",
         "const_cntr": "reads a shapefile that is not in the repository",
     }),
 )
@@ -70,6 +68,7 @@ EXTRA_PORTS = (
     ("cntr_bln", os.path.join("examples", "surfit_io", "bln"), "cntr_bln"),
     ("curv_bln", os.path.join("examples", "surfit_io", "bln"), "curv_bln"),
     ("area_shp", os.path.join("examples", "surfit_io", "shp"), "area_shp"),
+    ("cntr_shp", os.path.join("examples", "surfit_io", "shp"), "cntr_shp"),
     ("curv_shp", os.path.join("examples", "surfit_io", "shp"), "curv_shp"),
 )
 

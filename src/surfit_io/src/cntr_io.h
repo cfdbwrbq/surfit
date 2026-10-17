@@ -37,5 +37,10 @@ bool _cntr_save_bln(const d_cntr * crv, FILE * file, int orient);
 SURFIT_IO_EXPORT
 bool _cntr_save_shp(const d_cntr * contour, const char * filename);
 
+//! writes contour to ESRI shape file, with the shape type chosen by the caller
+SURFIT_IO_EXPORT
+bool _cntr_save_shp_as(const d_cntr * contour, const char * filename,
+		       bool use_arcz);
+
 }; // namespace surfit;
 

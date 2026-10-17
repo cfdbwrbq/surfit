@@ -37,5 +37,8 @@ build-*/
 dist/
 *.egg-info/
 
+# Logs the engine writes into the working directory
+*.log
+
 # Sphinx output
 docs/_build/

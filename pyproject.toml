@@ -40,7 +40,8 @@ build-dir = "build/{wheel_tag}"
 wheel.packages = []
 
 [tool.scikit-build.cmake.define]
-# The wheel carries the engine and its bindings only: no Tcl module, no CLI, no
-# globe/freeflow, and every shared library installed inside the package.
+# The wheel carries the engine, the globe and freeflow modules, and their
+# bindings: no Tcl module, no CLI, and every shared library installed inside the
+# package.
 SURFIT_PYTHON_WHEEL = "ON"
 SURFIT_BUILD_TCL = "OFF"

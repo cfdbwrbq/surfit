@@ -34,17 +34,29 @@ else()
 	SET( PROJ_NAME _surfit )
 	PROJECT( ${PROJ_NAME} )
 
-	pybind11_add_module(${PROJ_NAME} MODULE src/module.cpp)
+	pybind11_add_module(${PROJ_NAME} MODULE
+		src/module.cpp
+		src/modules.cpp
+		src/bind_common.h
+	)
 
 	include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/../surfit/src
 		${CMAKE_CURRENT_SOURCE_DIR}/../surfit_io/src
+		${CMAKE_CURRENT_SOURCE_DIR}/../globe/src
+		${CMAKE_CURRENT_SOURCE_DIR}/../freeflow/src
 		${CMAKE_CURRENT_SOURCE_DIR}/../sstuff/src
 		${CMAKE_CURRENT_SOURCE_DIR}/../sstuff/src/ptypes
 		${CMAKE_BINARY_DIR}
 	)
 
-	target_link_libraries(${PROJ_NAME} PRIVATE libsurfit_io_core libsstuff libsurfit)
+	target_link_libraries(${PROJ_NAME} PRIVATE
+		libsurfit_io_core
+		libglobe_core
+		libfreeflow_core
+		libsstuff
+		libsurfit
+	)
 
 	# In the build tree the extension sits one level below the libraries; in an
 	# installed wheel every library lands in the same package directory.

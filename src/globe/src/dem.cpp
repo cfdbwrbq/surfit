@@ -525,11 +525,22 @@ bool d_dem::decompose() {
 		grids_store->push_back( new d_grid(*grd) );
 		store_pos++;
 				
-	} else {
+	} else if (store_pos + 1 < (int)coeffs_store->size()) {
 
+		// A deeper level is already stored: step to it.  The bound is the
+		// point: a reconstruction leaves store_pos on a level that *is*
+		// stored, so the old unconditional store_pos++ read one past the
+		// end of the store, and the next calc_approx_norm() dereferenced
+		// whatever happened to be there (SIGSEGV in dem_auto_decomp after
+		// dem_recons).
 		store_pos++;
 		coeff = (*coeffs_store)[store_pos];
 		grd = (*grids_store)[store_pos];
+		
+	} else {
+		
+		// The deepest stored level is the current one: nothing left to reuse.
+		return false;
 		
 	}
 	return true;

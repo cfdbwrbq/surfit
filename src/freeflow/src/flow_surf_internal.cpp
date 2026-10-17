@@ -49,6 +49,16 @@ REAL _surf_debit(d_surf * fnc, REAL x, REAL y, REAL perm, REAL visc, REAL mult) 
 	fnc->grd->getCoordPoint(x, y, i, j);
 
 	size_t NN = fnc->getCountX();
+	size_t MM = fnc->getCountY();
+
+	// The four neighbours are read with i-1, i+1, j-1 and j+1, so a cell on the
+	// border wraps around to a huge offset, and a point outside the grid gives
+	// an index past the last row.  Neither is a flow rate, and reading there
+	// returns whatever the allocator left behind - the old code did, and the
+	// two front ends then disagreed on the number.
+	if ((i < 1) || (i >= NN-1) || (j < 1) || (j >= MM-1))
+		return undef_value;
+
 	size_t pos_0 = i + j*NN;
 	size_t pos_1 = (i-1) +     j*NN;
 	size_t pos_2 = i     + (j+1)*NN;

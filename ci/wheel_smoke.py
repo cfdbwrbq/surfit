@@ -65,6 +65,12 @@ def main():
 
     print("wheel solves: %s, %d of %d defined, %.3f .. %.3f"
           % (grid.shape, int(defined.sum()), grid.size, low, high))
+
+    # The wheel also carries the DEM and freeflow libraries: calling one of each
+    # proves they were installed and that their code loads and links.
+    assert surfit.dem_size() == 0, surfit.dem_size()
+    assert surfit.lcm_simple(1, 1, 1), "lcm_simple() failed"
+    print("wheel modules: dem_size()=0, lcm_simple() ok")
     return 0
 
 

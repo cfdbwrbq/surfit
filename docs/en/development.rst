@@ -17,7 +17,8 @@ Repository layout
    * - ``src/surfit_io``
      - the file format plugin
    * - ``src/globe``, ``src/freeflow``
-     - global DEM tiles and streamline subprojects
+     - the DEM and flow libraries; the Tcl plugins that wrap them are separate
+       modules built from the checked-in SWIG wrappers
    * - ``src/tclsurfit``
      - SWIG interface that turns the engine's functions into Tcl commands
    * - ``src/pysurfit``
@@ -59,6 +60,14 @@ library in, compare the exported symbols:
 Inline methods from shared headers appear in both lists and are harmless, since
 their definitions are identical. A plain type name that appears in both is not.
 
+The two plugin libraries follow the same split as the formats. ``libglobe_core``
+and ``libfreeflow_core`` hold the code and have no Tcl dependency; ``libglobe.so``
+and ``libfreeflow.so`` are the Tcl plugins, built from the ``*_wrap.cxx`` files
+that SWIG 1.3.28 generated. Python links the core libraries, so a wheel carries
+them and ``import surfit`` registers their data managers — the same thing
+``load libglobe.so`` does under Tcl. Compare their exported symbols with the
+engine's before linking them together; the check above applies unchanged.
+
 Testing
 -------
 
@@ -79,8 +88,10 @@ Testing
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
    * - ``python3 src/pysurfit/tests/test_all_commands.py``
-     - every bound command is run through both front ends from one table, and
-       the values, the warnings, and the files written must all agree
+     - every command of both front ends, the plugins included, is run through
+       both from one table; the values, the warnings and the files written must
+       agree, and the command list itself is read from tclsh so a command Python
+       lacks cannot go unnoticed
    * - ``python3 src/pysurfit/tests/check_stringmatch.py``
      - the local name matcher agrees with Tcl on every well-formed pattern
    * - ``python3 gil_check.py``

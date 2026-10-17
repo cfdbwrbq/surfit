@@ -18,7 +18,8 @@ see `Build options`_.
 
 These are optional and enable extra features:
 
-* ``zlib`` — the ``globe`` module for global DEM tiles
+* ``zlib`` — zipped SRTM tiles for the ``globe`` module (``dem_load_hgt_zip``;
+  without it the command reports "zlib not detected")
 * ``libjpeg`` — JPEG grids
 * ``netcdf`` — GMT and netCDF grids
 
@@ -47,11 +48,11 @@ From source
    export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 
 That produces the engine libraries, the format library
-``libsurfit_io_core.so``, and — when pybind11 is available — the Python
+``libsurfit_io_core.so``, the DEM and freeflow libraries ``libglobe_core.so``
+and ``libfreeflow_core.so``, and — when pybind11 is available — the Python
 extension inside ``bin/surfit/``. With ``SURFIT_BUILD_TCL=ON`` you also get the
-Tcl module ``libtclsurfit.so``, the ``surfit`` command line interpreter, the
-``globe`` and ``freeflow`` subprojects, and the Tcl plugin
-``libsurfit_io.so``.
+Tcl module ``libtclsurfit.so``, the ``surfit`` command line interpreter, and the
+Tcl plugins ``libsurfit_io.so``, ``libglobe.so`` and ``libfreeflow.so``.
 
 To install into a prefix, ``make install`` puts the libraries in ``lib`` and the
 interpreter in ``bin``. There is no RPATH, so ``lib`` has to be on the loader
@@ -69,8 +70,9 @@ Build options
      - Meaning
    * - ``SURFIT_BUILD_TCL``
      - ``OFF``
-     - Build the Tcl module, the command line interpreter, ``globe``,
-       ``freeflow`` and the Tcl plugin for the formats. Needs Tcl and SWIG.
+     - Build the Tcl module, the command line interpreter and the Tcl plugins
+       for the formats, ``globe`` and ``freeflow``. Needs Tcl and SWIG. The
+       libraries themselves are built either way.
    * - ``SURFIT_BUILD_PYTHON``
      - ``ON``
      - Build the Python extension. Skipped with a message when pybind11 is

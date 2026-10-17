@@ -128,6 +128,38 @@ names:
 
 See :doc:`formats` for the full list.
 
+Digital elevation models and flows
+----------------------------------
+
+The two libraries the Tcl front end loads as plugins, ``globe`` (DEM) and
+``freeflow`` (flows), are linked into the extension, so their commands are
+there after ``import surfit``, under the same names:
+
+.. code-block:: python
+
+   surfit.surf_to_dem("top")            # a DEM made from a solved surface
+   surfit.dem_getCountX("top")
+   surfit.dem_minz("top")
+   surfit.dem_save_grd("top.grd", "top")
+
+   surfit.dem_load_hgt("N00E006.hgt")   # a DEM from an SRTM tile
+   surfit.grid_get(6.4, 6.8, 0.0005, 0.0, 0.48, 0.0005)
+   surfit.dem("N00E006.hgt")            # rule: follow the DEM
+   surfit.completer()
+   surfit.surfit()
+
+   surfit.lcm_simple(1, 1, 1)           # rule: conservation of mass
+   surfit.flow_points("wells")          # attach flow data to that rule
+   surfit.surf_debit(0.0, 0.0, 1, 1, 1, "pressure")
+
+Two things are worth knowing:
+
+* ``dem_load_hgt_zip`` needs a build with zlib headers. Without them it reports
+  "zlib not detected" and returns nothing.
+* DEMs live in a container of their own, outside the state a Session owns, so
+  two Sessions in one process share them. The finite-element rules the
+  ``freeflow`` commands create are ordinary rules and are per-Session.
+
 More than one task
 ------------------
 

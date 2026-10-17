@@ -527,6 +527,98 @@ STEPS = (
     ("datafile_mode", []),
     ("datafile_new", []),
     ("datafile_mode", []),
+
+    # --- globe: the digital elevation model -------------------------------
+    #: The DEMs are built from the surface the task file restored, so the whole
+    #: family is exercised on data that travelled through the task file.
+    ("dem_size", []),
+    ("dems_info", []),
+    ("surf_to_dem", ["map"]),
+    ("dem_size", []),
+    ("dem_getName", []),
+    ("dem_getNameAt", [0]),
+    ("dem_getNameAt", [99]),
+    ("dem_getId", ["map"]),
+    ("dem_getCountX", ["map"]),
+    ("dem_getCountY", ["map"]),
+    ("dem_getStepX", ["map"]),
+    ("dem_getStepY", ["map"]),
+    ("dem_minz", ["map"]),
+    ("dem_maxz", ["map"]),
+    ("dem_getValue", [10.0, 10.0, "map"]),
+    ("dem_D1", ["map"]),
+    ("dem_D2", ["map"]),
+    ("dem_save", ["dem.dat", "map"]),
+    ("dem_save_grd", ["dem.grd", "map"]),
+    ("dem_save_xyz", ["dem.xyz", "map"]),
+    ("dem_resid", ["dem_resid.txt", "map", "wells"]),
+    #: not implemented upstream: it logs "Not implemented!" and fails.  Listed
+    #: in EXPECTED_FAILURE, so the step still has to fail on both sides.
+    ("dem_save_dtm", ["dem.dtm"]),
+    ("dem_decomp", ["map"]),
+    ("dem_get_details_level", ["map"]),
+    ("dem_recons", ["map"]),
+    ("dem_full_recons", ["map"]),
+    ("dem_auto_decomp", [0.01, "map"]),
+    ("dem_project", ["proj", "map"]),
+    ("dem_gradient", ["grad", "map"]),
+    ("dem_to_pnts", ["map"]),
+    ("dem_to_surf", ["map"]),
+    ("dem_to_mask", [0, 1000, "map"]),
+    ("dem_plus", ["map", "proj"]),
+    ("dem_minus", ["map", "proj"]),
+    ("dem_mult", ["map", "proj"]),
+    ("dem_div", ["proj", "map"]),
+    ("dem_set", ["proj", "map"]),
+    ("dem_plus_real", [1.0, "map"]),
+    ("dem_minus_real", [1.0, "map"]),
+    ("dem_mult_real", [2.0, "map"]),
+    ("dem_div_real", [2.0, "map"]),
+    ("dem_set_real", [7.0, "map"]),
+    ("dem_undef", [1e30, "map"]),
+    ("dem_setName", ["map2", "map"]),
+    ("dem_getName", []),
+    ("dem_setName", ["map", "map2"]),
+    ("dem_del", ["map"]),
+    ("dem_size", []),
+    ("dem_load", ["dem.dat", "map"]),
+    ("dem_size", []),
+    ("dem_load_grd", ["dem.grd", "map"]),
+    ("dem_size", []),
+    #: a DTM fixture in data/ (dtm4.hdr + dtm4.DEM, 4x4 int16): the loader
+    #: derives the binary's name from the header's, so only the header is named.
+    ("dem_load_dtm", ["data/dtm4.hdr", "dtm4"]),
+    ("dem_getName", []),
+    ("dem_getCountX", ["dtm4"]),
+    ("dem_getValue", [44.0, 43.0, "dtm4"]),
+    #: These read a file, so the data directory holds empty fixtures under the
+    #: names the loaders parse: a missing file would make find_first() match
+    #: nothing and every one of them would quietly return an empty result.
+    ("dem_load_hgt", ["data/N00E006.hgt"]),
+    ("dem_load_hgt_zip", ["data/N00E006.hgt.zip"]),
+    ("dem_load_globe", ["data/a16g"]),
+    #: rules over the DEMs, after the loaders so there is something to match
+    ("dem", ["*"]),
+    ("dem_add", [1.0, "*"]),
+    ("dem_del", ["*"]),
+    ("dem_size", []),
+
+    # --- freeflow: conservation of mass ----------------------------------
+    #: flow_points/area/curve/contour attach to the last modifiable rule, so
+    #: lcm_simple() has to come first - without it each of them answers false.
+    ("lcm_simple", [1, 1, 1]),
+    ("flow_points", ["wells"]),
+    ("flow_area", [10.0, "area1"]),
+    ("flow_curve", [5.0, "line"]),
+    ("flow_contour", ["c1"]),
+    ("lcm_simple_add", [1, 1, 1, 1]),
+    ("flow_points", ["*"]),
+    #: a cell inside the surface, and a point outside it: the second one has no
+    #: neighbours to difference against, and used to read past the array
+    ("surf_debit", [0.0, 0.0, 1, 1, 1, "map"]),
+    ("surf_debit", [500.0, 500.0, 1, 1, 1, "map"]),
+    ("surf_debit_rect", [-5.0, -5.0, 5.0, 5.0, 1, 1, 1, "map"]),
+    ("clear_rules", []),
 )
 
 
@@ -565,7 +657,12 @@ def tcl_quote(value):
 
 
 def render_tcl(steps):
-    lines = ["load libtclsurfit[info sharedlibextension]", "clear_data"]
+    # The globe and freeflow plugins, in the order the Python side registers
+    # them: a Tcl script has to load them, where import surfit does it itself.
+    lines = ["load libtclsurfit[info sharedlibextension]",
+             "load libglobe[info sharedlibextension]",
+             "load libfreeflow[info sharedlibextension]",
+             "clear_data"]
     for index, (command, args) in enumerate(steps):
         if command in NOT_IN_TCL:
             continue
@@ -712,6 +809,22 @@ NOT_BOUND = {
     "surf_plot",
 }
 
+#: Commands that raise on both sides by design, with the reason.  They stay in
+#: the table: a call that stops failing - or starts failing on one side only -
+#: is a change worth failing on.
+EXPECTED_FAILURE = {
+    "dem_save_dtm": "not implemented: _dem_save_dtm() logs and returns false",
+    "dem_load_hgt": "needs a real SRTM tile: the grid comes from the file name "
+                    "and the size",
+    "dem_load_hgt_zip": "same, and this build has no zlib (HAVE_ZLIB_H unset)",
+    "dem_load_globe": "needs a real GTOPO30 tile: 10800 x 4800 or 6000 cells",
+}
+
+#: What `tcl_commands()` loads before asking tclsh for its command set.
+TCL_MODULES = ("load libtclsurfit[info sharedlibextension]\n"
+               "load libglobe[info sharedlibextension]\n"
+               "load libfreeflow[info sharedlibextension]\n")
+
 TCL_COMMANDS = "foreach c [info commands] { puts $c }"
 
 
@@ -719,9 +832,11 @@ def tcl_commands():
     """The commands the Tcl front end has, asked of tclsh itself.
 
     Asking the reference beats keeping a list by hand: the hand-written list
-    this replaced was missing 44 commands, and the check could not see them
-    because it intersected the two sets instead of comparing them.  A command
-    that Tcl has and Python lacks is invisible to an intersection.
+    this replaced was missing 44 commands of the core alone, and the check
+    could not see them because it intersected the two sets instead of
+    comparing them.  A command that Tcl has and Python lacks is invisible to an
+    intersection.  The plugins are loaded here for the same reason: their
+    commands are part of the front end only once a script has loaded them.
     """
     def names(script):
         result = subprocess.run(
@@ -735,7 +850,7 @@ def tcl_commands():
                 if line.strip() and " " not in line}
 
     bare = names(TCL_COMMANDS + "\n")
-    loaded = names("load libtclsurfit[info sharedlibextension]\n" + TCL_COMMANDS + "\n")
+    loaded = names(TCL_MODULES + TCL_COMMANDS + "\n")
     return loaded - bare
 
 
@@ -772,7 +887,8 @@ def main():
         tcl_files = artefacts(tcl_dir)
         python_files = artefacts(python_dir)
 
-    problems, errors = [], []
+    problems, errors, unexpected_passes = [], [], []
+    expected = 0
     lost_python = [i for i in range(len(STEPS)) if i not in python]
     lost_tcl = [i for i in range(len(STEPS))
                 if i not in tcl and STEPS[i][0] not in NOT_IN_TCL]
@@ -791,13 +907,22 @@ def main():
         if "ERROR" in (left, right):
             sides = [name for name, value in (("tcl", left), ("python", right))
                      if "ERROR" in value]
+            if command in EXPECTED_FAILURE and len(sides) == 2:
+                expected += 1
+                continue
             errors.append((index, command, "/".join(sides)))
+            continue
+        if command in EXPECTED_FAILURE:
+            unexpected_passes.append((index, command))
             continue
         if not same(left, right):
             problems.append((index, command, left, right))
 
     for index, command, side in errors:
         print("ERROR %-22s step %3d on the %s side" % (command, index, side))
+    for index, command in unexpected_passes:
+        print("PASSED %-21s step %3d should fail on both sides"
+              % (command, index))
     for index, command, left, right in problems:
         print("DIFF  %-22s\n      tcl    %s\n      python %s" % (command, left, right))
 
@@ -837,6 +962,12 @@ def main():
     print("\n%d step(s): %d differ, %d errored, %d missing from python, %d from tcl"
           % (len(STEPS), len(problems), len(errors), len(lost_python), len(lost_tcl)))
 
+    if expected:
+        print("\n%d step(s) failed on both sides, as expected:" % expected)
+        for name in sorted({command for command, _ in STEPS
+                            if command in EXPECTED_FAILURE}):
+            print("  %-22s %s" % (name, EXPECTED_FAILURE[name]))
+
     unbound, missing = coverage_problems()
     if unbound:
         print("\nthe Tcl front end has these and Python does not (%d):" % len(unbound))
@@ -851,7 +982,8 @@ def main():
 
     # A side that stopped early is a crash, not a pass: the steps after it
     # were never run, so there is nothing to compare.
-    failed = bool(problems or errors or unbound or missing or lost_python or lost_tcl
+    failed = bool(problems or errors or unexpected_passes or unbound or missing
+                  or lost_python or lost_tcl
                   or tcl_problems != python_problems
                   or only_tcl or only_python or file_diffs)
     return 1 if failed else 0

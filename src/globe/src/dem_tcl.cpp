@@ -845,7 +845,14 @@ boolvec * dem_project(const char * newname, const char * pos)
 {
 	bool_oper_project oper(newname);
 	match_dem_bool qq(pos, &oper);
-	qq = std::for_each(globe_dems->begin(), globe_dems->end(), qq);
+	// The rule appends the projection to the same container this walks.  Walk by
+	// index over the DEMs that existed when it started: appending reallocates
+	// the vector, which invalidates an iterator, and std::for_each would then
+	// read past the end (SIGSEGV in data::getName()).
+	const size_t count = globe_dems->size();
+	size_t i;
+	for (i = 0; i < count; i++)
+		qq((*globe_dems)[i]);
 	return qq.res;
 };
 
@@ -870,7 +877,11 @@ boolvec * dem_gradient(const char * newname, const char * pos)
 {
 	bool_oper_gradient oper(newname);
 	match_dem_bool qq(pos, &oper);
-	qq = std::for_each(globe_dems->begin(), globe_dems->end(), qq);
+	// As in dem_project(): the gradient is appended to the container being walked.
+	const size_t count = globe_dems->size();
+	size_t i;
+	for (i = 0; i < count; i++)
+		qq((*globe_dems)[i]);
 	return qq.res;
 };
 

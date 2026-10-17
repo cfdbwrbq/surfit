@@ -18,7 +18,8 @@ Tcl-*фронтенд* необязателен и по умолчанию вы�
 
 Дополнительно, для отдельных возможностей:
 
-* ``zlib`` — модуль ``globe`` для глобальных тайлов DEM;
+* ``zlib`` — заархивированные тайлы SRTM для модуля ``globe``
+  (``dem_load_hgt_zip``; без zlib команда сообщает «zlib not detected»);
 * ``libjpeg`` — сетки в JPEG;
 * ``netcdf`` — сетки GMT и netCDF.
 
@@ -47,10 +48,11 @@ Python
    export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 
 На выходе получаются библиотеки движка, библиотека форматов
-``libsurfit_io_core.so`` и — если найден pybind11 — расширение Python внутри
+``libsurfit_io_core.so``, библиотеки DEM и потоков ``libglobe_core.so`` и
+``libfreeflow_core.so`` и — если найден pybind11 — расширение Python внутри
 ``bin/surfit/``. С ``SURFIT_BUILD_TCL=ON`` добавляются ещё Tcl-модуль
-``libtclsurfit.so``, интерпретатор командной строки ``surfit``, подпроекты
-``globe`` и ``freeflow`` и Tcl-плагин форматов ``libsurfit_io.so``.
+``libtclsurfit.so``, интерпретатор командной строки ``surfit`` и Tcl-плагины
+``libsurfit_io.so``, ``libglobe.so`` и ``libfreeflow.so``.
 
 Чтобы поставить в префикс, ``make install`` кладёт библиотеки в ``lib``, а
 интерпретатор в ``bin``. RPATH не прописывается, поэтому ``lib`` должна быть в
@@ -68,8 +70,9 @@ Python
      - Значение
    * - ``SURFIT_BUILD_TCL``
      - ``OFF``
-     - Собирать Tcl-модуль, интерпретатор командной строки, ``globe``,
-       ``freeflow`` и Tcl-плагин форматов. Требует Tcl и SWIG.
+     - Собирать Tcl-модуль, интерпретатор командной строки и Tcl-плагины
+       форматов, ``globe`` и ``freeflow``. Требует Tcl и SWIG. Сами
+       библиотеки собираются в любом случае.
    * - ``SURFIT_BUILD_PYTHON``
      - ``ON``
      - Собирать расширение Python. Если pybind11 нет, шаг пропускается с

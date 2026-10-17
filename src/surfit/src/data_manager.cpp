@@ -829,10 +829,28 @@ char * types_info() {
 	return NULL;
 };
 
+namespace {
+
+/*! Keeps file_load() from aborting on a bad tag, and puts the setting back.
+
+	The loader runs with errors demoted, because a task file may carry a tag a
+	plugin does not understand.  The function has four exits; the old code
+	restored the setting on one of them, so after any successful file_load() of
+	a .dat file every later error was quietly downgraded to a printed line - in
+	both front ends, for the rest of the process.
+*/
+struct demote_errors {
+	demote_errors() : previous(stop_on_error) { stop_on_error = false; }
+	~demote_errors() { stop_on_error = previous; }
+	int previous;
+};
+
+}  // namespace
+
 void file_load(const char * filename) {
 
-	int prev_stop_on_error = stop_on_error;
-	stop_on_error = false;
+	demote_errors errors_demoted;
+
 	int readed;
 	char * first1024 = read_first1024(filename, readed);
 
@@ -862,8 +880,6 @@ void file_load(const char * filename) {
 		surfit_data_manager->auto_load(filename, first1024, readed);
 	
 	sstuff_free_char(first1024);
-
-	stop_on_error = prev_stop_on_error;
 	
 };
 

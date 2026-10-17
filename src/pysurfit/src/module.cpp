@@ -27,6 +27,8 @@
 #include "sstuff_ie.h"
 #include "surfit_ie.h"
 
+#include "bind_common.h"
+
 #include "real.h"
 #include "vec.h"
 #include "boolvec.h"
@@ -80,6 +82,11 @@ namespace surfit {
 extern surfit_io_manager * my_surfit_io_manager;
 }  // namespace surfit
 
+// The DEM and freeflow commands live in translation units of their own; each
+// one binds its commands and registers its data manager on this module.
+void bind_globe(pybind11::module_ & m);
+void bind_freeflow(pybind11::module_ & m);
+
 using surfit::area;
 using surfit::area_add;
 using surfit::area_read;
@@ -104,74 +111,14 @@ using surfit::strvec;
 
 namespace {
 
-/*! Drains a boolvec of per-file success flags and releases it. */
-py::list drain_boolvec(boolvec * flags) {
-	py::list result;
-	if (flags == NULL)
-		return result;
-	for (size_t i = 0; i < flags->size(); i++)
-		result.append(py::bool_((*flags)(i)));
-	flags->release();
-	return result;
-}
-
-/*! A REAL vector result: copied into an array, then released.
-
-	These come back from the statistics commands, which return one value per
-	object they matched rather than a flag each.
-*/
-py::array_t<double> drain_vec(vec * values) {
-	if (values == NULL)
-		return py::array_t<double>(0);
-	const size_t size = values->size();
-	py::array_t<double> result(size);
-	double * out = result.mutable_data();
-	for (size_t i = 0; i < size; i++)
-		out[i] = double((*values)(i));
-	values->release();
-	return result;
-}
-
-/*! The integer counterpart, for cell counts and decomposition levels. */
-py::array_t<int> drain_intvec(intvec * values) {
-	if (values == NULL)
-		return py::array_t<int>(0);
-	const size_t size = values->size();
-	py::array_t<int> result(size);
-	int * out = result.mutable_data();
-	for (size_t i = 0; i < size; i++)
-		out[i] = (*values)(i);
-	values->release();
-	return result;
-}
-
-/*! A strvec of object names, as a Python list of str. */
-py::list drain_strvec(strvec * values) {
-	py::list result;
-	if (values == NULL)
-		return result;
-	for (size_t i = 0; i < values->size(); i++) {
-		const char * name = (*values)(i);
-		result.append(py::str(name != NULL ? name : ""));
-	}
-	values->release();
-	return result;
-}
-
-/*! The accessors answer NULL for a position that does not exist, which Python
-	spells as an empty string rather than a missing value. */
-std::string cstr_or_empty(const char * text) {
-	return text != NULL ? std::string(text) : std::string();
-}
-
-/*! Optional-string helper: Python None becomes a NULL C string, matching the
-	C++ API, where NULL means "derive the name" or "no name". */
-const char * opt_cstr(const py::object & value, std::string & storage) {
-	if (value.is_none())
-		return NULL;
-	storage = std::string(py::str(value));
-	return storage.c_str();
-}
+// The result-draining helpers live in bind_common.h, because the globe and
+// freeflow bindings are a translation unit of their own and use the same ones.
+using surfit_py::cstr_or_empty;
+using surfit_py::drain_boolvec;
+using surfit_py::drain_intvec;
+using surfit_py::drain_strvec;
+using surfit_py::drain_vec;
+using surfit_py::opt_cstr;
 
 /*! Registers the surfit_io data manager.
 
@@ -324,6 +271,15 @@ PYBIND11_MODULE(_surfit, m) {
 	// Registers the file-format plugin, which the Tcl front end would load as
 	// a separate shared library.
 	ensure_io_manager();
+
+	// The DEM and freeflow modules, which the Tcl front end loads as the
+	// plugins libglobe.so and libfreeflow.so.  Their init functions announce
+	// themselves in the log the way the plugins do; a Python import stays
+	// quiet, so the announcement is filtered, exactly like the licence
+	// banner surfit_init_variables() would print.
+	surfit::loglevel = LOG_SILENT;
+	bind_globe(m);
+	bind_freeflow(m);
 
 	// The Tcl front end runs surfit_init_variables() when the module loads,
 	// which calls log_open() and so raises the level to LOG_WARNING.  Python

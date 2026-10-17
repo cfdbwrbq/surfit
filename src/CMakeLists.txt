@@ -11,11 +11,12 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # ----------------------------------
 # what to build
 # ----------------------------------
-# A Python wheel wants only the engine and its bindings: no Tcl module, no CLI,
-# no globe/freeflow, and every shared library installed *inside* the package so
-# the extension finds it through $ORIGIN.
+# A Python wheel wants only the engine and its bindings: no Tcl module and no
+# CLI, with every shared library installed *inside* the package so the
+# extension finds it through $ORIGIN.  The globe and freeflow libraries are
+# part of both front ends.
 
-option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, globe, freeflow)" OFF)
+option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, Tcl plugins)" OFF)
 option(SURFIT_BUILD_PYTHON "Build the Python bindings" ON)
 option(SURFIT_PYTHON_WHEEL "Install for a Python wheel, inside the package" OFF)
 
@@ -74,6 +75,11 @@ add_subdirectory(sstuff)
 add_subdirectory(surfit)
 add_subdirectory(surfit_io)
 
+# The DEM and freeflow libraries.  Both front ends carry them: Tcl loads the
+# separate Tcl plugins that wrap them, Python links the libraries themselves.
+add_subdirectory(globe)
+add_subdirectory(freeflow)
+
 # Python bindings; skipped automatically when pybind11 is unavailable
 if (SURFIT_BUILD_PYTHON)
 	add_subdirectory(pysurfit)
@@ -81,12 +87,6 @@ endif()
 
 if (SURFIT_BUILD_TCL)
 	add_subdirectory(tclsurfit)
-
-	if (ZLIB_FOUND)
-		add_subdirectory(globe)
-	endif(ZLIB_FOUND)
-
-	add_subdirectory(freeflow)
 
 	# Executabels
 	add_subdirectory(surfit_cmd)

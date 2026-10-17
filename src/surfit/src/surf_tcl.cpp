@@ -1704,7 +1704,7 @@ strvec * surf_getName(const char * pos)
 
 const char * surf_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_surfs->size())
+	if ((size_t)pos >= surfit_surfs->size())
 		return NULL;
 	return (*surfit_surfs)[pos]->getName();
 };

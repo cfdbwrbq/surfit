@@ -31,6 +31,7 @@
 #include "vec.h"
 #include "boolvec.h"
 #include "intvec.h"
+#include "strvec.h"
 #include "fileio.h"
 #include "interp.h"
 #include "surfit_state.h"
@@ -97,6 +98,7 @@ using surfit::surfit_surfs;
 using surfit::extvec;
 using surfit::create_extvec;
 using surfit::intvec;
+using surfit::strvec;
 // NB: `surfit` itself is not imported by a using-declaration -- the function
 // surfit::surfit() would clash with the namespace name in the global scope.
 
@@ -141,6 +143,25 @@ py::array_t<int> drain_intvec(intvec * values) {
 		out[i] = (*values)(i);
 	values->release();
 	return result;
+}
+
+/*! A strvec of object names, as a Python list of str. */
+py::list drain_strvec(strvec * values) {
+	py::list result;
+	if (values == NULL)
+		return result;
+	for (size_t i = 0; i < values->size(); i++) {
+		const char * name = (*values)(i);
+		result.append(py::str(name != NULL ? name : ""));
+	}
+	values->release();
+	return result;
+}
+
+/*! The accessors answer NULL for a position that does not exist, which Python
+	spells as an empty string rather than a missing value. */
+std::string cstr_or_empty(const char * text) {
+	return text != NULL ? std::string(text) : std::string();
 }
 
 /*! Optional-string helper: Python None becomes a NULL C string, matching the
@@ -411,6 +432,18 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("putlog", [](const std::string & text) { surfit::putlog(text.c_str()); },
 	      py::arg("text"), "writes a line to the log file");
 	m.def("log_clear", &surfit::log_clear, "truncate the log file");
+
+	// How file_save treats an existing file: "new" truncates it, "append" adds
+	// to it.  The Tcl front end exposes the same three commands.
+	m.def("datafile_mode", []() {
+		return cstr_or_empty(surfit::datafile_mode());
+	}, "the mode file_save writes in: datafile_new or datafile_append");
+	m.def("datafile_new", []() {
+		return cstr_or_empty(surfit::datafile_new());
+	}, "make file_save truncate an existing file");
+	m.def("datafile_append", []() {
+		return cstr_or_empty(surfit::datafile_append());
+	}, "make file_save append to an existing file");
 	m.def("show_c", &surfit::show_c, "print the copying conditions");
 	m.def("show_w", &surfit::show_w, "print the warranty notice");
 	m.def("init_threads", &surfit::init_threads, py::arg("count"),
@@ -501,6 +534,140 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("area_invert", [](const std::string & n) {
 		return drain_boolvec(surfit::area_invert(n.c_str()));
 	}, py::arg("name") = "*", "swap inside and outside of areas");
+
+	// --- object accessors ---------------------------------------------
+	// The Tcl front end has this family for every collection: the names that
+	// match, one name by position, the object ids and renaming.  Without it a
+	// front end can only reach an object it already knows the name of.
+	m.def("area_getName", [](const std::string & name) {
+		return drain_strvec(surfit::area_getName(name.c_str()));
+	}, py::arg("area_name") = "*", "names of the matching areas");
+	m.def("area_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::area_getNameAt(pos));
+	}, py::arg("pos"), "name of the area at that position; empty if there is none");
+	m.def("area_getId", [](const std::string & name) {
+		return drain_intvec(surfit::area_getId(name.c_str()));
+	}, py::arg("area_name") = "*", "ids of the matching areas");
+	m.def("area_setName", [](const std::string & new_name, const std::string & name) {
+		return drain_boolvec(surfit::area_setName(new_name.c_str(), name.c_str()));
+	}, py::arg("new_name"), py::arg("area_name") = "*");
+
+	m.def("cntr_getName", [](const std::string & name) {
+		return drain_strvec(surfit::cntr_getName(name.c_str()));
+	}, py::arg("cntr_name") = "*", "names of the matching contours");
+	m.def("cntr_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::cntr_getNameAt(pos));
+	}, py::arg("pos"), "name of the contour at that position; empty if there is none");
+	m.def("cntr_getId", [](const std::string & name) {
+		return drain_intvec(surfit::cntr_getId(name.c_str()));
+	}, py::arg("cntr_name") = "*", "ids of the matching contours");
+	m.def("cntr_setName", [](const std::string & new_name, const std::string & name) {
+		return drain_boolvec(surfit::cntr_setName(new_name.c_str(), name.c_str()));
+	}, py::arg("new_name"), py::arg("cntr_name") = "*");
+
+	m.def("curv_getName", [](const std::string & name) {
+		return drain_strvec(surfit::curv_getName(name.c_str()));
+	}, py::arg("curv_name") = "*", "names of the matching curves");
+	m.def("curv_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::curv_getNameAt(pos));
+	}, py::arg("pos"), "name of the curve at that position; empty if there is none");
+	m.def("curv_getId", [](const std::string & name) {
+		return drain_intvec(surfit::curv_getId(name.c_str()));
+	}, py::arg("curv_name") = "*", "ids of the matching curves");
+	m.def("curv_setName", [](const std::string & new_name, const std::string & name) {
+		return drain_boolvec(surfit::curv_setName(new_name.c_str(), name.c_str()));
+	}, py::arg("new_name"), py::arg("curv_name") = "*");
+
+	m.def("grid_getCountX", &surfit::grid_getCountX,
+	      "node count of the target grid in X, 0 when no grid is defined");
+	m.def("grid_setCountX", &surfit::grid_setCountX, py::arg("countX"));
+	m.def("grid_getCountY", &surfit::grid_getCountY,
+	      "node count of the target grid in Y, 0 when no grid is defined");
+	m.def("grid_setCountY", &surfit::grid_setCountY, py::arg("countY"));
+	m.def("grid_getCoordNodeX", [](int i) {
+		return double(surfit::grid_getCoordNodeX(i));
+	}, py::arg("i"));
+	m.def("grid_getCoordNodeY", [](int j) {
+		return double(surfit::grid_getCoordNodeY(j));
+	}, py::arg("j"));
+	m.def("grid_getStepX", []() { return double(surfit::grid_getStepX()); });
+	m.def("grid_getStepY", []() { return double(surfit::grid_getStepY()); });
+
+	m.def("hist_getName", [](const std::string & name) {
+		return drain_strvec(surfit::hist_getName(name.c_str()));
+	}, py::arg("name") = "*", "names of the matching histograms");
+	m.def("hist_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::hist_getNameAt(pos));
+	}, py::arg("pos"), "name of the histogram at that position; empty if there is none");
+	m.def("hist_setName", [](const std::string & new_name, const std::string & name) {
+		return drain_boolvec(surfit::hist_setName(new_name.c_str(), name.c_str()));
+	}, py::arg("new_name"), py::arg("name") = "*");
+
+	m.def("mask_getValue", [](double x, double y, const std::string & name) {
+		return drain_boolvec(surfit::mask_getValue(REAL(x), REAL(y), name.c_str()));
+	}, py::arg("x"), py::arg("y"), py::arg("mask_name") = "*");
+	m.def("mask_getName", [](const std::string & name) {
+		return drain_strvec(surfit::mask_getName(name.c_str()));
+	}, py::arg("mask_name") = "*", "names of the matching masks");
+	m.def("mask_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::mask_getNameAt(pos));
+	}, py::arg("pos"), "name of the mask at that position; empty if there is none");
+	m.def("mask_getId", [](const std::string & name) {
+		return drain_intvec(surfit::mask_getId(name.c_str()));
+	}, py::arg("mask_name") = "*", "ids of the matching masks");
+	m.def("mask_setName", [](const std::string & new_name, const std::string & name) {
+		surfit::mask_setName(new_name.c_str(), name.c_str());
+	}, py::arg("new_name"), py::arg("mask_name") = "*");
+
+	m.def("pnts_getCount", [](const std::string & name) {
+		return drain_intvec(surfit::pnts_getCount(name.c_str()));
+	}, py::arg("points_name") = "*", "point count of each matching set");
+	m.def("pnts_getName", [](const std::string & name) {
+		return drain_strvec(surfit::pnts_getName(name.c_str()));
+	}, py::arg("points_name") = "*", "names of the matching point sets");
+	m.def("pnts_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::pnts_getNameAt(pos));
+	}, py::arg("pos"), "name of the point set at that position; empty if there is none");
+	m.def("pnts_getId", [](const std::string & name) {
+		return drain_intvec(surfit::pnts_getId(name.c_str()));
+	}, py::arg("points_name") = "*", "ids of the matching point sets");
+	m.def("pnts_setName", [](const std::string & new_name, const std::string & name) {
+		return drain_boolvec(surfit::pnts_setName(new_name.c_str(), name.c_str()));
+	}, py::arg("new_name"), py::arg("points_name") = "*");
+
+	m.def("surf_getValue", [](double x, double y, const std::string & name) {
+		return drain_vec(surfit::surf_getValue(REAL(x), REAL(y), name.c_str()));
+	}, py::arg("x"), py::arg("y"), py::arg("surface_name") = "*");
+	m.def("surf_getValueIJ", [](int i, int j, const std::string & name) {
+		return drain_vec(surfit::surf_getValueIJ(i, j, name.c_str()));
+	}, py::arg("i"), py::arg("j"), py::arg("surface_name") = "*");
+	m.def("surf_D1", [](const std::string & name) {
+		return drain_vec(surfit::surf_D1(name.c_str()));
+	}, py::arg("surface_name") = "*", "approximation term of the surface");
+	m.def("surf_D2", [](const std::string & name) {
+		return drain_vec(surfit::surf_D2(name.c_str()));
+	}, py::arg("surface_name") = "*", "roughness term of the surface");
+	m.def("surf_getCountX", [](const std::string & name) {
+		return drain_intvec(surfit::surf_getCountX(name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_getCountY", [](const std::string & name) {
+		return drain_intvec(surfit::surf_getCountY(name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_getStepX", [](const std::string & name) {
+		return drain_vec(surfit::surf_getStepX(name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_getStepY", [](const std::string & name) {
+		return drain_vec(surfit::surf_getStepY(name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_getName", [](const std::string & name) {
+		return drain_strvec(surfit::surf_getName(name.c_str()));
+	}, py::arg("surface_name") = "*", "names of the matching surfaces");
+	m.def("surf_getNameAt", [](int pos) {
+		return cstr_or_empty(surfit::surf_getNameAt(pos));
+	}, py::arg("pos"), "name of the surface at that position; empty if there is none");
+	m.def("surf_getId", [](const std::string & name) {
+		return drain_intvec(surfit::surf_getId(name.c_str()));
+	}, py::arg("surface_name") = "*", "ids of the matching surfaces");
 
 	m.def("area_completer_add",
 	      [](double weight, const std::string & name, double d1, double d2,

@@ -21,6 +21,10 @@ A step whose call fails prints `R=ERROR` on that side, so one broken command
 does not hide the rest; the failing names are listed at the end.  A side that
 stops early is a failure, not a pass: the steps after it never ran.
 
+The coverage claim is measured against the reference, not written down: the
+command list is read from tclsh, and the table fails both when Tcl has a
+command Python lacks and when a bound command is never run.
+
 Loading is by name *inside the file*, not by new name: `area_load file name`
 looks for an area called `name` in the file, and `surf_load` treats its second
 argument as a Tcl pattern over the surfaces stored there.  That is why the
@@ -432,6 +436,97 @@ STEPS = (
     ("cntr_size", []),
     ("curv_size", []),
     ("grid_check", []),
+
+    # --- object accessors -----------------------------------------------
+    #: Names, ids, positions and per-object geometry, on the state the task
+    #: file restored.  Exercised here rather than next to each collection so
+    #: the accessors and the serialisation are checked against each other.
+    #: `*_getNameAt 99` asks for a position that does not exist: it answers an
+    #: empty name, and on the Tcl side that goes through the typemap that would
+    #: dereference a NULL string.
+    ("pnts_getName", []),
+    ("pnts_getNameAt", [0]),
+    ("pnts_getNameAt", [99]),
+    ("pnts_getId", ["wells"]),
+    ("pnts_getCount", ["wells"]),
+    ("pnts_setName", ["wells2", "wells"]),
+    ("pnts_getName", []),
+    ("pnts_setName", ["wells", "wells2"]),
+
+    ("surf_getName", []),
+    ("surf_getNameAt", [0]),
+    ("surf_getNameAt", [99]),
+    ("surf_getId", ["map"]),
+    ("surf_getCountX", ["map"]),
+    ("surf_getCountY", ["map"]),
+    ("surf_getStepX", ["map"]),
+    ("surf_getStepY", ["map"]),
+    ("surf_getValue", [10.0, 10.0, "map"]),
+    ("surf_getValueIJ", [0, 0, "map"]),
+    ("surf_D1", ["map"]),
+    ("surf_D2", ["map"]),
+    ("surf_setName", ["map2", "map"]),
+    ("surf_getName", []),
+    ("surf_setName", ["map", "map2"]),
+
+    ("mask_getName", []),
+    ("mask_getNameAt", [0]),
+    ("mask_getNameAt", [99]),
+    ("mask_getId", ["map"]),
+    ("mask_getValue", [10.0, 10.0, "map"]),
+    ("mask_setName", ["map2", "map"]),
+    ("mask_getName", []),
+    ("mask_setName", ["map", "map2"]),
+
+    #: no histogram is left after the reload (histograms are not part of the
+    #: task file), so these check the empty collection as well
+    ("hist_getName", []),
+    ("hist_getNameAt", [0]),
+    ("hist_setName", ["h2", "h_wells"]),
+
+    ("cntr_getName", []),
+    ("cntr_getNameAt", [0]),
+    ("cntr_getNameAt", [99]),
+    ("cntr_getId", ["c1"]),
+    ("cntr_setName", ["c2", "c1"]),
+    ("cntr_getName", []),
+    ("cntr_setName", ["c1", "c2"]),
+
+    ("curv_getName", []),
+    ("curv_getNameAt", [0]),
+    ("curv_getNameAt", [99]),
+    ("curv_getId", ["line"]),
+    ("curv_setName", ["line2", "line"]),
+    ("curv_getName", []),
+    ("curv_setName", ["line", "line2"]),
+
+    ("area_getName", []),
+    ("area_getNameAt", [0]),
+    ("area_getNameAt", [99]),
+    ("area_getId", ["area1"]),
+    ("area_setName", ["area9", "area1"]),
+    ("area_getName", []),
+    ("area_setName", ["area1", "area9"]),
+
+    #: the setters change the target grid's step, so they come last
+    ("grid_getCountX", []),
+    ("grid_getCountY", []),
+    ("grid_getStepX", []),
+    ("grid_getStepY", []),
+    ("grid_getCoordNodeX", [0]),
+    ("grid_getCoordNodeY", [0]),
+    ("grid_setCountX", [50]),
+    ("grid_getCountX", []),
+    ("grid_getStepX", []),
+    ("grid_setCountY", [50]),
+    ("grid_getCountY", []),
+
+    # --- how file_save treats an existing file --------------------------
+    ("datafile_mode", []),
+    ("datafile_append", []),
+    ("datafile_mode", []),
+    ("datafile_new", []),
+    ("datafile_mode", []),
 )
 
 
@@ -608,21 +703,57 @@ def same(left, right):
     return True
 
 
-def commands_file():
-    return os.path.join(HERE, "tcl_commands.txt")
+#: Commands the Tcl front end has and Python deliberately does not.  The list
+#: is the only place where the coverage check accepts a gap, so it stays short
+#: and every entry says why.
+NOT_BOUND = {
+    # CreEPS: draws PostScript through the Tcl front end's own graphics code,
+    # and the viewer closes the canvas the Tcl side opens.
+    "surf_plot",
+}
+
+TCL_COMMANDS = "foreach c [info commands] { puts $c }"
 
 
-def uncovered():
-    """The bound commands the table never exercises.
+def tcl_commands():
+    """The commands the Tcl front end has, asked of tclsh itself.
 
-    Strictness is the point: a command that is bound but never run is a claim,
-    not a fact.
+    Asking the reference beats keeping a list by hand: the hand-written list
+    this replaced was missing 44 commands, and the check could not see them
+    because it intersected the two sets instead of comparing them.  A command
+    that Tcl has and Python lacks is invisible to an intersection.
     """
-    with open(commands_file(), encoding="utf-8") as handle:
-        declared = {line.strip() for line in handle if line.strip()}
+    def names(script):
+        result = subprocess.run(
+            ["tclsh"], input=script, capture_output=True, text=True,
+            env=dict(os.environ, LD_LIBRARY_PATH=BIN))
+        if result.returncode != 0:
+            raise SystemExit("tclsh failed while listing commands:\n" + result.stderr)
+        # A command name is one token; the banner the module prints on load is
+        # prose and has spaces in it.
+        return {line.strip() for line in result.stdout.splitlines()
+                if line.strip() and " " not in line}
+
+    bare = names(TCL_COMMANDS + "\n")
+    loaded = names("load libtclsurfit[info sharedlibextension]\n" + TCL_COMMANDS + "\n")
+    return loaded - bare
+
+
+def coverage_problems():
+    """What the table fails to bind, and what it fails to exercise.
+
+    Two claims, kept apart on purpose: "Tcl has it and Python does not" used to
+    disappear into the intersection, so it is checked first and reported on its
+    own.  The second claim - every bound command is run - is the strictness the
+    table exists for: a command that is bound but never run is a claim, not a
+    fact.
+    """
+    declared = tcl_commands()
     covered = {command for command, _ in STEPS}
     accessible = {name for name in dir(surfit) if not name.startswith("_")}
-    return sorted((declared & accessible) - covered - NOT_IN_TCL)
+    unbound = sorted(declared - accessible - NOT_BOUND)
+    unexercised = sorted((declared & accessible) - covered - NOT_IN_TCL)
+    return unbound, unexercised
 
 
 def main():
@@ -706,17 +837,21 @@ def main():
     print("\n%d step(s): %d differ, %d errored, %d missing from python, %d from tcl"
           % (len(STEPS), len(problems), len(errors), len(lost_python), len(lost_tcl)))
 
-    missing = uncovered()
+    unbound, missing = coverage_problems()
+    if unbound:
+        print("\nthe Tcl front end has these and Python does not (%d):" % len(unbound))
+        for start_at in range(0, len(unbound), 6):
+            print("  " + " ".join("%-22s" % n for n in unbound[start_at:start_at + 6]))
     if missing:
         print("\nnot exercised by this table (%d):" % len(missing))
         for start_at in range(0, len(missing), 6):
             print("  " + " ".join("%-22s" % n for n in missing[start_at:start_at + 6]))
-    else:
-        print("every bound command is exercised")
+    if not (unbound or missing):
+        print("every command of the Tcl front end is bound and exercised")
 
     # A side that stopped early is a crash, not a pass: the steps after it
     # were never run, so there is nothing to compare.
-    failed = bool(problems or errors or missing or lost_python or lost_tcl
+    failed = bool(problems or errors or unbound or missing or lost_python or lost_tcl
                   or tcl_problems != python_problems
                   or only_tcl or only_python or file_diffs)
     return 1 if failed else 0

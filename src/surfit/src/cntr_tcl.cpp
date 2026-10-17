@@ -339,7 +339,7 @@ strvec * cntr_getName(const char * pos)
 
 const char * cntr_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_cntrs->size())
+	if ((size_t)pos >= surfit_cntrs->size())
 		return NULL;
 	return (*surfit_cntrs)[pos]->getName();
 };

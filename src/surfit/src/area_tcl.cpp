@@ -212,7 +212,7 @@ strvec * area_getName(const char * pos)
 
 const char * area_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_areas->size())
+	if ((size_t)pos >= surfit_areas->size())
 		return NULL;
 	return (*surfit_areas)[pos]->getName();
 };

@@ -292,7 +292,7 @@ strvec * mask_getName(const char * pos)
 
 const char * mask_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_masks->size())
+	if ((size_t)pos >= surfit_masks->size())
 		return NULL;
 	return (*surfit_masks)[pos]->getName();
 };

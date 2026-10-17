@@ -196,7 +196,7 @@ strvec * curv_getName(const char * pos)
 
 const char * curv_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_curvs->size())
+	if ((size_t)pos >= surfit_curvs->size())
 		return NULL;
 	return (*surfit_curvs)[pos]->getName();
 };

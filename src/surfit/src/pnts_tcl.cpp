@@ -1268,7 +1268,7 @@ strvec * pnts_getName(const char * pos)
 
 const char * pnts_getNameAt(int pos)
 {
-	if ((size_t)pos > surfit_pnts->size())
+	if ((size_t)pos >= surfit_pnts->size())
 		return NULL;
 	return (*surfit_pnts)[pos]->getName();
 };

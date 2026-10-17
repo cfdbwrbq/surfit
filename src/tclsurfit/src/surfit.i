@@ -67,13 +67,16 @@ namespace surfit {
 };
 //*/
 
+/* A NULL C string is an empty Tcl string: commands such as area_getNameAt()
+   answer NULL for a position that does not exist, and Tcl_NewStringObj(NULL)
+   would read through a null pointer. */
 %typemap(out) char * {
-   Tcl_SetObjResult(interp,Tcl_NewStringObj($1,-1));
+   Tcl_SetObjResult(interp,Tcl_NewStringObj($1 ? $1 : "", $1 ? -1 : 0));
    free($1);
 };
 
 %typemap(out) const char * {
-   Tcl_SetObjResult(interp,Tcl_NewStringObj($1,-1));
+   Tcl_SetObjResult(interp,Tcl_NewStringObj($1 ? $1 : "", $1 ? -1 : 0));
 };
 
 %typemap(out) surfit::vec * {

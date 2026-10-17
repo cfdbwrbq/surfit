@@ -994,8 +994,12 @@ strvec * dem_getName(const char * pos)
 
 const char * dem_getNameAt(int pos)
 {
-	if ((size_t)pos > globe_dems->size())
-		return NULL;
+	// An empty name, not NULL: the Tcl wrapper this command is bound through
+	// turns a NULL C string straight into Tcl_NewStringObj(NULL), which reads
+	// through a null pointer.  A position past the end has no name, and that
+	// is what an empty string says.
+	if ((size_t)pos >= globe_dems->size())
+		return "";
 	return (*globe_dems)[pos]->getName();
 };
 

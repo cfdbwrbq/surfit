@@ -326,14 +326,17 @@ class Session:
         return surf_save(path, name)
 
     def __getattr__(self, name):
-        """Delegates any core command, so ``task.points(...)`` works like
-        ``points(...)``.
+        """Delegates any core command or module helper, so ``task.points(...)``
+        works like ``points(...)`` and ``task.surf_names()`` like
+        ``surf_names()``.
 
         Every command is reachable without listing it here, and the Session
         stays in step with the bindings as they grow.
         """
-        if not name.startswith("_") and name in _COMMANDS:
-            return globals()[name]
+        if not name.startswith("_"):
+            target = globals().get(name)
+            if callable(target):
+                return target
         raise AttributeError("%r object has no attribute %r"
                              % (type(self).__name__, name))
 

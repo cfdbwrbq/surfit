@@ -98,6 +98,15 @@ Interpolation and splines
   American Geophysical Union.
   `doi:10.1029/SC008 <https://doi.org/10.1029/SC008>`_
 
+* D. Shepard (1968). A two-dimensional interpolation function for
+  irregularly-spaced data. *Proceedings of the 1968 23rd ACM National
+  Conference*, 517-524.
+  `doi:10.1145/800186.810616 <https://doi.org/10.1145/800186.810616>`_
+* H. Wendland (1995). Piecewise polynomial, positive definite and compactly
+  supported radial functions of minimal degree. *Advances in Computational
+  Mathematics* 4, 389-396.
+  `doi:10.1007/BF02123482 <https://doi.org/10.1007/BF02123482>`_
+
 Geostatistics
 -------------
 
@@ -150,6 +159,18 @@ Geostatistics
   kriging variances. In *Geostatistics Banff 2004*, Springer.
   `doi:10.1007/978-1-4020-3610-1_107 <https://doi.org/10.1007/978-1-4020-3610-1_107>`_
 
+* N. Cressie (1993). *Statistics for Spatial Data* (revised edition). Wiley.
+  `doi:10.1002/9781119115151 <https://doi.org/10.1002/9781119115151>`_
+* M. L. Stein (1999). *Interpolation of Spatial Data: Some Theory for
+  Kriging*. Springer.
+  `doi:10.1007/978-1-4612-1494-6 <https://doi.org/10.1007/978-1-4612-1494-6>`_
+* S. Banerjee, B. P. Carlin, A. E. Gelfand (2014). *Hierarchical Modeling and
+  Analysis for Spatial Data*. CRC Press.
+  `doi:10.1201/b17115 <https://doi.org/10.1201/b17115>`_
+* A. E. Gelfand et al. (eds.) (2010). *Handbook of Spatial Statistics*. CRC
+  Press.
+  `doi:10.1201/9781420072884 <https://doi.org/10.1201/9781420072884>`_
+
 Rules and applications
 ----------------------
 
@@ -193,6 +214,11 @@ Rules and applications
   regression-based digital soil mapping and multiple-point geostatistics for
   the spatial extrapolation of soil data. *Geoderma* 262, 14-23.
   `doi:10.1016/j.geoderma.2015.08.037 <https://doi.org/10.1016/j.geoderma.2015.08.037>`_
+
+* D. G. Tarboton (1997). A new method for the determination of flow
+  directions and upslope areas in grid digital elevation models. *Water
+  Resources Research* 33, 309-319.
+  `doi:10.1029/96WR03137 <https://doi.org/10.1029/96WR03137>`_
 
 Terrain and data sources
 ------------------------
@@ -267,6 +293,22 @@ Data formats and standards
 * R. Rew, G. Davis (1990). NetCDF: an interface for scientific data access.
   *IEEE Computer Graphics and Applications* 10, 76–82.
   `doi:10.1109/38.56302 <https://doi.org/10.1109/38.56302>`_
+
+* G. H. Golub, C. F. Van Loan (2013). *Matrix Computations* (4th edition).
+  Johns Hopkins University Press.
+  `doi:10.56021/9781421407944 <https://doi.org/10.56021/9781421407944>`_
+* O. Axelsson (1994). *Iterative Solution Methods*. Cambridge University
+  Press.
+  `doi:10.1017/CBO9780511624100 <https://doi.org/10.1017/CBO9780511624100>`_
+* E. Anderson et al. (1999). *LAPACK Users' Guide* (3rd edition). SIAM.
+  `doi:10.1137/1.9780898719604 <https://doi.org/10.1137/1.9780898719604>`_
+* M. Frigo, S. G. Johnson (2005). The design and implementation of FFTW3.
+  *Proceedings of the IEEE* 93, 216-231.
+  `doi:10.1109/JPROC.2004.840301 <https://doi.org/10.1109/JPROC.2004.840301>`_
+* G. Karypis, V. Kumar (1998). A fast and high quality multilevel scheme for
+  partitioning irregular graphs. *SIAM Journal on Scientific Computing* 20,
+  359-392.
+  `doi:10.1137/S1064827595287997 <https://doi.org/10.1137/S1064827595287997>`_
 
 Numerical methods
 -----------------

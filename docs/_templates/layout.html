@@ -1,8 +1,10 @@
 {% extends "!layout.html" %}
 
-{# The language switcher, at the bottom of every page.  conf.py computes the
-   URL of the counterpart page in the other tree. #}
-{% block footer %}
+{# The language switcher.  It sits at the top of the page body rather than in
+   the footer: sphinx_rtd_theme renders the footer block after the closing
+   content wrappers, so a footer-level element ends up below the page and is
+   easy to miss.  conf.py computes the URL of the counterpart page. #}
+{% block content %}
 <div class="surfit-language-switcher">
   <span class="surfit-current">{{ language_current_label }}</span>
   &middot;

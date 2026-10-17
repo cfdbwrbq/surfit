@@ -37,6 +37,7 @@ Start with these documents to get you up and running:
    :maxdepth: 2
 
    installation
+   basics
    first_steps
    python
    terrain

@@ -39,6 +39,7 @@ surfit
    :maxdepth: 2
 
    installation
+   basics
    first_steps
    python
    terrain

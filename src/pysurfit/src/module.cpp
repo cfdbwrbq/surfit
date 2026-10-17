@@ -664,6 +664,171 @@ PYBIND11_MODULE(_surfit, m) {
 		return drain_vec(surfit::surf_wmean(wsurface_name.c_str(), surface_name.c_str()));
 	}, py::arg("wsurface_name") = "*", py::arg("surface_name") = "*");
 
+	// --- points, masks, grids, contours -------------------------------
+	m.def("area_load", [](const std::string & filename, const py::object & area_name) {
+		std::string area_name_storage;
+		return drain_boolvec(surfit::area_load(filename.c_str(), opt_cstr(area_name, area_name_storage)));
+	}, py::arg("filename"), py::arg("area_name") = py::none());
+	m.def("cntr_div_real", [](double value, const std::string & cntr_name) {
+		return drain_boolvec(surfit::cntr_div_real(REAL(value), cntr_name.c_str()));
+	}, py::arg("value"), py::arg("cntr_name") = "*");
+	m.def("cntr_minus_real", [](double value, const std::string & cntr_name) {
+		return drain_boolvec(surfit::cntr_minus_real(REAL(value), cntr_name.c_str()));
+	}, py::arg("value"), py::arg("cntr_name") = "*");
+	m.def("cntr_plus_real", [](double value, const std::string & cntr_name) {
+		return drain_boolvec(surfit::cntr_plus_real(REAL(value), cntr_name.c_str()));
+	}, py::arg("value"), py::arg("cntr_name") = "*");
+	m.def("cntr_smooth", [](const std::string & cntr_name, size_t cnt) {
+		return drain_boolvec(surfit::cntr_smooth(cntr_name.c_str(), cnt));
+	}, py::arg("cntr_name") = "*", py::arg("cnt") = 1);
+	m.def("cntr_to_curv", [](const std::string & cntr_name) {
+		return drain_boolvec(surfit::cntr_to_curv(cntr_name.c_str()));
+	}, py::arg("cntr_name") = "*");
+	m.def("grid2", [](double stepX, double stepY, double percent, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid2(REAL(stepX), REAL(stepY), REAL(percent), opt_cstr(gridname, gridname_storage));
+	}, py::arg("stepX") = 0, py::arg("stepY") = 0, py::arg("percent") = 2, py::arg("gridname") = py::none());
+	m.def("grid_check", []() {
+		return surfit::grid_check();
+	}, "true when the target grid has been defined");
+	m.def("grid_get2", [](double startX, double endX, double stepX, double startY, double endY, double stepY, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid_get2(REAL(startX), REAL(endX), REAL(stepX), REAL(startY), REAL(endY), REAL(stepY), opt_cstr(gridname, gridname_storage));
+	}, py::arg("startX"), py::arg("endX"), py::arg("stepX"), py::arg("startY"), py::arg("endY"), py::arg("stepY"), py::arg("gridname") = py::none());
+	m.def("grid_get_for_pnts", [](int Xnodes, int Ynodes, const std::string & points_name, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid_get_for_pnts(Xnodes, Ynodes, points_name.c_str(), opt_cstr(gridname, gridname_storage));
+	}, py::arg("Xnodes"), py::arg("Ynodes"), py::arg("points_name") = "*", py::arg("gridname") = py::none());
+	m.def("grid_get_for_pnts_step", [](double stepX, double stepY, const std::string & points_name, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid_get_for_pnts_step(REAL(stepX), REAL(stepY), points_name.c_str(), opt_cstr(gridname, gridname_storage));
+	}, py::arg("stepX"), py::arg("stepY"), py::arg("points_name") = "*", py::arg("gridname") = py::none());
+	m.def("grid_get_from_surf", [](const std::string & surface_name, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid_get_from_surf(surface_name.c_str(), opt_cstr(gridname, gridname_storage));
+	}, py::arg("surface_name") = "*", py::arg("gridname") = py::none());
+	m.def("grid_load", [](const std::string & filename, const py::object & gridname) {
+		std::string gridname_storage;
+		return surfit::grid_load(filename.c_str(), opt_cstr(gridname, gridname_storage));
+	}, py::arg("filename"), py::arg("gridname") = py::none());
+	m.def("grid_save", [](const std::string & filename) {
+		return surfit::grid_save(filename.c_str());
+	}, py::arg("filename"));
+	m.def("mask_and", [](const std::string & mask1_name, const std::string & mask2_name) {
+		surfit::mask_and(mask1_name.c_str(), mask2_name.c_str());
+	}, py::arg("mask1_name") = "*", py::arg("mask2_name") = "*");
+	m.def("mask_apply_to_surf", [](const std::string & mask_name, const std::string & surface_name) {
+		return drain_boolvec(surfit::mask_apply_to_surf(mask_name.c_str(), surface_name.c_str()));
+	}, py::arg("mask_name") = "*", py::arg("surface_name") = "*");
+	m.def("mask_from_surf", [](const std::string & surface_name) {
+		surfit::mask_from_surf(surface_name.c_str());
+	}, py::arg("surface_name") = "*");
+	m.def("mask_not", [](const std::string & mask1_name, const std::string & mask2_name) {
+		surfit::mask_not(mask1_name.c_str(), mask2_name.c_str());
+	}, py::arg("mask1_name") = "*", py::arg("mask2_name") = "*");
+	m.def("mask_or", [](const std::string & mask1_name, const std::string & mask2_name) {
+		surfit::mask_or(mask1_name.c_str(), mask2_name.c_str());
+	}, py::arg("mask1_name") = "*", py::arg("mask2_name") = "*");
+	m.def("mask_to_surf", [](const std::string & mask_name) {
+		surfit::mask_to_surf(mask_name.c_str());
+	}, py::arg("mask_name") = "*");
+	m.def("mask_xor", [](const std::string & mask1_name, const std::string & mask2_name) {
+		surfit::mask_xor(mask1_name.c_str(), mask2_name.c_str());
+	}, py::arg("mask1_name") = "*", py::arg("mask2_name") = "*");
+	m.def("pnts_abs", [](const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_abs(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_add_noise", [](double std, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_add_noise(REAL(std), points_name.c_str()));
+	}, py::arg("std"), py::arg("points_name") = "*");
+	m.def("pnts_concat", [](const std::string & points_name1, const std::string & points_name2) {
+		return drain_boolvec(surfit::pnts_concat(points_name1.c_str(), points_name2.c_str()));
+	}, py::arg("points_name1"), py::arg("points_name2"));
+	m.def("pnts_div", [](const std::string & points_name1, const std::string & points_name2) {
+		return drain_boolvec(surfit::pnts_div(points_name1.c_str(), points_name2.c_str()));
+	}, py::arg("points_name1"), py::arg("points_name2"));
+	m.def("pnts_div_real", [](double val, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_div_real(REAL(val), points_name.c_str()));
+	}, py::arg("val"), py::arg("points_name") = "*");
+	m.def("pnts_div_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_div_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_filter_by_mask", [](const std::string & points_name, const std::string & mask_name) {
+		return drain_boolvec(surfit::pnts_filter_by_mask(points_name.c_str(), mask_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("mask_name") = "*");
+	m.def("pnts_filter_by_surf", [](double eps, const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_filter_by_surf(REAL(eps), points_name.c_str(), surf_name.c_str()));
+	}, py::arg("eps"), py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_inverse_transform", [](double shiftX, double scaleX, double shiftY, double scaleY, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_inverse_transform(REAL(shiftX), REAL(scaleX), REAL(shiftY), REAL(scaleY), points_name.c_str()));
+	}, py::arg("shiftX"), py::arg("scaleX"), py::arg("shiftY"), py::arg("scaleY"), py::arg("points_name") = "*");
+	m.def("pnts_maxx", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_maxx(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_maxy", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_maxy(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_maxz", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_maxz(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_mean", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_mean(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_minus", [](const std::string & points_name1, const std::string & points_name2) {
+		return drain_boolvec(surfit::pnts_minus(points_name1.c_str(), points_name2.c_str()));
+	}, py::arg("points_name1"), py::arg("points_name2"));
+	m.def("pnts_minus_real", [](double val, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_minus_real(REAL(val), points_name.c_str()));
+	}, py::arg("val"), py::arg("points_name") = "*");
+	m.def("pnts_minus_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_minus_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_minx", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_minx(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_miny", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_miny(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_minz", [](const std::string & points_name) {
+		return drain_vec(surfit::pnts_minz(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_mult", [](const std::string & points_name1, const std::string & points_name2) {
+		return drain_boolvec(surfit::pnts_mult(points_name1.c_str(), points_name2.c_str()));
+	}, py::arg("points_name1"), py::arg("points_name2"));
+	m.def("pnts_mult_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_mult_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_plus", [](const std::string & points_name1, const std::string & points_name2) {
+		return drain_boolvec(surfit::pnts_plus(points_name1.c_str(), points_name2.c_str()));
+	}, py::arg("points_name1"), py::arg("points_name2"));
+	m.def("pnts_plus_real", [](double val, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_plus_real(REAL(val), points_name.c_str()));
+	}, py::arg("val"), py::arg("points_name") = "*");
+	m.def("pnts_plus_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_plus_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_rotate", [](double centerX, double centerY, double angle, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_rotate(REAL(centerX), REAL(centerY), REAL(angle), points_name.c_str()));
+	}, py::arg("centerX"), py::arg("centerY"), py::arg("angle"), py::arg("points_name") = "*");
+	m.def("pnts_set_real", [](double val, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_set_real(REAL(val), points_name.c_str()));
+	}, py::arg("val"), py::arg("points_name") = "*");
+	m.def("pnts_set_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_set_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+	m.def("pnts_std", [](double mean, const std::string & points_name) {
+		return drain_vec(surfit::pnts_std(REAL(mean), points_name.c_str()));
+	}, py::arg("mean"), py::arg("points_name") = "*");
+	m.def("pnts_to_cntrs", [](const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_to_cntrs(points_name.c_str()));
+	}, py::arg("points_name") = "*");
+	m.def("pnts_transform", [](double shiftX, double scaleX, double shiftY, double scaleY, const std::string & points_name) {
+		return drain_boolvec(surfit::pnts_transform(REAL(shiftX), REAL(scaleX), REAL(shiftY), REAL(scaleY), points_name.c_str()));
+	}, py::arg("shiftX"), py::arg("scaleX"), py::arg("shiftY"), py::arg("scaleY"), py::arg("points_name") = "*");
+	m.def("pnts_update_by_surf", [](const std::string & points_name, const std::string & surf_name) {
+		return drain_boolvec(surfit::pnts_update_by_surf(points_name.c_str(), surf_name.c_str()));
+	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
+
 	m.def("area_read", [](const std::string & path, py::object name) {
 		std::string storage;
 		return drain_boolvec(area_read(path.c_str(), opt_cstr(name, storage)));

@@ -164,11 +164,48 @@ def python_surf_math():
     print("after_plus=%r" % float(surfit.surf_minz("s")[0]))
 
 
+def tcl_pnts_math():
+    return LOAD + """
+pnts_read "data/7points.txt" "wells"
+puts "minx=[lindex [pnts_minx "wells"] 0]"
+puts "maxz=[lindex [pnts_maxz "wells"] 0]"
+pnts_plus_real 1 "wells"
+puts "shifted=[lindex [pnts_maxz "wells"] 0]"
+pnts_write "shifted.txt" "wells"
+pnts_rotate 0 0 90 "wells"
+pnts_write "rotated.txt" "wells"
+puts "rotated_minx=[lindex [pnts_minx "wells"] 0]"
+mask_from_surf "nosuchsrf"
+puts "mask_size=[mask_size]"
+grid_get_for_pnts 50 50 "wells" "from_pnts"
+puts "grid_check=[grid_check]"
+"""
+
+
+def python_pnts_math():
+    surfit.clear_data()
+    surfit.pnts_read(os.path.join("data", "7points.txt"), "wells")
+    print("minx=%r" % float(surfit.pnts_minx("wells")[0]))
+    print("maxz=%r" % float(surfit.pnts_maxz("wells")[0]))
+    surfit.pnts_plus_real(1, "wells")
+    print("shifted=%r" % float(surfit.pnts_maxz("wells")[0]))
+    surfit.pnts_write("shifted.txt", "wells")
+    surfit.pnts_rotate(0, 0, 90, "wells")
+    surfit.pnts_write("rotated.txt", "wells")
+    print("rotated_minx=%r" % float(surfit.pnts_minx("wells")[0]))
+    surfit.mask_from_surf("nosuchsrf")
+    print("mask_size=%d" % surfit.mask_size())
+    surfit.grid_get_for_pnts(50, 50, "wells", "from_pnts")
+    print("grid_check=%d" % int(surfit.grid_check()))
+
+
 CASES = (
     ("areas", tcl_areas, python_areas, ("areas.dat", "areas.txt", "inverted.dat")),
     ("points", tcl_points, python_points, ("wells.txt", "wells.dat")),
     ("surfaces", tcl_surfaces, python_surfaces, ("result.dat",)),
     ("surf math", tcl_surf_math, python_surf_math, ("math.dat", "plus.dat")),
+    ("pnts math", tcl_pnts_math, python_pnts_math,
+     ("shifted.txt", "rotated.txt")),
     ("settings", tcl_settings, python_settings, ()),
 )
 
@@ -189,6 +226,7 @@ def prepare(directory, scratch):
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
+           "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",
            "threads_positive=", "types=")
 
 

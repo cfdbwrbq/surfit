@@ -130,6 +130,11 @@ FIGURES = (
     # first steps: the smallest complete task
     ("map-first-steps", "first_steps", {"levels": 14, "size": 700,
                                         "title": "first steps"}),
+    # terrain: an SRTM tile of Sao Tome, as a hard rule and as a weighted one
+    ("map-dem", "dem", {"levels": 14, "size": 700,
+                        "title": "dem example"}),
+    ("map-dem-add", "dem_add", {"levels": 14, "size": 700,
+                                "title": "dem_add example"}),
 )
 
 

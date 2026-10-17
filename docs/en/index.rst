@@ -39,6 +39,7 @@ the resulting data files byte for byte.
    how_it_works
    data_types
    flows
+   terrain
    tcl
    formats
    commands
@@ -55,6 +56,8 @@ Where to start
   ``src/pysurfit/tests/run_tcl_suite.py`` does the translation mechanically.
 * Looking for a file format? :doc:`formats` lists them all.
 * Reconstructing a pressure field? :doc:`flows` runs the flow examples.
+* Modelling terrain? :doc:`terrain` loads an SRTM tile and makes a surface from
+  it.
 * Building or extending the engine? :doc:`development`.
 
 License

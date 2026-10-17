@@ -114,7 +114,8 @@ build without zlib reports "zlib not detected" and returns nothing.
 written.
 
 The DEM loaders take a file pattern and find the tile by its name; for an HGT
-tile the name also carries the coordinates. :doc:`python` has the details.
+tile the name also carries the coordinates. :doc:`python` has the details, and
+:doc:`terrain` walks through a real tile in both front ends.
 
 Masks
 -----

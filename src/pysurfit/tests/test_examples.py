@@ -49,6 +49,16 @@ CORPORA = (
     (os.path.join("examples", "surfit_io", "shp"), {
         "const_cntr": "reads a shapefile that is not in the repository",
     }),
+    (os.path.join("examples", "globe"), {
+        "run_all": "a pipeline that sources dem, dem_add and the canyon scripts",
+    }),
+    (os.path.join("examples", "globe", "canyon"), {
+        "canyon_prepare": "needs a USA DTM and nine SRTM tiles that are not in "
+                          "the repository",
+        "canyon_map": "reads what canyon_prepare and canyon_trend write",
+        "canyon_trend": "reads what canyon_prepare writes",
+        "run_all": "a pipeline that runs the three canyon scripts in order",
+    }),
 )
 
 #: The example whose Tcl original has a different file name.
@@ -70,6 +80,8 @@ EXTRA_PORTS = (
     ("area_shp", os.path.join("examples", "surfit_io", "shp"), "area_shp"),
     ("cntr_shp", os.path.join("examples", "surfit_io", "shp"), "cntr_shp"),
     ("curv_shp", os.path.join("examples", "surfit_io", "shp"), "curv_shp"),
+    ("dem", os.path.join("examples", "globe"), "dem"),
+    ("dem_add", os.path.join("examples", "globe"), "dem_add"),
 )
 
 

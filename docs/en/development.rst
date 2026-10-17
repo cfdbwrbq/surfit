@@ -143,7 +143,7 @@ Continuous integration
 ----------------------
 
 ``ci/check.sh`` builds from scratch in ``build-ci`` and runs every check: the 35
-test scripts with Tcl and Python side by side, the 47 Python examples against
+test scripts with Tcl and Python side by side, the 49 Python examples against
 their Tcl originals, parity, the name matcher against Tcl, two tasks in one
 process, the viewer, and a wheel that installs into an isolated directory and
 solves there without ``LD_LIBRARY_PATH``.

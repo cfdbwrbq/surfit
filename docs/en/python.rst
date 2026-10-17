@@ -167,7 +167,7 @@ Two things are worth knowing:
   ``freeflow`` commands create are ordinary rules and are per-Session.
 
 The flow examples, with maps and the story of what each rule does, are on the
-:doc:`flows` page.
+:doc:`flows` page; the terrain examples are on :doc:`terrain`.
 
 More than one task
 ------------------

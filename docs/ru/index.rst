@@ -41,6 +41,7 @@ surfit
    how_it_works
    data_types
    flows
+   terrain
    tcl
    formats
    commands
@@ -57,6 +58,8 @@ surfit
   а ``src/pysurfit/tests/run_tcl_suite.py`` делает этот перевод механически.
 * Ищете формат файла? Полный список в :doc:`formats`.
 * Восстанавливаете поле давления? Примеры в :doc:`flows`.
+* Работаете с рельефом? :doc:`terrain` загружает тайл SRTM и строит по нему
+  поверхность.
 * Собираете или расширяете движок? Вам в :doc:`development`.
 
 Лицензия

@@ -194,7 +194,8 @@ Two things are worth knowing: the DEM loaders take a file *pattern* rather than
 one path, and ``dem_load_hgt_zip`` needs zlib (the CMake build enables it when
 found). DEMs also
 live outside the Session state and are shared by all tasks in the process;
-:doc:`python` explains why.
+:doc:`python` explains why. :doc:`terrain` reads an SRTM tile in both front ends
+and shows what the two rules produce.
 
 What they have in common
 ------------------------

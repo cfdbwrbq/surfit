@@ -79,6 +79,9 @@ run sessions "$PYTHON" "$TESTS/test_sessions.py"
 step "the object and settings commands, against Tcl"
 run commands "$PYTHON" "$TESTS/test_commands.py"
 
+step "the psql point reader, without a database"
+run postgis "$PYTHON" "$TESTS/test_postgis.py"
+
 step "every command, against Tcl"
 run all-commands "$PYTHON" "$TESTS/test_all_commands.py"
 

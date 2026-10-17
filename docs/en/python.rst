@@ -204,6 +204,36 @@ The lock belongs to Session calls. A module-level function such as
 ``surfit.area(...)`` still works on whichever state is active and is not
 protected; use a Session when several threads share the engine.
 
+Databases
+---------
+
+``read_postgis`` reads points through the ``psql`` client, so there is no Python
+driver or extra package to install. The query must return x, y and z in that
+order; it can read PostGIS geometry or plain columns:
+
+.. code-block:: python
+
+   task.read_postgis(
+       "service=surfit dbname=gis",
+       """SELECT ST_X(geom), ST_Y(geom), COALESCE(ST_Z(geom), 0)
+          FROM wells WHERE geom IS NOT NULL""",
+       name="wells")
+
+The call runs ``psql --no-password`` in a read-only transaction and feeds the
+CSV through the same loader as ``pnts_read``. Credentials come from ``.pgpass``
+or a service file; do not put a password in the connection string. The
+connection must already work as ``psql -w``; if that asks for a password, fix
+the passfile or the service entry first. A result
+that is not exactly three numeric columns, a NULL coordinate and an empty
+result are errors, not an empty load.
+
+The whole result is fetched before the engine sees it, so read a very large
+table in slices (``WHERE id BETWEEN ...``). ``psql`` must be on ``PATH``; that is
+a client dependency, not a Python one. The engine has no CRS: return the
+coordinates in the grid's units, or transform them in SQL with
+``ST_Transform``. Called as ``task.read_postgis(...)``, the fetch runs under the
+Session's state lock, so other Sessions wait while the query runs.
+
 Progress
 --------
 

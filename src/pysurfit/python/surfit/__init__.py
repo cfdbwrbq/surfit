@@ -465,4 +465,6 @@ del _name, _value
 _reexport_commands()
 del _reexport_commands
 
+from .postgis import read_postgis  # noqa: E402  (after the core re-exports)
+
 __all__ = sorted(name for name in globals() if not name.startswith("_"))

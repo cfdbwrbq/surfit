@@ -419,3 +419,34 @@ Software
 * J. D. Hunter (2007). Matplotlib: a 2D graphics environment. *Computing in
   Science & Engineering* 9, 90–95.
   `doi:10.1109/MCSE.2007.55 <https://doi.org/10.1109/MCSE.2007.55>`_
+
+Books and papers without a DOI
+------------------------------
+
+Everything above is DOI-verified. These standard references have no DOI deposit
+(mostly books and older papers), so they are listed for a library lookup and are
+deliberately not link targets.
+
+* G. Matheron (1971). *The Theory of Regionalized Variables and Its
+  Applications*. Cahiers du Centre de Morphologie Mathématique de Fontainebleau.
+* A. G. Journel, C. J. Huijbregts (1978). *Mining Geostatistics*. Academic Press.
+* B. D. Ripley (1981). *Spatial Statistics*. Wiley.
+* R. Sibson (1981). A brief description of natural neighbour interpolation. In
+  *Interpreting Multivariate Data*, Wiley, 21-36.
+* R. Franke (1982). Scattered data interpolation: tests of some methods.
+  *Mathematics of Computation* 38, 181-200.
+* P. Lancaster, K. Salkauskas (1986). *Curve and Surface Fitting: An
+  Introduction*. Academic Press.
+* J. C. Davis (1986). *Statistics and Data Analysis in Geology*. Wiley.
+* E. H. Isaaks, R. M. Srivastava (1989). *An Introduction to Applied
+  Geostatistics*. Oxford University Press.
+* M. J. D. Powell (1992). The theory of radial basis function approximation in
+  1990. In *Advances in Numerical Analysis II*, Oxford University Press, 105-210.
+* D. F. Watson (1992). *Contouring: A Guide to the Analysis and Display of
+  Spatial Data*. Pergamon.
+* P. Goovaerts (1997). *Geostatistics for Natural Resources Evaluation*. Oxford
+  University Press.
+* C. V. Deutsch, A. G. Journel (1998). *GSLIB: Geostatistical Software Library
+  and User's Guide*. Oxford University Press.
+* I. D. Wilson, J. C. Gallant (eds.) (2000). *Terrain Analysis: Principles and
+  Applications*. Wiley.

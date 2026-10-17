@@ -127,27 +127,30 @@ REAL std_value(REAL mean_value, iter begin, iter end, REAL undef) {
 
 };
 
-//! calculates minimum and maximum values for all vector values
+//! calculates min/max over a range, skipping undef_value
 template<class iter, class val>
 void minmax_value(iter begin, iter end, val & min_value, val & max_value, val undef_value) {
-	
+
 	iter ptr;
 
 	max_value = undef_value;
 	min_value = undef_value;
 
-	for (ptr = begin+1; ptr != end; ptr++)  {
+	// Start at begin, not begin+1: the first value is data too.  An empty
+	// range keeps both answers at undef_value.
+	for (ptr = begin; ptr != end; ptr++)  {
 		if (*ptr != undef_value) {
 			max_value = *ptr;
 			min_value = *ptr;
+			ptr++;
 			break;
 		}
 	}
-	
-	for (ptr = begin+1; ptr != end; ptr++)  {
+
+	for (; ptr != end; ptr++)  {
 		if (*ptr == undef_value)
 			continue;
-        	min_value = MIN(*ptr,min_value);
+		min_value = MIN(*ptr,min_value);
 		max_value = MAX(*ptr,max_value);
 	}
 

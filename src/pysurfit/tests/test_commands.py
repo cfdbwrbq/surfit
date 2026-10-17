@@ -77,6 +77,24 @@ def python_points():
     print("after_del=%d" % surfit.pnts_size())
 
 
+def tcl_minmax():
+    return LOAD + """
+pnts_read "data/minmax.txt" "mm"
+puts "minz=[pnts_minz]"
+puts "maxz=[pnts_maxz]"
+"""
+
+
+def python_minmax():
+    surfit.clear_data()
+    surfit.pnts_read(os.path.join("data", "minmax.txt"), "mm")
+    print("minz=%g" % surfit.pnts_minz())
+    print("maxz=%g" % surfit.pnts_maxz())
+    # The first z is the minimum; a reduction that starts at begin+1 misses it.
+    assert surfit.pnts_minz() == -100.0, surfit.pnts_minz()
+    assert surfit.pnts_maxz() == 20.0, surfit.pnts_maxz()
+
+
 def tcl_hist_datafile():
     return LOAD + """
 pnts_read "data/points.txt" "wells"
@@ -244,6 +262,7 @@ CASES = (
      ("shifted.txt", "rotated.txt")),
     ("settings", tcl_settings, python_settings, ()),
     ("hist datafile", tcl_hist_datafile, python_hist_datafile, ("task.dat",)),
+    ("minmax", tcl_minmax, python_minmax, ()),
 )
 
 

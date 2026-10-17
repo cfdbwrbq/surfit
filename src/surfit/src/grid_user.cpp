@@ -68,8 +68,6 @@ struct grid_garbage : public binman {
 	};
 };
 
-#define GRID_START_SIZE 8
-
 grid_garbage gird_garb;
 
 d_grid * method_grid = NULL;

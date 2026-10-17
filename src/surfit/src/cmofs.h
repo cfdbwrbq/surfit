@@ -25,7 +25,6 @@
 namespace surfit {
 
 //! indicates cmofs calculation completness
-extern SURFIT_EXPORT bool method_ok;
 
 /*! \ingroup tcl_other
     executes gridding procedure. 

@@ -15,6 +15,8 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <cstdint>
+
 #include <cfloat>
 #include <cstdlib>
 #include <cstring>
@@ -30,6 +32,7 @@
 #include "boolvec.h"
 #include "fileio.h"
 #include "interp.h"
+#include "surfit_state.h"
 
 #include "other_tcl.h"
 #include "others_tcl.h"
@@ -281,6 +284,20 @@ PYBIND11_MODULE(_surfit, m) {
 		return ::StringMatch(pattern.c_str(), string.c_str());
 	}, py::arg("pattern"), py::arg("string"),
 	   "Tcl-style name matching: *, ?, [sets], backslash escapes");
+
+	// One task's state, kept as an opaque handle: the Python side owns the
+	// lifetime and never touches the structure.
+	m.def("state_create", []() {
+		return reinterpret_cast<std::uintptr_t>(surfit::state_create());
+	}, "a new empty task state, as a handle");
+	m.def("state_install", [](std::uintptr_t handle) {
+		surfit::state_install(
+			reinterpret_cast<surfit::surfit_state *>(handle));
+	}, py::arg("handle"), "makes that state the active one");
+	m.def("state_release", [](std::uintptr_t handle) {
+		surfit::state_release(
+			reinterpret_cast<surfit::surfit_state *>(handle));
+	}, py::arg("handle"), "frees a state and everything it holds");
 
 	// The core reports progress and diagnostics through writelog() and
 	// log_printf(); an observer can turn that into a progress bar.

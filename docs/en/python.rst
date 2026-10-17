@@ -128,14 +128,35 @@ names:
 
 See :doc:`formats` for the full list.
 
-One task at a time
+More than one task
 ------------------
 
-The engine keeps its data in process-wide globals, so creating a session resets
-that state. Two sessions cannot run concurrently in one process yet.
+Each Session owns its state, so two tasks can live in one process and neither
+disturbs the other:
 
-The solve does release the GIL, so other Python threads keep running while it
-computes — a progress indicator or a server stays responsive.
+.. code-block:: python
+
+   first = surfit.Session("first")
+   second = surfit.Session("second")
+
+   first.read_areas("data/area1.txt", "area1")
+   second.read_areas("data/area2.txt", "area1")
+
+   first.solve()
+   second.solve()
+
+   first_grid = first.values()
+   second_grid = second.values()
+
+Every call through a Session installs that task's state first, so the calls can
+be interleaved in any order; the results are the same as running each task
+alone. ``src/pysurfit/tests/test_sessions.py`` checks exactly that, comparing
+the interleaved grids byte for byte against solo runs in fresh processes.
+
+Only one state is active at a time, which is what keeps the switch cheap. Two
+Sessions can therefore be interleaved but not driven from two threads at once:
+the switch itself is not protected. The solve does release the GIL, so other
+Python threads keep running while it computes.
 
 Progress
 --------

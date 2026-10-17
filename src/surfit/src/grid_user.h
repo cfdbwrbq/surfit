@@ -43,6 +43,9 @@ Gridding generates a Z value at each grid node by interpolating or approximating
 \sa
 \li \ref d_grid
 */
+//! Starting size of the solver's own grid, before the first phase
+const size_t GRID_START_SIZE = 8;
+
 extern SURFIT_EXPORT d_grid * surfit_grid;	
 
 //! current \ref d_grid using for gridding calculations

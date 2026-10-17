@@ -145,13 +145,16 @@ a bare "all good".
 Known issues
 ------------
 
-* **Global state.** The data manager, the functional list and the grid are
-  process-wide singletons. A session resets them, but two cannot coexist.
+* **One active state.** A session installs its state before each call, which
+  is what lets two tasks share a process; but the install itself is not
+  protected, so two sessions cannot be driven from two threads at once.
+  Thread-local storage would not fix it either - the solver's own worker
+  threads read the same globals.
 * **The plugin is linked whole.** ``libsurfit_io`` should be built with hidden
   visibility and export only its public API, instead of relying on the helper
   names not colliding.
-* ``surf_plot`` renders through CreEPS; a web based viewer would suit the Python
-  side better.
+* ``surf_plot`` still writes PostScript through CreEPS for the Tcl front end.
+  It is not bound in Python, where the viewer covers output.
 
 Working on the project
 ----------------------

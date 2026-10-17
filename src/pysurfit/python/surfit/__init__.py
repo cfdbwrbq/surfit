@@ -23,6 +23,7 @@ name the Tcl front end uses, so a Tcl script maps one call to one call.
 """
 
 import fnmatch
+import functools
 import re
 import sys
 import time
@@ -251,26 +252,60 @@ def progress(disable=False, style=None, **tqdm_kwargs):
 
 
 class Session:
-    """One gridding task.
+    """One gridding task, with its own state.
 
-    The core keeps its data in process-wide globals, so a Session resets that
-    state when it is created and drives it through the command functions.  Two
-    Sessions cannot be used at the same time yet: that needs the per-instance
-    context planned for stage L2.
+    The engine keeps its working data in globals, so a Session owns a state and
+    installs it before every call it makes.  Two Sessions can therefore be used
+    in one process without one wiping the other::
+
+        first = surfit.Session("first")
+        second = surfit.Session("second")
+        first.read_areas(...)    # each call switches to that task
+        second.read_areas(...)
+
+    Only one state is active at a time.  Interleaving is fine; running two
+    Sessions from two threads at once is not, because the switch itself is not
+    protected.
     """
 
     def __init__(self, map_name="map", tol=None):
-        clear_data()
+        self._state = _core.state_create()
+        self._activate()
         set_map_name(map_name)
         if tol is not None:
             set_tol(tol)
 
+    def _activate(self):
+        """Makes this task's state the one the engine works on."""
+        state = getattr(self, "_state", 0)
+        if state:
+            _core.state_install(state)
+
+    def _call(self, target, *args, **kwargs):
+        self._activate()
+        return target(*args, **kwargs)
+
+    def close(self):
+        """Frees this task's state and everything it holds."""
+        state = getattr(self, "_state", 0)
+        if state:
+            _core.state_release(state)
+            self._state = 0
+
     def __enter__(self):
+        self._activate()
         return self
 
     def __exit__(self, *exc_info):
+        self._activate()
         clear_data()
         return False
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - never raise from a destructor
+            pass
 
     def read_areas(self, path, name):
         """Loads polygon areas from a text file under the given name."""
@@ -336,7 +371,10 @@ class Session:
         if not name.startswith("_"):
             target = globals().get(name)
             if callable(target):
-                return target
+                @functools.wraps(target)
+                def bound(*args, **kwargs):
+                    return self._call(target, *args, **kwargs)
+                return bound
         raise AttributeError("%r object has no attribute %r"
                              % (type(self).__name__, name))
 
@@ -381,6 +419,21 @@ def _reexport_commands():
         exported.append(name)
     _COMMANDS = frozenset(exported)
 
+
+def _activating(function):
+    """Wraps a Session method so it installs the task's state first."""
+    @functools.wraps(function)
+    def wrapper(self, *args, **kwargs):
+        self._activate()
+        return function(self, *args, **kwargs)
+    return wrapper
+
+
+# Applied here rather than by hand, so a method added later cannot forget.
+for _name, _value in list(vars(Session).items()):
+    if not _name.startswith("_") and callable(_value):
+        setattr(Session, _name, _activating(_value))
+del _name, _value
 
 _reexport_commands()
 del _reexport_commands

@@ -36,6 +36,9 @@ A task has three phases, and they must happen in this order:
    it to the loaded data (Tcl's ``grid``), and then add rules.
 #. **Solve** with ``solve``, then read or save the result.
 
+The types behind the first phase are described in :doc:`data_types`; the method
+behind the third, in :doc:`how_it_works`.
+
 Every command of the Tcl front end is also a method on the session, under the
 same name, so ``task.points("wells")`` means the same as ``points("wells")``.
 The one exception is ``grid``: the method of that name builds an explicit grid

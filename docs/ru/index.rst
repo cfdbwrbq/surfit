@@ -39,6 +39,7 @@ surfit
    first_steps
    python
    how_it_works
+   data_types
    flows
    tcl
    formats

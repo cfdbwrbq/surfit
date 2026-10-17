@@ -37,6 +37,7 @@ the resulting data files byte for byte.
    first_steps
    python
    how_it_works
+   data_types
    flows
    tcl
    formats

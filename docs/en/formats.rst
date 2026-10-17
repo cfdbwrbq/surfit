@@ -1,10 +1,11 @@
 File formats
 ============
 
-The native format is the surfit data file, written and read by ``surf_save`` and
-``surf_load`` and friends; it stores the whole task, not just a grid. Everything
-else comes from the ``surfit_io`` plugin, which the Tcl front end loads
-separately and the Python package includes.
+The native format is the surfit data file. ``file_save`` and ``file_load``
+write and read the whole task -- data, rules and the result; ``surf_save`` and
+``surf_load`` store one surface, and every data type has its own ``<type>_save``
+and ``<type>_load``. Everything else comes from the ``surfit_io`` plugin, which
+the Tcl front end loads separately and the Python package includes.
 
 Grids and surfaces
 ------------------
@@ -44,28 +45,14 @@ Grids and surfaces
 Points, curves, contours and areas
 ----------------------------------
 
-These four families share the same set of formats, with the command names
-following the data type: ``pnts_``, ``curv_``, ``cntr_`` and ``area_``.
+The command names follow the data type: ``pnts_``, ``curv_``, ``cntr_`` and
+``area_``. Not every format exists for every type:
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Format
-     - Load
-     - Save
-   * - surfit native
-     - ``<type>_load``
-     - ``<type>_save``
-   * - Columned text
-     - ``<type>_read``
-     - ``<type>_write``
-   * - Surfer BLN
-     - ``<type>_load_bln``
-     - ``<type>_save_bln``
-   * - ESRI shapefile
-     - ``<type>_load_shp``
-     - ``<type>_save_shp``
+* **surfit native** -- all four: ``<type>_load`` and ``<type>_save``.
+* **Columned text** -- all four: ``<type>_read`` and ``<type>_write``.
+* **Surfer BLN** -- curves, contours and areas: ``curv_*_bln``, ``cntr_*_bln``,
+  ``area_*_bln``. Points have no BLN reader or writer.
+* **ESRI shapefile** -- all four: ``<type>_load_shp`` and ``<type>_save_shp``.
 
 ``<type>_read`` and ``<type>_write`` work on columned text files and take the
 column numbers and the delimiter, which default to the first columns and
@@ -83,18 +70,64 @@ tab delimiter and one header line skipped. In Python the same call is:
    surfit.pnts_read("model.txt", "model", col1=3, col2=4, col3=8, col4=2,
                     delimiter="\t", skip_lines=1)
 
+Digital elevation models
+------------------------
+
+DEMs come from the ``globe`` library, which the Tcl front end loads separately
+and the Python package includes. They are georeferenced rasters, not surfaces:
+the loader keeps the tile's origin and step.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 33 33
+
+   * - Format
+     - Load
+     - Save
+   * - surfit native
+     - ``dem_load``
+     - ``dem_save``
+   * - Surfer grid
+     - ``dem_load_grd``
+     - ``dem_save_grd``
+   * - DTM
+     - ``dem_load_dtm``
+     - ``dem_save_dtm`` (not implemented)
+   * - SRTM HGT tile
+     - ``dem_load_hgt``
+     - --
+   * - zipped SRTM HGT tile
+     - ``dem_load_hgt_zip``
+     - --
+   * - GTOPO30 / GLOBE
+     - ``dem_load_globe``
+     - --
+   * - Three column xyz
+     - --
+     - ``dem_save_xyz``
+
+Two caveats belong to the formats themselves. ``dem_load_hgt_zip`` needs a build
+with zlib headers; without them it reports "zlib not detected" and returns
+nothing. ``dem_save_dtm`` is declared in the headers, but the implementation
+logs "Not implemented!" and returns false, so a DTM tile can be read and not
+written.
+
+The DEM loaders take a file pattern and find the tile by its name; for an HGT
+tile the name also carries the coordinates. :doc:`python` has the details.
+
 Masks
 -----
 
-``mask_save_grd`` and ``mask_save_xyz`` write raster masks;
-
-``mask_load`` reads one back from a surfit data file.
+``mask_save`` writes a mask to the native file; ``mask_save_grd`` and
+``mask_save_xyz`` write a Surfer grid or three-column xyz. ``mask_load`` reads
+one back from a surfit data file.
 
 Reading a directory
 -------------------
 
-The loaders accept a shell pattern in the file name rather than a single path,
-and return one flag per matched file:
+Most loaders -- the formats plugin and the DEM loaders alike -- accept a shell
+pattern in the file name rather than a single path, and return one flag per
+matched file:
 
 .. code-block:: python
 

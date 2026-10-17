@@ -109,6 +109,24 @@ FIGURES = (
                                                   "title": "trend example"}),
     ("map-trend", "trend", {"levels": 12, "size": 700,
                             "title": "trend example"}),
+    # flows, press1: pressure from a 250-atm boundary and one well
+    ("map-press-points", "press_points", {"levels": 12, "size": 700,
+                                          "title": "pressure field example"}),
+    ("map-flow-points", "flow_points", {"levels": 12, "size": 700,
+                                        "title": "flow_points example"}),
+    ("map-flow-points2", "flow_points2", {"levels": 12, "size": 700,
+                                          "title": "flow_points2 example"}),
+    ("map-flow-area", "flow_area", {"levels": 12, "size": 700,
+                                    "title": "flow_area example"}),
+    ("map-flow-curve", "flow_curve", {"levels": 12, "size": 700,
+                                      "title": "flow_curve example"}),
+    ("map-flow-cntr", "flow_cntr", {"levels": 12, "size": 700,
+                                    "title": "flow_cntr example"}),
+    # flows, press2: a real field with a fracture in two directions
+    ("map-hor-frac", "map_hor_frac", {"levels": 12, "size": 700,
+                                      "title": "horizontal fracture"}),
+    ("map-ver-frac", "map_ver_frac", {"levels": 12, "size": 700,
+                                      "title": "vertical fracture"}),
 )
 
 

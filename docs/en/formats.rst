@@ -103,3 +103,86 @@ and return one flag per matched file:
 
 In this case the names are derived from the file names, since no explicit name
 was given.
+
+Worked examples
+---------------
+
+Five round trips under ``examples/python/`` show the plugin from the Python side.
+Each reads text data, writes a file, drops the data and reads the file back, so
+the second write is the evidence that the reader and the writer agree.
+``test_examples.py`` runs each of them and its Tcl original and compares every
+file they write, byte for byte.
+
+The BLN writer appends to the file it is given instead of overwriting it, so an
+example is meant to run in a directory where its output does not exist yet; the
+test gives both sides a fresh directory.
+
+area_bln.py
+~~~~~~~~~~~
+
+The five polygons are read, ``area1`` is written to ``areas.bln``, the data is
+dropped, the file is read back and written again as ``areas2.bln``:
+
+.. code-block:: python
+
+   task.area_save_bln("areas.bln", "area1")
+   task.clear_data()
+   task.area_load_bln("areas.bln", "area1")
+   task.area_save_bln("areas2.bln", "area1")
+
+cntr_bln.py
+~~~~~~~~~~~
+
+Five contours, with their Z values, go into one BLN file and come back:
+
+.. code-block:: python
+
+   task.cntr_save_bln("cntrs.bln", "cntr_*")
+   task.clear_data()
+   task.cntr_load_bln("cntrs.bln", "cntr_*")
+
+curv_bln.py
+~~~~~~~~~~~
+
+Four curves are written and three are loaded back by name pattern -- the file
+pattern and the name pattern are independent:
+
+.. code-block:: python
+
+   task.curv_save_bln("curvs.bln", "iso*")
+   task.clear_data()
+   task.curv_load_bln("curvs.bln", "iso[1-3]")
+
+area_shp.py
+~~~~~~~~~~~
+
+A shapefile is three files. The saver takes a base name and writes ``.shp``,
+``.shx`` and ``.dbf``; the loader takes a file pattern, so both calls name the
+``.shp`` file:
+
+.. code-block:: python
+
+   task.area_save_shp("areas.shp", "area1")
+   task.clear_data()
+   task.area_load_shp("areas.shp", "area1")
+   task.area_save_shp("areas2.shp", "area1")
+
+curv_shp.py
+~~~~~~~~~~~
+
+The same for four curves, loading three back:
+
+.. code-block:: python
+
+   task.curv_save_shp("curvs.shp", "iso*")
+   task.clear_data()
+   task.curv_load_shp("curvs.shp", "iso[1-3]")
+
+Two shipped scripts are not ported. ``cntr_shp.tcl`` mixes a flat 2D contour
+with 3D ones, and ``cntr_save_shp`` fixes the shape type by the first contour,
+so the set cannot be written to one file -- an open defect. ``const_cntr.tcl``
+reads a shapefile that is not part of the repository. The two shapefile
+examples above were repaired as well: the shipped scripts named the output
+``.bln``, and because the loader treats the name as a file pattern it silently
+loaded nothing. Both now name the ``.shp`` file, and a generated ``curvs.bln``
+that the distribution carried was removed so the BLN example starts clean.

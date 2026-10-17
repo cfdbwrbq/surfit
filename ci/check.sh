@@ -2,7 +2,7 @@
 #
 # Builds surfit and runs every check, the way continuous integration does.
 #
-#   ci/check.sh            build, the 35 test scripts, the 33 Python examples,
+#   ci/check.sh            build, the 35 test scripts, the 46 Python examples,
 #                          parity, the name matcher, the viewer, sessions, every
 #                          command against Tcl, and a wheel that installs and
 #                          solves on its own (about twenty minutes)

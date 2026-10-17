@@ -35,6 +35,7 @@ the resulting data files byte for byte.
 
    installation
    python
+   flows
    tcl
    formats
    development
@@ -47,6 +48,7 @@ Where to start
 * Migrating an existing Tcl script? :doc:`tcl` explains the mapping, and
   ``src/pysurfit/tests/run_tcl_suite.py`` does the translation mechanically.
 * Looking for a file format? :doc:`formats` lists them all.
+* Reconstructing a pressure field? :doc:`flows` runs the flow examples.
 * Building or extending the engine? :doc:`development`.
 
 License

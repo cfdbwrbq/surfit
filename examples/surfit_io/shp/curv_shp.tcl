@@ -22,10 +22,10 @@ curv_read "iso3.xy" "iso3"
 curv_read "iso4.xy" "iso4"  
 
                                
-curv_save_shp "curvs.bln" "iso*"
+curv_save_shp "curvs.shp" "iso*"
 
 clear_data
 
-curv_load_shp "curvs.bln" "iso\[1-3\]"
+curv_load_shp "curvs.shp" "iso\[1-3\]"
 
 curvs_info

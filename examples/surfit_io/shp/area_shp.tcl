@@ -1,29 +1,29 @@
-# 
+#
 # load plugins
-# 
+#
 load libtclsurfit[info sharedlibextension]
 load libsurfit_io[info sharedlibextension]
 
 
-# load area from text file 
-area_read "area1.txt" "area1"  
- 
-# load area from text file 
-area_read "area2.txt" "area2"  
- 
-# load area from text file 
-area_read "area3.txt" "area3"  
- 
-# load area from text file 
-area_read "area4.txt" "area4"  
- 
-# load area from text file 
-area_read "area5.txt" "area5"  
+# load area from text file
+area_read "area1.txt" "area1"
 
-area_save_shp "areas.bln" "area1"
+# load area from text file
+area_read "area2.txt" "area2"
+
+# load area from text file
+area_read "area3.txt" "area3"
+
+# load area from text file
+area_read "area4.txt" "area4"
+
+# load area from text file
+area_read "area5.txt" "area5"
+
+area_save_shp "areas.shp" "area1"
 
 clear_data
 
-area_load_shp "areas.bln" "area1"
+area_load_shp "areas.shp" "area1"
 
-area_save_shp "areas2.bln" "area1"
+area_save_shp "areas2.shp" "area1"

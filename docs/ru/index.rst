@@ -37,6 +37,7 @@ surfit
 
    installation
    python
+   flows
    tcl
    formats
    development
@@ -49,6 +50,7 @@ surfit
 * Переносите существующий Tcl-скрипт? В :doc:`tcl` описано соответствие команд,
   а ``src/pysurfit/tests/run_tcl_suite.py`` делает этот перевод механически.
 * Ищете формат файла? Полный список в :doc:`formats`.
+* Восстанавливаете поле давления? Примеры в :doc:`flows`.
 * Собираете или расширяете движок? Вам в :doc:`development`.
 
 Лицензия

@@ -69,7 +69,11 @@ The log shows the ladder:
    ...
    * Phase 6, grid size = 121 x 121 (map_area)
    ...
-   cg: (14641) ....... iter : 113, error : 4.99215E-06, 0 sec
+   cg: (14641) iter : 113, error : 4.99215E-06, 0 sec
+
+The live line also prints one dot per progress tick between the cell count and
+``iter``; they are left out here. :doc:`python` shows how ``surfit.progress()``
+turns the same events into a tqdm bar.
 
 The tolerance ``tol`` applies to each linear solve on the way. The number of
 phases follows from the requested grid size, not from the data.

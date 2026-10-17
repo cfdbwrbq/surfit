@@ -224,6 +224,16 @@ knowing because the two cases are genuinely different:
 ``style=None`` (default)
     a bar when stderr is a terminal, lines otherwise.
 
+With ``style="bar"`` on a terminal, the run ends on a line like this:
+
+.. code-block:: text
+
+   cg (14641 cells): 113iter [00:00, 347iter/s, err 4.99215E-06]
+
+The solver does not know the final iteration count in advance, so the bar counts
+iterations and reports the residual in its postfix instead of filling a
+percentage.
+
 A redrawn bar survives only in a terminal. In a captured stream the carriage
 returns collapse the frames into each other and only the last one is left, so
 the default switches to lines automatically:

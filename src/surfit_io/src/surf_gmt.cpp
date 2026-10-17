@@ -164,6 +164,10 @@ d_surf * _surf_load_gmt(const char * filename, const char * surfname)
 	writelog(LOG_MESSAGE, "loading surface from GMT file %s",filename);
 
 	GRD_HEADER header;
+	// nc_get_att_text() fills at most the attribute's length; without a zeroed
+	// struct and a terminator, a title that fills its field would leave the
+	// name unterminated and the strlen() below would read past it.
+	memset(&header, 0, sizeof(header));
 	int cdfid, nm[2];
 	size_t start[2], edge[2];
 	double dummy[2];
@@ -223,6 +227,13 @@ d_surf * _surf_load_gmt(const char * filename, const char * surfname)
 		goto exit;
         if (check_nc_status (nc_get_att_text  (cdfid, NC_GLOBAL, "source", text)) == false)
 		goto exit;
+
+	// The attributes have their field's length, so none of these strings is
+	// guaranteed to be terminated by the data read into it.
+	header.title[GRD_TITLE_LEN-1] = '\0';
+	header.x_units[GRD_UNIT_LEN-1] = '\0';
+	header.y_units[GRD_UNIT_LEN-1] = '\0';
+	header.z_units[GRD_UNIT_LEN-1] = '\0';
 
 	strncpy (header.command, text, GRD_COMMAND_LEN);
 	strncpy (header.remark, &text[GRD_COMMAND_LEN], GRD_REMARK_LEN);
@@ -378,6 +389,10 @@ bool _surf_save_gmt(const d_surf * srf, const char * filename) {
 	// Create file and enter define mode 
 
 	GRD_HEADER header;
+	// The attributes are written as fixed-length blocks, so every byte of the
+	// struct reaches the file: an uninitialised tail is what made two runs of
+	// the same save differ.  Zero it instead of filling three of its strings.
+	memset(&header, 0, sizeof(header));
 	header.nx = srf->getCountX();
 	header.ny = srf->getCountY();
 	strcpy(header.command,"");

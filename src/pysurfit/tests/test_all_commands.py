@@ -619,6 +619,48 @@ STEPS = (
     ("surf_debit", [500.0, 500.0, 1, 1, 1, "map"]),
     ("surf_debit_rect", [-5.0, -5.0, 5.0, 5.0, 1, 1, 1, "map"]),
     ("clear_rules", []),
+
+    # --- the format plugin ----------------------------------------------
+    #: Each saver writes, and the matching loader reads the file back under a
+    #: name of its own, so the pair is checked on the file itself.  The written
+    #: files are then compared byte for byte between the two front ends.
+    ("surf_save_grd", ["fmt.grd", "map"]),
+    ("surf_load_grd", ["fmt.grd", "grd_map"]),
+    ("surf_save_xyz", ["fmt.xyz", "map"]),
+    ("surf_load_xyz", ["fmt.xyz", "xyz_map"]),
+    ("surf_save_gmt", ["fmt.gmt", "map"]),
+    ("surf_load_gmt", ["fmt.gmt", "gmt_map"]),
+    ("surf_save_grass", ["fmt.grass", "map"]),
+    ("surf_load_grass", ["fmt.grass", "grass_map"]),
+    ("surf_save_arcgis", ["fmt.asc", "map"]),
+    ("surf_load_arcgis", ["fmt.asc", "arcgis_map"]),
+    ("surf_save_bmp", ["fmt.bmp", "map"]),
+    ("surf_load_bmp", ["fmt.bmp", "bmp_map"]),
+    ("surf_save_jpg", ["fmt.jpg", "map"]),
+    ("surf_load_jpg", ["fmt.jpg", "jpg_map"]),
+    ("mask_save_grd", ["fmt_mask.grd", "map"]),
+    ("mask_save_xyz", ["fmt_mask.xyz", "map"]),
+
+    ("area_save_bln", ["fmt_area.bln", "area1"]),
+    ("area_load_bln", ["fmt_area.bln", "bln_area"]),
+    ("area_save_shp", ["fmt_area.shp", "area1"]),
+    ("area_load_shp", ["fmt_area.shp", "shp_area"]),
+
+    ("curv_save_bln", ["fmt_curv.bln", "line"]),
+    ("curv_load_bln", ["fmt_curv.bln", "bln_curv"]),
+    ("curv_save_shp", ["fmt_curv.shp", "line"]),
+    ("curv_load_shp", ["fmt_curv.shp", "shp_curv"]),
+
+    ("cntr_save_bln", ["fmt_cntr.bln", "c1"]),
+    ("cntr_load_bln", ["fmt_cntr.bln", "bln_cntr"]),
+    ("cntr_save_shp", ["fmt_cntr.shp", "c1"]),
+    #: A contour with one Z value is written as a 2D arc with a Z column, so the
+    #: loader has to be told which column holds it; without a field name it
+    #: expects a 3D shape and refuses this file.
+    ("cntr_load_shp", ["fmt_cntr.shp", "shp_cntr", "Z"]),
+
+    ("pnts_save_shp", ["fmt_pnts.shp", "wells"]),
+    ("pnts_load_shp", ["fmt_pnts.shp", "shp_pnts"]),
 )
 
 
@@ -650,6 +692,14 @@ TCL_INSTEAD = {
 }
 
 
+#: The modules a Tcl script loads, in the order `import surfit` registers their
+#: managers: the engine, the format plugin, then globe and freeflow.
+TCL_MODULE_LOADS = ("load libtclsurfit[info sharedlibextension]\n"
+                    "load libsurfit_io[info sharedlibextension]\n"
+                    "load libglobe[info sharedlibextension]\n"
+                    "load libfreeflow[info sharedlibextension]")
+
+
 def tcl_quote(value):
     if isinstance(value, str):
         return '"%s"' % value
@@ -657,12 +707,10 @@ def tcl_quote(value):
 
 
 def render_tcl(steps):
-    # The globe and freeflow plugins, in the order the Python side registers
-    # them: a Tcl script has to load them, where import surfit does it itself.
-    lines = ["load libtclsurfit[info sharedlibextension]",
-             "load libglobe[info sharedlibextension]",
-             "load libfreeflow[info sharedlibextension]",
-             "clear_data"]
+    # Every plugin the Python side registers when it is imported, in that order:
+    # a Tcl script has to load them, where import surfit does it itself.  The
+    # managers are registered in load order, and types_info lists them in it.
+    lines = [TCL_MODULE_LOADS, "clear_data"]
     for index, (command, args) in enumerate(steps):
         if command in NOT_IN_TCL:
             continue
@@ -820,11 +868,6 @@ EXPECTED_FAILURE = {
     "dem_load_globe": "needs a real GTOPO30 tile: 10800 x 4800 or 6000 cells",
 }
 
-#: What `tcl_commands()` loads before asking tclsh for its command set.
-TCL_MODULES = ("load libtclsurfit[info sharedlibextension]\n"
-               "load libglobe[info sharedlibextension]\n"
-               "load libfreeflow[info sharedlibextension]\n")
-
 TCL_COMMANDS = "foreach c [info commands] { puts $c }"
 
 
@@ -850,7 +893,7 @@ def tcl_commands():
                 if line.strip() and " " not in line}
 
     bare = names(TCL_COMMANDS + "\n")
-    loaded = names(TCL_MODULES + TCL_COMMANDS + "\n")
+    loaded = names(TCL_MODULE_LOADS + "\n" + TCL_COMMANDS + "\n")
     return loaded - bare
 
 

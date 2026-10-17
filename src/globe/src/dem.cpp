@@ -466,82 +466,69 @@ size_t d_dem::details_size() const {
 bool d_dem::decompose() {
 
 	if (coeffs_store->size() == 0) {
+		// The store owns every level, including the original.  coeff and
+		// grd are views into it from here on; the destructor releases the
+		// store, and only falls back to the views when the store is empty.
 		coeffs_store->push_back(coeff);
-		grids_store->push_back( new d_grid(*grd) );
-		store_pos++;
+		grids_store->push_back(grd);
+		store_pos = 1;
 	}
 
-	if (store_pos == coeffs_store->size()) {
-		
+	if (store_pos == (int)coeffs_store->size()) {
+
 		writelog(LOG_MESSAGE,"dem (%s): making decomposition",getName());
-		bool enlarge_X = false;
-		bool enlarge_Y = false;
-		
+
 		size_t countX = grd->getCountX();
 		size_t countY = grd->getCountY();
-		
-		if (countX % 2 != 0)
-			enlarge_X = true;
-		
-		if (countY % 2 != 0)
-			enlarge_Y = true;
-		
-		size_t N = coeff->size()/4;
-		
-		if (N <= 1)
-			return false;
-		
-		shortvec * new_coeff = _decomp2d(coeff, 
-			grd->getCountX(), grd->getCountY(),
-			undef_value, 
-			(store_pos % 2 == 1));
-		
-		coeff = new_coeff;
-		
-		size_t new_size_x = 0;
-		if (enlarge_X) {
-			new_size_x = (grd->getCountX() + 1) / 2;
-		} else {
-			new_size_x = (grd->getCountX()) / 2;
-		}
-		grd->startX += grd->stepX/REAL(2);
-		grd->stepX  *= REAL(2);
-		grd->endX    = grd->startX + (new_size_x-1) * grd->stepX;
-		new_size_x = grd->getCountX();
-		
-		
-		size_t new_size_y = 0;
-		if (enlarge_Y) {
-			new_size_y = (grd->getCountY() + 1) / 2;
-		} else {
-			new_size_y = (grd->getCountY()) / 2;
-		}
-		grd->startY += grd->stepY/REAL(2);
-		grd->stepY  *= REAL(2);
-		grd->endY    = grd->startY + (new_size_y-1) * grd->stepY;
-		new_size_y = grd->getCountY();
-		
-		coeffs_store->push_back(coeff);
-		grids_store->push_back( new d_grid(*grd) );
-		store_pos++;
-				
-	} else if (store_pos + 1 < (int)coeffs_store->size()) {
 
-		// A deeper level is already stored: step to it.  The bound is the
-		// point: a reconstruction leaves store_pos on a level that *is*
-		// stored, so the old unconditional store_pos++ read one past the
-		// end of the store, and the next calc_approx_norm() dereferenced
-		// whatever happened to be there (SIGSEGV in dem_auto_decomp after
-		// dem_recons).
+		if (coeff->size()/4 <= 1)
+			return false;
+
+		size_t new_size_x = (countX % 2 != 0) ? (countX + 1) / 2 : countX / 2;
+		size_t new_size_y = (countY % 2 != 0) ? (countY + 1) / 2 : countY / 2;
+
+		REAL old_startX = grd->startX;
+		REAL old_stepX  = grd->stepX;
+		REAL old_startY = grd->startY;
+		REAL old_stepY  = grd->stepY;
+
+		shortvec * new_coeff = _decomp2d(coeff, countX, countY,
+		                                 undef_value,
+		                                 (store_pos % 2 == 1));
+
+		// A new grid object, not a mutation of the stored one: the finer
+		// level has to keep its own geometry for the reconstruction.
+		d_grid * new_grd = create_grid(grd);
+		new_grd->startX = old_startX + old_stepX/REAL(2);
+		new_grd->stepX  = old_stepX * REAL(2);
+		new_grd->endX   = new_grd->startX + (new_size_x-1) * new_grd->stepX;
+		new_grd->startY = old_startY + old_stepY/REAL(2);
+		new_grd->stepY  = old_stepY * REAL(2);
+		new_grd->endY   = new_grd->startY + (new_size_y-1) * new_grd->stepY;
+
+		coeff = new_coeff;
+		grd = new_grd;
+
+		coeffs_store->push_back(coeff);
+		grids_store->push_back(grd);
 		store_pos++;
-		coeff = (*coeffs_store)[store_pos];
-		grd = (*grids_store)[store_pos];
-		
+
+	} else if (store_pos < (int)coeffs_store->size()) {
+
+		// A deeper level is already stored: step to it.  store_pos is the
+		// 1-based number of the current level, so level n lives at index
+		// n-1.  After a reconstruction the current level is stored and the
+		// next one exists whenever store_pos is still below the store size;
+		// the old bound skipped that level and then read past the end.
+		store_pos++;
+		coeff = (*coeffs_store)[store_pos-1];
+		grd = (*grids_store)[store_pos-1];
+
 	} else {
-		
+
 		// The deepest stored level is the current one: nothing left to reuse.
 		return false;
-		
+
 	}
 	return true;
 
@@ -588,40 +575,43 @@ REAL d_dem::calc_approx_norm(int norm_type) const {
 };
 
 bool d_dem::reconstruct() {
-	
-	int N = store_pos;
 
-	if (N == 0)
+	// store_pos is 1-based; level 1 is the original, so there is nothing
+	// finer to reconstruct to at 1 or below.  The old code decremented and
+	// then indexed with the new store_pos, which still pointed at the same
+	// level: the first dem_recons() after a decomposition was a no-op.
+	if (store_pos <= 1)
 		return false;
 
 	writelog(LOG_MESSAGE,"dem (%s): making reconstruction", getName());
 
 	store_pos--;
 
-	coeff = (*coeffs_store)[store_pos];
-	grd = (*grids_store)[store_pos];
-	
+	coeff = (*coeffs_store)[store_pos-1];
+	grd = (*grids_store)[store_pos-1];
+
 	return true;
 
 };
 
 bool d_dem::full_reconstruct() {
 
-	writelog(LOG_MESSAGE,"dem : make reconstruction");
-	
-	int N = store_pos;
-	bool res = true;
+	if (store_pos <= 1)
+		return false;
 
-	while ( (N > 0) && res ) {
-		res = reconstruct() && res;
-		N = store_pos;
+	writelog(LOG_MESSAGE,"dem : make reconstruction");
+
+	// Reconstruct until the original level is current.  The old loop tested
+	// the last, deliberately failing reconstruct(), so a successful return to
+	// the original still reported false.
+	while (store_pos > 1) {
+		if (!reconstruct())
+			return false;
 	}
 
-	return res;
+	return true;
 
 };
-
-
 
 void dems_container::push_back(d_dem * elem)
 {

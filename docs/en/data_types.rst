@@ -180,8 +180,10 @@ Digital elevation models
 
 A DEM comes from the ``globe`` library: a raster with a georeference, so it can
 be projected onto the task grid. ``dem`` makes the surface follow it and
-``dem_add`` adds it with a weight; the model itself can be decomposed and
-reconstructed (``dem_decomp``, ``dem_recons``).
+``dem_add`` adds it with a weight. The model itself can be decomposed into
+coarser levels and reconstructed: ``dem_decomp`` adds the next coarser level,
+``dem_recons`` steps back one level and ``dem_full_recons`` returns to the
+original. The levels are kept, so the original values come back exactly.
 
 .. code-block:: python
 

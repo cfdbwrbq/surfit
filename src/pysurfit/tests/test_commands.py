@@ -110,6 +110,38 @@ def python_surf_debit():
     assert rect[0] == -12345.0, rect
 
 
+def tcl_dem_wave():
+    return LOAD + """
+load libglobe[info sharedlibextension]
+dem_load "data/wave.dat" "wave"
+dem_decomp "wave"
+dem_recons "wave"
+puts "wave_level=[lindex [dem_get_details_level wave] 0]"
+puts "wave_value=[lindex [dem_getValue 1 1 wave] 0]"
+"""
+
+
+def python_dem_wave():
+    surfit.clear_data()
+    assert surfit.dem_load(os.path.join("data", "wave.dat"), "wave") == [True]
+    before = [surfit.dem_getValue(float(x), float(y), "wave")[0]
+              for y in range(4) for x in range(4)]
+    assert before == [float(v) for v in range(16)], before
+    assert surfit.dem_decomp("wave") == [True]
+    assert surfit.dem_recons("wave") == [True]
+    after = [surfit.dem_getValue(float(x), float(y), "wave")[0]
+             for y in range(4) for x in range(4)]
+    # The first dem_recons() used to be a no-op: it stayed on the coarse level.
+    assert after == before, after
+    # full_recons must report success after it has returned to the original.
+    assert surfit.dem_decomp("wave") == [True]
+    assert surfit.dem_full_recons("wave") == [True]
+    assert [surfit.dem_getValue(float(x), float(y), "wave")[0]
+            for y in range(4) for x in range(4)] == before
+    print("wave_level=%d" % surfit.dem_get_details_level("wave")[0])
+    print("wave_value=%g" % surfit.dem_getValue(1.0, 1.0, "wave")[0])
+
+
 def tcl_dem_zip():
     return LOAD + """
 load libglobe[info sharedlibextension]
@@ -346,6 +378,7 @@ CASES = (
     ("pnts to cntrs", tcl_pnts_to_cntrs, python_pnts_to_cntrs, ()),
     ("surf debit", tcl_surf_debit, python_surf_debit, ()),
     ("dem zip", tcl_dem_zip, python_dem_zip, ()),
+    ("dem wave", tcl_dem_wave, python_dem_wave, ()),
 )
 
 
@@ -365,7 +398,7 @@ def prepare(directory, scratch):
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
            "converted=", "cntrs=", "debit=", "rect=", "dems=", "dem_x=",
-           "dem_y=", "dem_minz=", "dem_maxz=",
+           "dem_y=", "dem_minz=", "dem_maxz=", "wave_level=", "wave_value=",
            "empty=", "names=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",

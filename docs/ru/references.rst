@@ -87,6 +87,13 @@
 * C. de Boor (1978). *A Practical Guide to Splines*. Springer.
   `doi:10.1007/978-1-4612-6333-3 <https://doi.org/10.1007/978-1-4612-6333-3>`_
 
+* H. Wendland (2005). *Scattered Data Approximation*. Cambridge University
+  Press.
+  `doi:10.1017/CBO9780511617539 <https://doi.org/10.1017/CBO9780511617539>`_
+* G. E. Fasshauer (2007). *Meshfree Approximation Methods with MATLAB*. World
+  Scientific.
+  `doi:10.1142/6437 <https://doi.org/10.1142/6437>`_
+
 Геостатистика
 -------------
 
@@ -131,6 +138,13 @@
 * L. Liang, D. Hale, M. Maučec (2010). Estimating fault displacements in
   seismic images. *SEG Technical Program Expanded Abstracts*, 1357-1361.
   `doi:10.1190/1.3513094 <https://doi.org/10.1190/1.3513094>`_
+
+* R. Webster, M. A. Oliver (2007). *Geostatistics for Environmental
+  Scientists*. Wiley.
+  `doi:10.1002/9780470517277 <https://doi.org/10.1002/9780470517277>`_
+* N. Cressie, M. Pavlicová (2005). Lognormal kriging: bias adjustment and
+  kriging variances. In *Geostatistics Banff 2004*, Springer.
+  `doi:10.1007/978-1-4020-3610-1_107 <https://doi.org/10.1007/978-1-4020-3610-1_107>`_
 
 Правила и применения
 --------------------
@@ -222,6 +236,18 @@
 * M. Neteler, H. Mitasova (2008). *Open Source GIS: A GRASS GIS Approach*.
   Springer.
   `doi:10.1007/978-0-387-68574-8 <https://doi.org/10.1007/978-0-387-68574-8>`_
+
+* M. Yanalak (2004). Sibson (natural neighbour) and non-Sibsonian
+  interpolation for digital elevation model (DEM). *Survey Review* 37,
+  434-443.
+  `doi:10.1179/003962604791482513 <https://doi.org/10.1179/003962604791482513>`_
+* K. Arai, Y. Terayama, K. Nakamura (1993). A comparative study on
+  interpolation methods for digital elevation model. *Proceedings of IGARSS
+  '93*.
+  `doi:10.1109/IGARSS.1993.322050 <https://doi.org/10.1109/IGARSS.1993.322050>`_
+* M. Zhao (2020). An indirect interpolation model and its application for
+  digital elevation model generation. *Earth Science Informatics*.
+  `doi:10.1007/s12145-020-00504-2 <https://doi.org/10.1007/s12145-020-00504-2>`_
 
 Форматы данных и стандарты
 --------------------------

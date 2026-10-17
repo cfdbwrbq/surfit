@@ -275,8 +275,10 @@ All of these live under ``examples/python/`` and run as written. Each map is tha
 example's own output: ``docs/make_images.py`` imports the example and renders the
 grid it produces, so a figure cannot drift from the code.
 
-Each of these four is a port of a Tcl script under ``examples/surfit/tests``, and
-the grid it produces is byte-identical to the one that script produces.
+Four of the examples below — ``area``, ``faults``, ``surface`` and ``contour`` —
+are ports of Tcl scripts under ``examples/surfit/tests``, and each produces a
+grid byte-identical to the one its script produces. ``trend_from_numpy`` has no
+Tcl original: it shows the numpy interface.
 
 area.py
 ~~~~~~~

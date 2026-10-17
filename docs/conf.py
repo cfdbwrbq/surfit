@@ -1,8 +1,8 @@
 """Sphinx configuration for surfit.
 
 The documentation is kept as two parallel source trees, ``docs/en`` and
-``docs/ru``, which share this file.  A page has the same name in both trees,
-and that is what lets the language switcher point at its counterpart;
+``docs/ru``, which share this file.  They are built into ``../<lang>/``, and
+the theme's locale widget switches between the two roots;
 ``docs/check_docs.py`` fails the build when the two drift apart.
 
 Build both languages with ``docs/build.sh``.
@@ -20,7 +20,6 @@ copyright = "2002-2007 M. V. Dmitrievsky & V. N. Kutrunov"
 
 extensions = ["sphinx_tabs.tabs"]
 
-templates_path = ["_templates"]
 html_static_path = ["_static"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "README.md"]
 
@@ -28,23 +27,59 @@ root_doc = "index"
 
 # One of the two trees is built per invocation: sphinx-build -D language=ru ...
 
-try:
-    import sphinx_rtd_theme  # noqa: F401
+version = "3.1"
+release = "3.1"
 
-    html_theme = "sphinx_rtd_theme"
-    html_theme_options = {
-        "navigation_depth": 3,
-        "collapse_navigation": False,
-    }
+try:
+    import sphinx_nefertiti  # noqa: F401
+
+    html_theme = "sphinx_nefertiti"
 except ImportError:  # the theme is optional, alabaster ships with Sphinx
     html_theme = "alabaster"
 
+HEADER_LINKS = {
+    "en": [
+        {"text": "First steps", "link": "first_steps"},
+        {"text": "Python", "link": "python"},
+        {"text": "Tcl", "link": "tcl"},
+        {"text": "Formats", "link": "formats"},
+    ],
+    "ru": [
+        {"text": "Первые шаги", "link": "first_steps"},
+        {"text": "Python", "link": "python"},
+        {"text": "Tcl", "link": "tcl"},
+        {"text": "Форматы", "link": "formats"},
+    ],
+}
+
+html_theme_options = {
+    "style": "green",
+    "project_name_font": "Montserrat",
+    "monospace_font": "Fira Code",
+    "monospace_font_size": "1.0rem",
+    "documentation_font_size": "1.1rem",
+    "doc_headers_font": "Montserrat",
+    "pygments_light_style": "pastie",
+    "pygments_dark_style": "dracula",
+    "logo": "logo.svg",
+    "logo_width": 28,
+    "logo_height": 28,
+    "logo_alt": "surfit",
+    "repository_url": "https://github.com/mdmitr/surfit",
+    "repository_name": "surfit",
+    "current_version": release,
+    "header_links": HEADER_LINKS["en"],
+    "locales": [
+        ("en", "../en/"),
+        ("ru", "../ru/"),
+    ],
+}
+
+html_css_files = ["custom.css"]
+html_js_files = ["copy_code.js"]
 html_title = "surfit"
 html_short_title = "surfit"
 html_show_sourcelink = False
-
-LANGUAGE_LABELS = {"en": "English", "ru": "Русский"}
-
 
 class SurfitTclLexer(TclLexer):
     """Pygments' Tcl lexer, with one fix.
@@ -69,29 +104,15 @@ class SurfitTclLexer(TclLexer):
     ]
 
 
-def _add_language_switcher(app, pagename, templatename, context, doctree):
-    """Hands the template the URL of the same page in the other language.
-
-    Both trees are built into ../<lang>/, so the counterpart of page
-    ``a/b`` sits at ``<depth>/<other>/a/b.html`` plus the two steps back
-    up to the language roots.
-    """
-    if app.builder.format != "html":
-        return
-
-    current = app.config.language or "en"
-    other = "ru" if current == "en" else "en"
-    depth = pagename.count("/") + 1
-
-    context["language_switcher_url"] = "%s%s/%s.html" % (
-        "../" * depth, other, pagename)
-    context["language_switcher_label"] = LANGUAGE_LABELS[other]
-    context["language_current_label"] = LANGUAGE_LABELS[current]
+def _localize_header_links(app, config):
+    """The conf file is shared by both trees; the -D language comes later."""
+    language = config.language or "en"
+    options = dict(config.html_theme_options or {})
+    options["header_links"] = HEADER_LINKS.get(language, HEADER_LINKS["en"])
+    config.html_theme_options = options
 
 
 def setup(app):
-    app.connect("html-page-context", _add_language_switcher)
-    app.add_css_file("custom.css")
-    app.add_js_file("copy_code.js")
+    app.connect("config-inited", _localize_header_links)
     app.add_lexer("tcl-src", SurfitTclLexer)
     return {"parallel_read_safe": True, "parallel_write_safe": True}

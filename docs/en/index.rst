@@ -22,13 +22,16 @@ Features
 * Two front ends over the same engine: the original Tcl commands and a Python
   package with numpy in and out.
 
-Two front ends, one engine
---------------------------
+---
 
-The Python bindings call the same C++ functions the Tcl commands are generated
-from, so the two agree by construction. That is not a claim, it is checked:
-the test suite runs every Tcl example through the Python front end and compares
-the resulting data files byte for byte.
+.. image:: ../_static/cover.svg
+   :alt: A surface built from five polygonal areas
+   :width: 100%
+
+Getting started
+---------------
+
+Start with these documents to get you up and running:
 
 .. toctree::
    :maxdepth: 2
@@ -36,29 +39,27 @@ the resulting data files byte for byte.
    installation
    first_steps
    python
+   terrain
+   flows
+
+Advanced use
+------------
+
+The two front ends call the same engine: the Python bindings call the C++
+functions the Tcl commands are generated from, so the two agree by construction.
+That is not a claim, it is checked — the test suite runs every Tcl example
+through the Python front end and compares the resulting data files byte for
+byte.
+
+.. toctree::
+   :maxdepth: 2
+
    how_it_works
    data_types
-   flows
-   terrain
    tcl
    formats
    commands
    development
-
-Where to start
---------------
-
-* New to surfit? Read :doc:`installation`, then :doc:`first_steps`; the examples
-  with their maps are in :doc:`python`.
-* Want to know why the result is what it is? :doc:`how_it_works` describes the
-  method, the penalty loop and the solvers.
-* Migrating an existing Tcl script? :doc:`tcl` explains the mapping, and
-  ``src/pysurfit/tests/run_tcl_suite.py`` does the translation mechanically.
-* Looking for a file format? :doc:`formats` lists them all.
-* Reconstructing a pressure field? :doc:`flows` runs the flow examples.
-* Modelling terrain? :doc:`terrain` loads an SRTM tile and makes a surface from
-  it.
-* Building or extending the engine? :doc:`development`.
 
 License
 -------

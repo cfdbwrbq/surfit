@@ -189,7 +189,8 @@ reconstructed (``dem_decomp``, ``dem_recons``).
    task.dem("N00E006.hgt")
 
 Two things are worth knowing: the DEM loaders take a file *pattern* rather than
-one path, and ``dem_load_hgt_zip`` needs a build with zlib headers. DEMs also
+one path, and ``dem_load_hgt_zip`` needs zlib (the CMake build enables it when
+found). DEMs also
 live outside the Session state and are shared by all tasks in the process;
 :doc:`python` explains why.
 

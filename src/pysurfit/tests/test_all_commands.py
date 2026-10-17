@@ -592,9 +592,11 @@ STEPS = (
     ("dem_getName", []),
     ("dem_getCountX", ["dtm4"]),
     ("dem_getValue", [44.0, 43.0, "dtm4"]),
-    #: These read a file, so the data directory holds empty fixtures under the
-    #: names the loaders parse: a missing file would make find_first() match
-    #: nothing and every one of them would quietly return an empty result.
+    #: These read a file, so the data directory holds fixtures under the names
+    #: the loaders parse: a missing file would make find_first() match nothing
+    #: and the command would quietly return an empty result.  The HGT and GLOBE
+    #: fixtures are empty because a real tile is large; the zip holds a real
+    #: 1201 x 1201 SRTM tile, so dem_load_hgt_zip exercises the zlib branch.
     ("dem_load_hgt", ["data/N00E006.hgt"]),
     ("dem_load_hgt_zip", ["data/N00E006.hgt.zip"]),
     ("dem_load_globe", ["data/a16g"]),
@@ -865,7 +867,6 @@ EXPECTED_FAILURE = {
     "dem_save_dtm": "not implemented: _dem_save_dtm() logs and returns false",
     "dem_load_hgt": "needs a real SRTM tile: the grid comes from the file name "
                     "and the size",
-    "dem_load_hgt_zip": "same, and this build has no zlib (HAVE_ZLIB_H unset)",
     "dem_load_globe": "needs a real GTOPO30 tile: 10800 x 4800 or 6000 cells",
 }
 

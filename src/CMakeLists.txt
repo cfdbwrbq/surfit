@@ -66,6 +66,10 @@ if (NETCDF_FOUND)
 	SET(HAVE_NETCDF 1)
 endif (NETCDF_FOUND)
 
+if (ZLIB_FOUND)
+	SET(HAVE_ZLIB_H 1)
+endif (ZLIB_FOUND)
+
 
 configure_file(config.h.in config.h)
 

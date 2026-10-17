@@ -159,7 +159,8 @@ there after ``import surfit``, under the same names:
 
 Two things are worth knowing:
 
-* ``dem_load_hgt_zip`` needs a build with zlib headers. Without them it reports
+* ``dem_load_hgt_zip`` needs zlib. The CMake build enables it when
+  ``find_package(ZLIB)`` succeeds; otherwise the command reports
   "zlib not detected" and returns nothing.
 * DEMs live in a container of their own, outside the state a Session owns, so
   two Sessions in one process share them. The finite-element rules the

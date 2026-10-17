@@ -110,6 +110,34 @@ def python_surf_debit():
     assert rect[0] == -12345.0, rect
 
 
+def tcl_dem_zip():
+    return LOAD + """
+load libglobe[info sharedlibextension]
+dem_load_hgt_zip "data/N00E006.hgt.zip"
+puts "dems=[dem_size]"
+puts "dem_x=[lindex [dem_getCountX N00E006] 0]"
+puts "dem_y=[lindex [dem_getCountY N00E006] 0]"
+puts "dem_minz=[lindex [dem_minz] 0]"
+puts "dem_maxz=[lindex [dem_maxz] 0]"
+"""
+
+
+def python_dem_zip():
+    surfit.clear_data()
+    result = surfit.dem_load_hgt_zip(
+        os.path.join("data", "N00E006.hgt.zip"))
+    assert result == [True], result
+    print("dems=%d" % surfit.dem_size())
+    print("dem_x=%d" % surfit.dem_getCountX("N00E006")[0])
+    print("dem_y=%d" % surfit.dem_getCountY("N00E006")[0])
+    print("dem_minz=%g" % surfit.dem_minz()[0])
+    print("dem_maxz=%g" % surfit.dem_maxz()[0])
+    assert surfit.dem_getCountX("N00E006")[0] == 1201
+    assert surfit.dem_getCountY("N00E006")[0] == 1201
+    assert surfit.dem_minz()[0] == -50.0
+    assert surfit.dem_maxz()[0] == 100.0
+
+
 def tcl_pnts_to_cntrs():
     return LOAD + """
 pnts_read "data/7points.txt" "wells"
@@ -317,6 +345,7 @@ CASES = (
     ("minmax", tcl_minmax, python_minmax, ()),
     ("pnts to cntrs", tcl_pnts_to_cntrs, python_pnts_to_cntrs, ()),
     ("surf debit", tcl_surf_debit, python_surf_debit, ()),
+    ("dem zip", tcl_dem_zip, python_dem_zip, ()),
 )
 
 
@@ -335,7 +364,8 @@ def prepare(directory, scratch):
 
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
-           "converted=", "cntrs=", "debit=", "rect=",
+           "converted=", "cntrs=", "debit=", "rect=", "dems=", "dem_x=",
+           "dem_y=", "dem_minz=", "dem_maxz=",
            "empty=", "names=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",

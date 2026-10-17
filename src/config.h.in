@@ -3,5 +3,6 @@
 #cmakedefine HAVE_UNISTD_H
 #cmakedefine HAVE_LIBJPEG
 #cmakedefine HAVE_NETCDF
+#cmakedefine HAVE_ZLIB_H
 #cmakedefine HAVE_THREADS
 #cmakedefine VERSION "@VERSION@"

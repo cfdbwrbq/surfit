@@ -106,10 +106,11 @@ the loader keeps the tile's origin and step.
      - --
      - ``dem_save_xyz``
 
-Two caveats belong to the formats themselves. ``dem_load_hgt_zip`` needs a build
-with zlib headers; without them it reports "zlib not detected" and returns
-nothing. ``dem_save_dtm`` is declared in the headers, but the implementation
-logs "Not implemented!" and returns false, so a DTM tile can be read and not
+Two caveats belong to the formats themselves. ``dem_load_hgt_zip`` needs zlib:
+the CMake build detects it with ``find_package(ZLIB)`` and enables the loader; a
+build without zlib reports "zlib not detected" and returns nothing.
+``dem_save_dtm`` is declared in the headers, but the implementation logs
+"Not implemented!" and returns false, so a DTM tile can be read and not
 written.
 
 The DEM loaders take a file pattern and find the tile by its name; for an HGT

@@ -83,6 +83,56 @@ Python
 исходный Tcl-фронтенд это молча игнорирует, поэтому при странном результате
 на флаги стоит посмотреть.
 
+Зачем нужны семейства правил
+----------------------------
+
+Семейства не случайны: каждое — стандартный способ выразить определённый тип
+измерения или априорного знания, и у каждого долгая история в картографии.
+
+* **points** — основной случай интерполяции рассеянных данных; обзоры
+  экологического картографирования сравнивают методы и их точность [Li & Heap
+  2014].
+* **curve, contour** — отметки с изолиний до сих пор основной источник ЦМР, и
+  интерполяция должна сохранять форму между линиями [Bek & Ježek 2011].
+* **surface, trend** — региональный тренд — поверхность низкого порядка,
+  подогнанная к данным и вычтенная перед локальной интерполяцией; та же идея
+  используется в потенциальных полях и геохимии [Agterberg 2023].
+* **fault** — линия, через которую поле может скачком меняться; сейсмические
+  и геологические поверхности интерполируют по разные стороны разлома, а
+  затем сшивают [Xue et al. 2018].
+* **leq, geq** — физические границы (неотрицательные концентрации, пределы
+  растворимости, пороги обнаружения); интерполяция должна их соблюдать, а не
+  только подгонять данные [Michalak 2008].
+* **mean, wmean** — среднее по блоку или области — это block kriging
+  [Cressie 2006].
+* **hist** — подгонка распределения результата под целевую гистограмму — это
+  quantile mapping, которым правят смещения климатических и спутниковых полей
+  [Themeßl et al. 2011].
+
+* J. Li, A. D. Heap (2014). Spatial interpolation methods applied in the
+  environmental sciences: a review. *Environmental Modelling & Software*.
+  `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_
+* S. Bek, J. Ježek (2011). Optimization of interpolation parameters when
+  deriving DEM from contour lines. *Stochastic Environmental Research and Risk
+  Assessment* 25, 1049–1055.
+  `doi:10.1007/s00477-011-0482-8 <https://doi.org/10.1007/s00477-011-0482-8>`_
+* F. Agterberg (2023). Trend Surface Analysis. In *Encyclopedia of Mathematical
+  Geosciences*, Springer, 1567–1575.
+  `doi:10.1007/978-3-030-85040-1_461 <https://doi.org/10.1007/978-3-030-85040-1_461>`_
+* Z. Xue, X. Wu, S. Fomel (2018). Predictive painting across faults.
+  *Interpretation* 6, T449–T455.
+  `doi:10.1190/int-2017-0171.1 <https://doi.org/10.1190/int-2017-0171.1>`_
+* A. M. Michalak (2008). A Gibbs sampler for inequality-constrained
+  geostatistical interpolation and inverse modeling. *Water Resources Research*
+  44\. `doi:10.1029/2007WR006645 <https://doi.org/10.1029/2007WR006645>`_
+* N. Cressie (2006). Block kriging for lognormal spatial processes.
+  *Mathematical Geology* 38, 413–443.
+  `doi:10.1007/s11004-005-9022-8 <https://doi.org/10.1007/s11004-005-9022-8>`_
+* M. J. Themeßl, A. Gobiet, A. Leuprecht (2011). Empirical-statistical
+  downscaling and error correction of daily precipitation from regional climate
+  models. *International Journal of Climatology*.
+  `doi:10.1002/joc.2168 <https://doi.org/10.1002/joc.2168>`_
+
 Массивы на входе и выходе
 -------------------------
 

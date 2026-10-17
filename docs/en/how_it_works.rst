@@ -25,6 +25,31 @@ that area; a points rule is a sum over the measured points; a fault changes how
 neighbouring cells are coupled. The order in which the rules are added is the
 order of the functionals, and that order is the priority.
 
+Why these energies
+------------------
+
+The two smoothness terms are the discrete bending energy of a thin plate: D1
+penalises the slope and D2 the curvature, so without data the surface relaxes
+to a constant or a plane. It is the same idea as minimum-curvature gridding in
+geophysics, where the grid is a thin elastic sheet that passes through the data
+and is allowed to bend [Wessel & Bercovici 1998]. A data-misfit term added to the
+same energy is the classical thin-plate smoothing spline [Hutchinson 1995];
+geostatistics looks at the same field as a realisation of a random process and
+calls the interpolation kriging [Chilès & Delfiner 2012]. The rules mix both
+views: hard conditions (points, areas, curves) act as data, soft ones as
+misfit, and the completer is the bending energy itself.
+
+* P. Wessel, D. Bercovici (1998). Interpolation with splines in tension: a
+  Green's function approach. *Mathematical Geology* 30, 77–93.
+  `doi:10.1023/A:1021713421882 <https://doi.org/10.1023/A:1021713421882>`_
+* M. F. Hutchinson (1995). Interpolating mean rainfall using thin plate
+  smoothing splines. *International Journal of Geographical Information
+  Systems* 9, 385–403.
+  `doi:10.1080/02693799508902045 <https://doi.org/10.1080/02693799508902045>`_
+* J.-P. Chilès, P. Delfiner (2012). *Geostatistics: Modeling Spatial
+  Uncertainty*. Wiley.
+  `doi:10.1002/9781118136188 <https://doi.org/10.1002/9781118136188>`_
+
 CMOFS
 -----
 

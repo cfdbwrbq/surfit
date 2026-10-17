@@ -41,6 +41,21 @@ Sao Tome rises from a flat sea, and the peak at 0.27 N is Pico de Sao Tome. It
 is 164 KB, which is why the repository can carry it; a full 1-arcsecond tile is
 25 MB, and those are neither committed nor downloaded by the checks.
 
+What the data is
+----------------
+
+SRTM is the radar topography mission flown in 2000; its one-degree tiles are the
+most widely used free DEM, and the 3-arcsecond product is a resampling of the
+1-arcsecond one [Farr et al. 2007]. The grid step is worth choosing from the data
+density and the purpose of the map, not just from the resolution of the source
+[Hengl 2006].
+
+* T. G. Farr et al. (2007). The Shuttle Radar Topography Mission. *Reviews of
+  Geophysics* 45, RG2004.
+  `doi:10.1029/2005RG000183 <https://doi.org/10.1029/2005RG000183>`_
+* T. Hengl (2006). Finding the right pixel size. *Computers & Geosciences*.
+  `doi:10.1016/j.cageo.2005.11.008 <https://doi.org/10.1016/j.cageo.2005.11.008>`_
+
 The examples
 ------------
 

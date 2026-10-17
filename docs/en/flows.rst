@@ -18,6 +18,19 @@ inconsistent -- a measured pressure and a measured rate at the same well rarely
 agree -- and the weights decide how far each is trusted. A boundary-value
 problem cannot accept both; this is the reason the library exists.
 
+What this is
+------------
+
+The rules solve an inverse problem: the pressure field has to reproduce the
+measured rates while satisfying the conservation law in every cell. This is the
+classical history-matching problem of reservoir and groundwater modelling, where
+the unknown field is conditioned on production data and the weights express how
+much each measurement is trusted [Oliver & Chen 2011].
+
+* D. S. Oliver, Y. Chen (2011). Recent progress on reservoir history matching:
+  a review. *Computational Geosciences*.
+  `doi:10.1007/s10596-010-9194-2 <https://doi.org/10.1007/s10596-010-9194-2>`_
+
 The examples are ports of ``examples/freeflow/press1`` and ``press2``. Each
 writes the same ``.dat`` as its Tcl original (``test_examples.py`` checks that
 byte for byte), and the maps below are drawn by ``make_images.py`` from the

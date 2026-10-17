@@ -34,6 +34,7 @@ the resulting data files byte for byte.
    :maxdepth: 2
 
    installation
+   first_steps
    python
    flows
    tcl
@@ -43,8 +44,8 @@ the resulting data files byte for byte.
 Where to start
 --------------
 
-* New to surfit? Read :doc:`installation`, then the Python example in
-  :doc:`python`.
+* New to surfit? Read :doc:`installation`, then :doc:`first_steps`; the examples
+  with their maps are in :doc:`python`.
 * Migrating an existing Tcl script? :doc:`tcl` explains the mapping, and
   ``src/pysurfit/tests/run_tcl_suite.py`` does the translation mechanically.
 * Looking for a file format? :doc:`formats` lists them all.

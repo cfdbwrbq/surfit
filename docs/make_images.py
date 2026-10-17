@@ -127,6 +127,9 @@ FIGURES = (
                                       "title": "horizontal fracture"}),
     ("map-ver-frac", "map_ver_frac", {"levels": 12, "size": 700,
                                       "title": "vertical fracture"}),
+    # first steps: the smallest complete task
+    ("map-first-steps", "first_steps", {"levels": 14, "size": 700,
+                                        "title": "first steps"}),
 )
 
 

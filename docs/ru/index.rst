@@ -36,6 +36,7 @@ surfit
    :maxdepth: 2
 
    installation
+   first_steps
    python
    flows
    tcl
@@ -45,8 +46,8 @@ surfit
 С чего начать
 -------------
 
-* Впервые слышите о surfit? Прочитайте :doc:`installation`, затем пример на
-  Python в :doc:`python`.
+* Впервые слышите о surfit? Прочитайте :doc:`installation`, затем
+  :doc:`first_steps`; примеры с картами — в :doc:`python`.
 * Переносите существующий Tcl-скрипт? В :doc:`tcl` описано соответствие команд,
   а ``src/pysurfit/tests/run_tcl_suite.py`` делает этот перевод механически.
 * Ищете формат файла? Полный список в :doc:`formats`.

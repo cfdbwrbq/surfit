@@ -65,4 +65,5 @@ def _add_language_switcher(app, pagename, templatename, context, doctree):
 def setup(app):
     app.connect("html-page-context", _add_language_switcher)
     app.add_css_file("custom.css")
+    app.add_js_file("copy_code.js")
     return {"parallel_read_safe": True, "parallel_write_safe": True}

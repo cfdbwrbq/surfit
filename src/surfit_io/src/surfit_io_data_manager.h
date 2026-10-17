@@ -34,9 +34,8 @@ protected:
 public:
 	bool auto_load(const char * filename, const char * first1024, int readed) const;
 	//! The whole-task ROFF file is written by surfit's own manager; this one
-	//! contributes no tag to it, and the base class default (false) made
-	//! file_save() report failure as soon as the io manager was registered.
-	bool save(datafile * df) const { return true; };
+	//! contributes no tag to it, which is why the inherited save() is a no-op
+	//! that succeeds.
 	void release();
 	const char * getName() const {return "surfit_io";};
 };

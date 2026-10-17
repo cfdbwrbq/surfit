@@ -43,7 +43,9 @@ public:
 	//! loads tag with tag_name from ROFF file (if it is possible)	
 	virtual int load_tag(datafile *df, char * tag_name) const { return 0; }; // -1 = error, 0 = not found, 1 = ok
 	//! saves memory to ROFF file (see \ref datafile)
-	virtual bool save(datafile *df) const { return false; };
+	//! A manager with nothing to contribute returns true: "not supported" is
+	//! not "failed", or one neutral manager makes file_save() fail for all.
+	virtual bool save(datafile *df) const { return true; };
 	//! unloads data from memory
 	virtual void clear_data() const {};
 	//! unloads gridding rules from memory

@@ -94,6 +94,10 @@
   Scientific.
   `doi:10.1142/6437 <https://doi.org/10.1142/6437>`_
 
+* A. G. Journel (1989). *Fundamentals of Geostatistics in Five Lessons*.
+  American Geophysical Union.
+  `doi:10.1029/SC008 <https://doi.org/10.1029/SC008>`_
+
 Геостатистика
 -------------
 
@@ -181,6 +185,14 @@
   with variable density: a new methodology to derive quality DEMs. *IEEE
   Geoscience and Remote Sensing Letters* 4, 117–121.
   `doi:10.1109/LGRS.2006.887055 <https://doi.org/10.1109/LGRS.2006.887055>`_
+
+* D. Maraun (2016). Bias correcting climate change simulations - a critical
+  review. *Current Climate Change Reports* 2, 211-220.
+  `doi:10.1007/s40641-016-0050-x <https://doi.org/10.1007/s40641-016-0050-x>`_
+* B. P. Malone, S. K. Jha, B. Minasny, A. B. McBratney (2016). Comparing
+  regression-based digital soil mapping and multiple-point geostatistics for
+  the spatial extrapolation of soil data. *Geoderma* 262, 14-23.
+  `doi:10.1016/j.geoderma.2015.08.037 <https://doi.org/10.1016/j.geoderma.2015.08.037>`_
 
 Рельеф и источники данных
 -------------------------
@@ -285,6 +297,19 @@
   `doi:10.1145/235815.235821 <https://doi.org/10.1145/235815.235821>`_
 * R. B. Lehoucq, D. C. Sorensen, C. Yang (1998). *ARPACK Users' Guide*. SIAM.
   `doi:10.1137/1.9780898719628 <https://doi.org/10.1137/1.9780898719628>`_
+
+* Y. Saad, M. H. Schultz (1986). GMRES: a generalized minimal residual
+  algorithm for solving nonsymmetric linear systems. *SIAM Journal on
+  Scientific and Statistical Computing* 7, 856-869.
+  `doi:10.1137/0907058 <https://doi.org/10.1137/0907058>`_
+* H. A. van der Vorst (1992). Bi-CGSTAB: a fast and smoothly converging
+  variant of Bi-CG for the solution of nonsymmetric linear systems. *SIAM
+  Journal on Scientific and Statistical Computing* 13, 631-644.
+  `doi:10.1137/0913035 <https://doi.org/10.1137/0913035>`_
+* C. L. Lawson, R. J. Hanson, D. R. Kincaid, F. T. Krogh (1979). Basic linear
+  algebra subprograms for Fortran usage. *ACM Transactions on Mathematical
+  Software* 5, 308-323.
+  `doi:10.1145/355841.355847 <https://doi.org/10.1145/355841.355847>`_
 
 Вычислительная геометрия
 ------------------------

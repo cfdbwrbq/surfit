@@ -29,6 +29,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy tqdm pybind11 scikit-build-core
+          # The documentation build is part of ci/check.sh when sphinx is
+          # visible; these are the same versions a reader would use.
+          python -m pip install -r docs/requirements.txt
 
       # The viewer tests need a DOM and d3. Without these they report SKIP
       # instead of failing, so this step is what turns them on.

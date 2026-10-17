@@ -4,12 +4,14 @@
 #
 #   ci/check.sh            build, the 35 test scripts, the 49 Python examples,
 #                          parity, the name matcher, the viewer, sessions, every
-#                          command against Tcl, and a wheel that installs and
-#                          solves on its own (about twenty minutes)
+#                          command against Tcl, the documentation trees, and a
+#                          wheel that installs and solves on its own (about
+#                          twenty minutes)
 #   ci/check.sh --full     the same, plus the 29 realworld pipelines (an hour
 #                          more), for the nightly run
 #
-# Everything happens in build-ci/, so a development build is left alone.
+# Everything happens in build-ci/, so a development build is left alone:
+# the documentation, when sphinx is installed, is built into build-ci/docs-html.
 # Environment:
 #   BUILD_DIR      where to build (default: <repo>/build-ci)
 #   PYBIND11_DIR   pybind11's CMake directory, if find_package cannot see it
@@ -87,6 +89,24 @@ run all-commands "$PYTHON" "$TESTS/test_all_commands.py"
 
 step "the viewer"
 run viewer "$PYTHON" "$TESTS/test_viewer.py"
+
+step "the documentation trees are in step"
+run documentation "$PYTHON" "$HERE/docs/check_docs.py"
+
+# The documentation is a deliverable, so a broken cross-reference or a page that
+# stops building has to fail a run rather than wait for a manual build.  Sphinx
+# is not needed to build the engine, so a tree without it reports SKIP instead
+# of failing; the CI image installs docs/requirements.txt.
+step "the documentation builds in both languages"
+if "$PYTHON" -c "import sphinx" > /dev/null 2>&1; then
+    for language in en ru; do
+        run "documentation-$language" "$PYTHON" -m sphinx -q -W -b html \
+            -c "$HERE/docs" -D language="$language" \
+            "$HERE/docs/$language" "$BUILD/docs-html/$language"
+    done
+else
+    echo "SKIP documentation build: sphinx is not installed"
+fi
 
 step "a wheel that installs and solves"
 WHEEL_TARGET="$BUILD/wheel-install"

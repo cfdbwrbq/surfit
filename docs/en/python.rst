@@ -275,6 +275,9 @@ All of these live under ``examples/python/`` and run as written. Each map is tha
 example's own output: ``docs/make_images.py`` imports the example and renders the
 grid it produces, so a figure cannot drift from the code.
 
+Each of these four is a port of a Tcl script under ``examples/surfit/tests``, and
+the grid it produces is byte-identical to the one that script produces.
+
 area.py
 ~~~~~~~
 
@@ -302,6 +305,35 @@ instead of smoothing over it.
    :align: center
 
    The jumps are the abrupt colour changes along the polygon edges.
+
+surface.py
+~~~~~~~~~~
+
+A surface used as data: the result follows ``test_func`` in least squares and
+tends to a plane where the surface gives no guidance.
+
+.. figure:: ../_static/map-surface.svg
+   :alt: Filled contour map of the surface example
+   :width: 80%
+   :align: center
+
+   The surface is smooth but not flat: the contour lines bunch up where
+   ``test_func`` changes fastest, and the map runs from -27.5 to 82.3.
+
+contour.py
+~~~~~~~~~~
+
+Three contours: the small one and the centre one are honoured exactly, the big
+one follows with a weight of 0.5. A contour carries its value along the line,
+which is what separates it from a curve.
+
+.. figure:: ../_static/map-contour.svg
+   :alt: Filled contour map of the contour example
+   :width: 80%
+   :align: center
+
+   Values run from -0.7 to 1. The three rings are the contours themselves; the
+   space between them is filled in by ``completer``.
 
 trend_from_numpy.py
 ~~~~~~~~~~~~~~~~~~~

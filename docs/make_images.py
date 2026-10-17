@@ -36,6 +36,10 @@ FIGURES = (
                           "title": "area example"}),
     ("map-faults", "faults", {"levels": 12, "size": 700,
                               "title": "fault example"}),
+    ("map-surface", "surface", {"levels": 12, "size": 700,
+                                "title": "surface example"}),
+    ("map-contour", "contour", {"levels": 12, "size": 700,
+                                "title": "contour example"}),
     ("map-trend", "trend_from_numpy", {"levels": 12, "size": 700,
                                        "title": "trend example"}),
 )

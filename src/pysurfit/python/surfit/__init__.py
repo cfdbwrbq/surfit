@@ -26,6 +26,7 @@ import fnmatch
 import functools
 import re
 import sys
+import threading
 import time
 
 import numpy as np
@@ -35,6 +36,12 @@ from ._viewer import render_html, save_viewer, viewer
 
 #: Undefined grid nodes carry FLT_MAX, the core's `undef_value`.
 UNDEF_VALUE = float(np.finfo(np.float32).max)
+
+
+#: Session calls switch the engine's globals, so only one of them may be in
+#: flight at a time.  The lock is process-wide and re-entrant: a method may
+#: call another Session method without deadlocking.
+_STATE_LOCK = threading.RLock()
 
 
 def defined_mask(values_array):
@@ -263,17 +270,20 @@ class Session:
         first.read_areas(...)    # each call switches to that task
         second.read_areas(...)
 
-    Only one state is active at a time.  Interleaving is fine; running two
-    Sessions from two threads at once is not, because the switch itself is not
-    protected.
+    Only one state is active at a time.  Interleaving is fine, and so are two
+    Sessions in two threads: every call holds a process-wide lock across the
+    state switch and the command, so the calls are serialized rather than
+    interleaved.  The solve releases the GIL while it computes, but another
+    Session's call waits for the lock until it finishes.
     """
 
     def __init__(self, map_name="map", tol=None):
-        self._state = _core.state_create()
-        self._activate()
-        set_map_name(map_name)
-        if tol is not None:
-            set_tol(tol)
+        with _STATE_LOCK:
+            self._state = _core.state_create()
+            self._activate()
+            set_map_name(map_name)
+            if tol is not None:
+                set_tol(tol)
 
     def _activate(self):
         """Makes this task's state the one the engine works on."""
@@ -282,8 +292,9 @@ class Session:
             _core.state_install(state)
 
     def _call(self, target, *args, **kwargs):
-        self._activate()
-        return target(*args, **kwargs)
+        with _STATE_LOCK:
+            self._activate()
+            return target(*args, **kwargs)
 
     def close(self):
         """Frees this task's state and everything it holds."""
@@ -293,12 +304,14 @@ class Session:
             self._state = 0
 
     def __enter__(self):
-        self._activate()
+        with _STATE_LOCK:
+            self._activate()
         return self
 
     def __exit__(self, *exc_info):
-        self._activate()
-        clear_data()
+        with _STATE_LOCK:
+            self._activate()
+            clear_data()
         return False
 
     def __del__(self):
@@ -430,11 +443,16 @@ def _reexport_commands():
 
 
 def _activating(function):
-    """Wraps a Session method so it installs the task's state first."""
+    """Wraps a Session method so it installs the task's state first.
+
+    The whole activate-and-call pair is under the state lock: another thread
+    must not switch the globals between the two steps.
+    """
     @functools.wraps(function)
     def wrapper(self, *args, **kwargs):
-        self._activate()
-        return function(self, *args, **kwargs)
+        with _STATE_LOCK:
+            self._activate()
+            return function(self, *args, **kwargs)
     return wrapper
 
 

@@ -194,10 +194,15 @@ be interleaved in any order; the results are the same as running each task
 alone. ``src/pysurfit/tests/test_sessions.py`` checks exactly that, comparing
 the interleaved grids byte for byte against solo runs in fresh processes.
 
-Only one state is active at a time, which is what keeps the switch cheap. Two
-Sessions can therefore be interleaved but not driven from two threads at once:
-the switch itself is not protected. The solve does release the GIL, so other
-Python threads keep running while it computes.
+Only one state is active at a time, which is what keeps the switch cheap. Every
+Session call holds a process-wide lock across the switch and the command, so two
+Sessions can be driven from two threads: their calls are serialized, and a solve
+blocks the other Session's calls until it finishes. The solve releases the GIL,
+so Python threads that do not touch surfit keep running.
+
+The lock belongs to Session calls. A module-level function such as
+``surfit.area(...)`` still works on whichever state is active and is not
+protected; use a Session when several threads share the engine.
 
 Progress
 --------

@@ -8,6 +8,7 @@ itself in a fresh process, so "independent" is measured, not assumed.
 
 import hashlib
 import os
+from concurrent.futures import ThreadPoolExecutor
 import subprocess
 import sys
 import tempfile
@@ -104,6 +105,17 @@ def main():
     assert again == solo, "a repeated run changed the result"
     assert solo[0] != solo[1], "the two tasks produced the same grid"
     print("PASS: each task keeps its own result")
+
+    # Two threads, one Session each.  The state switch and the call are under a
+    # process-wide lock, so the calls serialize instead of switching the globals
+    # underneath each other.
+    threaded_tasks = [build(name, value) for name, value in CONFIGS]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        threaded = list(pool.map(
+            lambda task: (task.solve(), digest(task.values()))[1],
+            threaded_tasks))
+    assert threaded == solo, "two threads changed the results: %r" % (threaded,)
+    print("PASS: two Sessions in two threads give the solo results")
 
     # A Session must compute what the engine computes.  Without this the state
     # work could quietly change the answer while every other check still passed:

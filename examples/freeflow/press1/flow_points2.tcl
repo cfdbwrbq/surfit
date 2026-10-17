@@ -1,6 +1,7 @@
 # 
 # load plugins
 # 
+load libtclsurfit[info sharedlibextension]
 load libfreeflow[info sharedlibextension]
 
 # remove all previous data and functionals

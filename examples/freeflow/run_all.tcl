@@ -1,3 +1,4 @@
+load libtclsurfit[info sharedlibextension]
 load libfreeflow[info sharedlibextension]
 
 #

@@ -1,4 +1,5 @@
 #
+load libtclsurfit[info sharedlibextension]
 load libfreeflow[info sharedlibextension]
 
 source "points.tcl"

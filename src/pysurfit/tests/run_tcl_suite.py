@@ -213,14 +213,41 @@ def link_libraries(workdir):
             os.symlink(os.path.join(BIN, name), os.path.join(workdir, name))
 
 
-def data_files(directory):
-    """Every produced data file, as a path relative to the scratch root."""
-    found = []
+def produced_files(directory, source_dir):
+    """The files a run wrote, as relative path -> bytes.
+
+    Only `.dat` files used to be compared, which left every example that writes
+    another format unverified: the format plugin's examples write `.bln` and
+    `.shp` and were reported as "no data files produced" on both sides.
+
+    A file that is byte-identical to the copy in the script's source directory
+    was an input: comparing it says nothing, and skipping it keeps the inputs
+    (which are most of the directory) out of the comparison.
+    """
+    found = {}
     for root, _dirs, names in os.walk(directory):
         for name in names:
-            if name.endswith(".dat"):
-                found.append(os.path.relpath(os.path.join(root, name), directory))
-    return sorted(found)
+            path = os.path.join(root, name)
+            if os.path.islink(path):
+                continue
+            # The build tree is linked into the scratch directory, and a saved
+            # reference keeps those links: they are the front end, not a result.
+            if name.endswith((".so", ".dylib", ".dll", ".pyd")):
+                continue
+            # surf_plot has no Python binding and writes PostScript on the Tcl
+            # side only; the log carries timestamps.
+            if name == "surfit.log" or name.endswith(".ps"):
+                continue
+            relative = os.path.relpath(path, directory)
+            with open(path, "rb") as handle:
+                content = handle.read()
+            original = os.path.join(source_dir, relative)
+            if os.path.isfile(original):
+                with open(original, "rb") as handle:
+                    if handle.read() == content:
+                        continue
+            found[relative] = content
+    return found
 
 
 def execute_python(script, workdir):
@@ -243,25 +270,29 @@ def execute_python(script, workdir):
     return warnings
 
 
-def compare(tcl_dir, py_dir, note):
+def compare(tcl_dir, py_dir, note, source_dir):
     """Compares what both front ends produced."""
-    tcl_files = data_files(tcl_dir)
-    py_files = data_files(py_dir)
+    tcl_files = produced_files(tcl_dir, source_dir)
+    py_files = produced_files(py_dir, source_dir)
 
-    if tcl_files != py_files:
+    if sorted(tcl_files) != sorted(py_files):
         return "DIFF", "different outputs: tcl=%s python=%s" % (
-            tcl_files, py_files)
+            sorted(tcl_files), sorted(py_files))
     if not tcl_files:
         return "EMPTY", "no data files produced"
 
-    for filename in tcl_files:
-        with open(os.path.join(tcl_dir, filename), "rb") as handle:
-            expected = handle.read()
-        with open(os.path.join(py_dir, filename), "rb") as handle:
-            actual = handle.read()
-        if expected != actual:
+    # A file with no bytes is what a save writes when its name pattern matched
+    # nothing.  Both front ends agreeing on an empty file is not a pass: the
+    # example did nothing, and the `+`-for-`*` patterns in the shipped examples
+    # hid behind exactly that.
+    empty = sorted(name for name, content in tcl_files.items() if not content)
+    if empty:
+        return "EMPTY", "empty output: %s" % ", ".join(empty)
+
+    for filename in sorted(tcl_files):
+        if tcl_files[filename] != py_files[filename]:
             return "DIFF", "%s differs (%d vs %d bytes)" % (
-                filename, len(expected), len(actual))
+                filename, len(tcl_files[filename]), len(py_files[filename]))
     return "PASS", note
 
 
@@ -303,7 +334,8 @@ def check_group(scripts, key=None, mode="live", reference_root=None):
             except subprocess.CalledProcessError as error:
                 return "TCL-FAIL", "%s: tclsh exited %d" % (label, error.returncode)
 
-        note = "%d file(s)" % len(data_files(py_dir))
+        source_dir = os.path.dirname(os.path.abspath(scripts[0]))
+        note = "%d file(s)" % len(produced_files(py_dir, source_dir))
         if len(scripts) > 1:
             note += " from %d scripts" % len(scripts)
         if warnings:
@@ -313,16 +345,18 @@ def check_group(scripts, key=None, mode="live", reference_root=None):
             target = reference_dir_for(reference_root, key)
             if os.path.isdir(target):
                 shutil.rmtree(target)
-            shutil.copytree(tcl_dir, target)
-            return compare(tcl_dir, py_dir, note + "; reference saved")
+            # Keep the library links as links: produced_files() skips them, and
+            # a reference is about the data, not a copy of the front end.
+            shutil.copytree(tcl_dir, target, symlinks=True)
+            return compare(tcl_dir, py_dir, note + "; reference saved", source_dir)
 
         if mode == "use":
             target = reference_dir_for(reference_root, key)
             if not os.path.isdir(target):
                 return "ERROR", "no reference for %r in %s" % (key, reference_root)
-            return compare(target, py_dir, note + "; vs reference")
+            return compare(target, py_dir, note + "; vs reference", source_dir)
 
-        return compare(tcl_dir, py_dir, note)
+        return compare(tcl_dir, py_dir, note, source_dir)
 
 
 def collect(argv):

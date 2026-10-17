@@ -960,10 +960,20 @@ PYBIND11_MODULE(_surfit, m) {
 		return drain_boolvec(surfit::pnts_update_by_surf(points_name.c_str(), surf_name.c_str()));
 	}, py::arg("points_name") = "*", py::arg("surf_name") = "*");
 
-	m.def("area_read", [](const std::string & path, py::object name) {
+	// The columns and the delimiter are part of the command: `area_read` reads
+	// a table, and an area file whose coordinates are not in columns 1 and 2
+	// (press2's ZAM1.txt puts the name first) cannot be loaded without them.
+	m.def("area_read", [](const std::string & path, py::object name,
+	                      int col1, int col2, const std::string & delimiter,
+	                      int skip_lines, int grow_by) {
 		std::string storage;
-		return drain_boolvec(area_read(path.c_str(), opt_cstr(name, storage)));
-	}, py::arg("path"), py::arg("name") = py::none());
+		return drain_boolvec(area_read(path.c_str(), opt_cstr(name, storage),
+		                               col1, col2, delimiter.c_str(),
+		                               skip_lines, grow_by));
+	}, py::arg("path"), py::arg("name") = py::none(),
+	   py::arg("col1") = 1, py::arg("col2") = 2, py::arg("delimiter") = " \t",
+	   py::arg("skip_lines") = 0, py::arg("grow_by") = 250,
+	   "read areas from a text file, one row per node");
 
 	// `name` is optional in the C++ API (NULL means "unnamed grid"), so accept
 	// None here instead of inventing a name.
@@ -1008,10 +1018,6 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("surfit", []() { surfit::surfit(); }, "run the gridding algorithm",
 	      py::call_guard<py::gil_scoped_release>());
 
-	m.def("surf_save", [](const std::string & path, const std::string & name) {
-		return drain_boolvec(surfit::surf_save(path.c_str(), name.c_str()));
-	}, py::arg("path"), py::arg("name") = "*");
-
 	m.def("surf_count", &surf_count, "number of surfaces in memory");
 	m.def("surf_name_at", &surf_name_at, py::arg("pos"));
 	m.def("surf_index", &surf_index, py::arg("name"),
@@ -1032,10 +1038,6 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("get_solver_short_name", &surfit::get_solver_short_name, py::arg("pos"));
 	m.def("get_solver_long_name", &surfit::get_solver_long_name, py::arg("pos"),
 	      "description of the pos-th solver");
-	m.def("get_current_solver_short_name",
-	      &surfit::get_current_solver_short_name);
-	m.def("get_current_solver_long_name",
-	      &surfit::get_current_solver_long_name);
 
 	// ---- grid sizing -------------------------------------------------------
 
@@ -1361,25 +1363,9 @@ PYBIND11_MODULE(_surfit, m) {
 	   py::arg("histname") = py::none(), py::arg("col1") = 1,
 	   py::arg("delimiter") = " \t", py::arg("skip_lines") = 0,
 	   py::arg("grow_by") = 250);
-	m.def("hist_write", [](const std::string & path, const std::string & name,
-	                       bool three_columns) {
-		return drain_boolvec(surfit::hist_write(path.c_str(), name.c_str(),
-		                                        three_columns));
-	}, py::arg("path"), py::arg("name") = "*", py::arg("three_columns") = true);
-	m.def("hist_del", [](const std::string & name) {
-		surfit::hist_del(name.c_str());
-	}, py::arg("name") = "*");
 
 	// ---- dataset utilities -------------------------------------------------
 
-	m.def("pnts_save", [](const std::string & path, const std::string & name) {
-		return drain_boolvec(surfit::pnts_save(path.c_str(), name.c_str()));
-	}, py::arg("path"), py::arg("name") = "*");
-	m.def("pnts_write", [](const std::string & path, const std::string & name,
-	                       const std::string & delimiter) {
-		return drain_boolvec(surfit::pnts_write(path.c_str(), name.c_str(),
-		                                        delimiter.c_str()));
-	}, py::arg("path"), py::arg("name") = "*", py::arg("delimiter") = "\t");
 	m.def("pnts_set", [](const std::string & first, const std::string & second) {
 		return drain_boolvec(surfit::pnts_set(first.c_str(), second.c_str()));
 	}, py::arg("points1"), py::arg("points2"));
@@ -1396,9 +1382,6 @@ PYBIND11_MODULE(_surfit, m) {
 	}, py::arg("name") = "*", py::arg("area") = "*");
 	m.def("pnts_info", []() { surfit::pnts_info(); });
 
-	m.def("cntr_del", [](const std::string & name) {
-		surfit::cntr_del(name.c_str());
-	}, py::arg("name") = "*");
 	m.def("cntr_mult_real", [](double value, const std::string & name) {
 		return drain_boolvec(surfit::cntr_mult_real(value, name.c_str()));
 	}, py::arg("value"), py::arg("name") = "*");
@@ -1427,9 +1410,6 @@ PYBIND11_MODULE(_surfit, m) {
 		return drain_boolvec(surfit::smooth_contour_add(weight, name.c_str()));
 	}, py::arg("weight") = 50, py::arg("name") = "*");
 
-	m.def("surf_del", [](const std::string & name) {
-		surfit::surf_del(name.c_str());
-	}, py::arg("name") = "*");
 	m.def("surf_minus", [](const std::string & first, const std::string & second) {
 		return drain_boolvec(surfit::surf_minus(first.c_str(), second.c_str()));
 	}, py::arg("surface1_name"), py::arg("surface2_name"));

@@ -38,6 +38,7 @@ surfit
    installation
    first_steps
    python
+   how_it_works
    flows
    tcl
    formats
@@ -48,6 +49,8 @@ surfit
 
 * Впервые слышите о surfit? Прочитайте :doc:`installation`, затем
   :doc:`first_steps`; примеры с картами — в :doc:`python`.
+* Хотите понять, откуда берётся результат? :doc:`how_it_works` — про метод,
+  штрафной цикл и решатели.
 * Переносите существующий Tcl-скрипт? В :doc:`tcl` описано соответствие команд,
   а ``src/pysurfit/tests/run_tcl_suite.py`` делает этот перевод механически.
 * Ищете формат файла? Полный список в :doc:`formats`.

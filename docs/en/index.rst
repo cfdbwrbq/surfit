@@ -36,6 +36,7 @@ the resulting data files byte for byte.
    installation
    first_steps
    python
+   how_it_works
    flows
    tcl
    formats
@@ -46,6 +47,8 @@ Where to start
 
 * New to surfit? Read :doc:`installation`, then :doc:`first_steps`; the examples
   with their maps are in :doc:`python`.
+* Want to know why the result is what it is? :doc:`how_it_works` describes the
+  method, the penalty loop and the solvers.
 * Migrating an existing Tcl script? :doc:`tcl` explains the mapping, and
   ``src/pysurfit/tests/run_tcl_suite.py`` does the translation mechanically.
 * Looking for a file format? :doc:`formats` lists them all.

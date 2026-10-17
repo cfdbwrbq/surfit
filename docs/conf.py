@@ -70,8 +70,8 @@ html_theme_options = {
     "current_version": release,
     "header_links": HEADER_LINKS["en"],
     "locales": [
-        ("en", "../en/"),
-        ("ru", "../ru/"),
+        ("en", "/en/"),
+        ("ru", "/ru/"),
     ],
 }
 

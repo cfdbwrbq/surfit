@@ -77,6 +77,39 @@ def python_points():
     print("after_del=%d" % surfit.pnts_size())
 
 
+def tcl_surf_debit():
+    return LOAD + """
+load libfreeflow[info sharedlibextension]
+set map_name "map"
+grid_get -12 12 1 -12 12 1
+pnts_read "data/7points.txt" "wells"
+points "wells"
+surfit
+set undef_value -12345
+puts "debit=[lindex [surf_debit 500 500 1 1 1 map] 0]"
+puts "rect=[lindex [surf_debit_rect 500 500 600 600 1 1 1 map] 0]"
+"""
+
+
+def python_surf_debit():
+    surfit.clear_data()
+    surfit.set_map_name("map")
+    surfit.grid_get(-12, 12, 1, -12, 12, 1)
+    surfit.pnts_read(os.path.join("data", "7points.txt"), "wells")
+    surfit.points("wells")
+    surfit.surfit()
+    surfit.set_undef_value(-12345.0)
+    debit = surfit.surf_debit(500.0, 500.0, 1.0, 1.0, 1.0, "map")
+    rect = surfit.surf_debit_rect(500.0, 500.0, 600.0, 600.0,
+                                  1.0, 1.0, 1.0, "map")
+    print("debit=%g" % debit[0])
+    print("rect=%g" % rect[0])
+    # Both functions answer the configured undef_value outside the grid; the
+    # rectangle used to answer FLT_MAX regardless of the setting.
+    assert debit[0] == -12345.0, debit
+    assert rect[0] == -12345.0, rect
+
+
 def tcl_pnts_to_cntrs():
     return LOAD + """
 pnts_read "data/7points.txt" "wells"
@@ -283,6 +316,7 @@ CASES = (
     ("hist datafile", tcl_hist_datafile, python_hist_datafile, ("task.dat",)),
     ("minmax", tcl_minmax, python_minmax, ()),
     ("pnts to cntrs", tcl_pnts_to_cntrs, python_pnts_to_cntrs, ()),
+    ("surf debit", tcl_surf_debit, python_surf_debit, ()),
 )
 
 
@@ -301,7 +335,7 @@ def prepare(directory, scratch):
 
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
-           "converted=", "cntrs=",
+           "converted=", "cntrs=", "debit=", "rect=",
            "empty=", "names=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",

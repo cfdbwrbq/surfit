@@ -133,7 +133,7 @@ REAL _surf_debit_rect(d_surf * fnc, REAL x1, REAL y1, REAL x2, REAL y2,
 		(j1 >= MM-1) ||
 		(j2 < 1)     ||
 		(j2 >= MM-1) )
-		return FLT_MAX;
+		return undef_value;
 
 	REAL res = REAL(0);
 	size_t pos1, pos2;

@@ -251,6 +251,11 @@ the roughness ``surf_D1``. Printing those numbers is the comparison: the debit
 and pressure residuals trade against each other, and the roughness says which
 field is smoother.
 
+Both ``surf_debit`` and ``surf_debit_rect`` answer ``undef_value`` for a point
+or a rectangle outside the grid, or one that touches an undefined cell. The
+rectangle used to answer ``FLT_MAX`` regardless of ``undef_value``; it now
+follows the same setting as the point query.
+
 Reading the data
 ----------------
 

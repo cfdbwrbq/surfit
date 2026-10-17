@@ -37,11 +37,8 @@ press_points.py
 The baseline: the well pressure is 200 atmospheres and no rate is given, so the
 field is interpolated between the two pressures.
 
-.. code-block:: python
-
-   task.curve(250, "press")            # boundary pressure, atm
-   task.points("center_press_point")   # well pressure, atm
-   task.lcm_simple(16.4, 1, 1e-6)      # conservation of mass
+.. literalinclude:: ../../examples/python/press_points.py
+   :language: python
 
 .. figure:: ../_static/map-press-points.svg
    :alt: Pressure field from a 250-atm boundary and a 200-atm well
@@ -56,11 +53,8 @@ flow_points.py
 The well is given as a rate instead: -0.00159 m3/s at the centre. The pressure
 at the well is now an output of the conservation law rather than an input.
 
-.. code-block:: python
-
-   task.curve(250, "press")
-   task.lcm_simple(16.4, 1, 1e-6)
-   task.flow_points("center_flow_point")   # rate, m3/s
+.. literalinclude:: ../../examples/python/flow_points.py
+   :language: python
 
 .. figure:: ../_static/map-flow-points.svg
    :alt: Pressure field from a boundary and a rate at one point
@@ -77,10 +71,8 @@ Both the pressure and the rate at the well are known, and they disagree.
 ``points_add`` keeps the 200-atm measurement with a weight, ``flow_points`` adds
 the rate, and the solution is a compromise between them.
 
-.. code-block:: python
-
-   task.points_add(1, "center_press_point")   # pressure, with a weight
-   task.flow_points("center_flow_point")      # and the rate
+.. literalinclude:: ../../examples/python/flow_points2.py
+   :language: python
 
 .. figure:: ../_static/map-flow-points2.svg
    :alt: Pressure field from a boundary, a pressure and a rate at one well
@@ -96,9 +88,8 @@ flow_area.py
 The same total rate, spread over the 200 x 200 m square instead of concentrated
 at a point. The pressure inside the square is almost flat.
 
-.. code-block:: python
-
-   task.flow_area(-0.00159, "flow_area_center")   # total rate, m3/s
+.. literalinclude:: ../../examples/python/flow_area.py
+   :language: python
 
 .. figure:: ../_static/map-flow-area.svg
    :alt: Pressure field from a rate spread over an area
@@ -112,9 +103,8 @@ flow_curve.py
 
 The same total rate along the vertical line through the centre:
 
-.. code-block:: python
-
-   task.flow_curve(-0.00159, "flow_curve_center")  # total rate, m3/s
+.. literalinclude:: ../../examples/python/flow_curve.py
+   :language: python
 
 .. figure:: ../_static/map-flow-curve.svg
    :alt: Pressure field from a rate along a curve
@@ -130,9 +120,8 @@ The rate per unit length comes from the contour's Z value. This contour carries
 -7.95e-6 m3/s per unit length, which over its 200 m is the same total as in the
 point, area and curve versions:
 
-.. code-block:: python
-
-   task.flow_contour("flow_cntr_center")
+.. literalinclude:: ../../examples/python/flow_cntr.py
+   :language: python
 
 .. figure:: ../_static/map-flow-cntr.svg
    :alt: Pressure field from a rate along a contour
@@ -155,14 +144,10 @@ rest are outside the field or behind the impermeable zones.
 map_hor_frac.py
 ~~~~~~~~~~~~~~~
 
-The fracture runs horizontally. The flow part of the rule list is:
+The fracture runs horizontally. The full example:
 
-.. code-block:: python
-
-   task.lcm_simple(16.4, 0.5, 1e-6)
-   task.contour_add(1, "P_2001_236_hor")
-   task.flow_points("debits2001")
-   task.flow_curve(-0.000467413, "frac_236_hor")
+.. literalinclude:: ../../examples/python/map_hor_frac.py
+   :language: python
 
 .. figure:: ../_static/map-hor-frac.svg
    :alt: Pressure field with a horizontal fracture
@@ -177,12 +162,8 @@ map_ver_frac.py
 
 The same field with the vertical line:
 
-.. code-block:: python
-
-   task.lcm_simple(16.4, 0.5, 1e-6)
-   task.contour_add(1, "P_2001_236_ver")
-   task.flow_points("debits2001")
-   task.flow_curve(-0.000467413, "frac_236_ver")
+.. literalinclude:: ../../examples/python/map_ver_frac.py
+   :language: python
 
 .. figure:: ../_static/map-ver-frac.svg
    :alt: Pressure field with a vertical fracture

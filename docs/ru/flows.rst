@@ -36,11 +36,8 @@ press_points.py
 База: давление в скважине 200 атмосфер, расход не задан, поэтому поле
 интерполируется между двумя давлениями.
 
-.. code-block:: python
-
-   task.curve(250, "press")            # давление на границе, атм
-   task.points("center_press_point")   # давление в скважине, атм
-   task.lcm_simple(16.4, 1, 1e-6)      # закон сохранения массы
+.. literalinclude:: ../../examples/python/press_points.py
+   :language: python
 
 .. figure:: ../_static/map-press-points.svg
    :alt: Поле давления от границы 250 атм и скважины 200 атм
@@ -55,11 +52,8 @@ flow_points.py
 Теперь скважина задана расходом: -0.00159 м3/с в центре. Давление в скважине
 становится результатом закона сохранения массы, а не входным данным.
 
-.. code-block:: python
-
-   task.curve(250, "press")
-   task.lcm_simple(16.4, 1, 1e-6)
-   task.flow_points("center_flow_point")   # расход, м3/с
+.. literalinclude:: ../../examples/python/flow_points.py
+   :language: python
 
 .. figure:: ../_static/map-flow-points.svg
    :alt: Поле давления от границы и расхода в точке
@@ -76,10 +70,8 @@ flow_points2.py
 ``points_add`` сохраняет измерение 200 атм с весом, ``flow_points`` добавляет
 расход, и решение оказывается компромиссом.
 
-.. code-block:: python
-
-   task.points_add(1, "center_press_point")   # давление, с весом
-   task.flow_points("center_flow_point")      # и расход
+.. literalinclude:: ../../examples/python/flow_points2.py
+   :language: python
 
 .. figure:: ../_static/map-flow-points2.svg
    :alt: Поле давления от границы, давления и расхода в скважине
@@ -95,9 +87,8 @@ flow_area.py
 Тот же суммарный расход, распределённый по квадрату 200 x 200 м вместо точки.
 Внутри квадрата давление почти постоянно.
 
-.. code-block:: python
-
-   task.flow_area(-0.00159, "flow_area_center")   # суммарный расход, м3/с
+.. literalinclude:: ../../examples/python/flow_area.py
+   :language: python
 
 .. figure:: ../_static/map-flow-area.svg
    :alt: Поле давления от расхода, распределённого по площади
@@ -111,9 +102,8 @@ flow_curve.py
 
 Тот же суммарный расход вдоль вертикальной линии через центр:
 
-.. code-block:: python
-
-   task.flow_curve(-0.00159, "flow_curve_center")  # суммарный расход, м3/с
+.. literalinclude:: ../../examples/python/flow_curve.py
+   :language: python
 
 .. figure:: ../_static/map-flow-curve.svg
    :alt: Поле давления от расхода вдоль кривой
@@ -129,9 +119,8 @@ flow_cntr.py
 -7.95e-6 м3/с на метр, что на её 200 м даёт тот же суммарный расход, что и в
 вариантах с точкой, площадью и кривой:
 
-.. code-block:: python
-
-   task.flow_contour("flow_cntr_center")
+.. literalinclude:: ../../examples/python/flow_cntr.py
+   :language: python
 
 .. figure:: ../_static/map-flow-cntr.svg
    :alt: Поле давления от расхода вдоль изолинии
@@ -154,14 +143,10 @@ flow_cntr.py
 map_hor_frac.py
 ~~~~~~~~~~~~~~~
 
-Трещина идёт горизонтально. Часть списка правил, относящаяся к потоку:
+Трещина идёт горизонтально. Полный пример:
 
-.. code-block:: python
-
-   task.lcm_simple(16.4, 0.5, 1e-6)
-   task.contour_add(1, "P_2001_236_hor")
-   task.flow_points("debits2001")
-   task.flow_curve(-0.000467413, "frac_236_hor")
+.. literalinclude:: ../../examples/python/map_hor_frac.py
+   :language: python
 
 .. figure:: ../_static/map-hor-frac.svg
    :alt: Поле давления с горизонтальной трещиной
@@ -176,12 +161,8 @@ map_ver_frac.py
 
 То же поле с вертикальной линией:
 
-.. code-block:: python
-
-   task.lcm_simple(16.4, 0.5, 1e-6)
-   task.contour_add(1, "P_2001_236_ver")
-   task.flow_points("debits2001")
-   task.flow_curve(-0.000467413, "frac_236_ver")
+.. literalinclude:: ../../examples/python/map_ver_frac.py
+   :language: python
 
 .. figure:: ../_static/map-ver-frac.svg
    :alt: Поле давления с вертикальной трещиной

@@ -124,12 +124,8 @@ area_bln.py
 Пять полигонов читаются, ``area1`` пишется в ``areas.bln``, данные
 сбрасываются, файл читается обратно и снова пишется как ``areas2.bln``:
 
-.. code-block:: python
-
-   task.area_save_bln("areas.bln", "area1")
-   task.clear_data()
-   task.area_load_bln("areas.bln", "area1")
-   task.area_save_bln("areas2.bln", "area1")
+.. literalinclude:: ../../examples/python/area_bln.py
+   :language: python
 
 cntr_bln.py
 ~~~~~~~~~~~
@@ -137,11 +133,8 @@ cntr_bln.py
 Пять изолиний вместе со своими значениями Z уходят в один BLN-файл и
 возвращаются из него:
 
-.. code-block:: python
-
-   task.cntr_save_bln("cntrs.bln", "cntr_*")
-   task.clear_data()
-   task.cntr_load_bln("cntrs.bln", "cntr_*")
+.. literalinclude:: ../../examples/python/cntr_bln.py
+   :language: python
 
 curv_bln.py
 ~~~~~~~~~~~
@@ -149,11 +142,8 @@ curv_bln.py
 Четыре кривые записываются, а три загружаются обратно по шаблону имени —
 шаблон файла и шаблон имени независимы:
 
-.. code-block:: python
-
-   task.curv_save_bln("curvs.bln", "iso*")
-   task.clear_data()
-   task.curv_load_bln("curvs.bln", "iso[1-3]")
+.. literalinclude:: ../../examples/python/curv_bln.py
+   :language: python
 
 area_shp.py
 ~~~~~~~~~~~
@@ -162,23 +152,16 @@ area_shp.py
 ``.shx`` и ``.dbf``; читатель принимает шаблон файла, поэтому оба вызова
 называют файл ``.shp``:
 
-.. code-block:: python
-
-   task.area_save_shp("areas.shp", "area1")
-   task.clear_data()
-   task.area_load_shp("areas.shp", "area1")
-   task.area_save_shp("areas2.shp", "area1")
+.. literalinclude:: ../../examples/python/area_shp.py
+   :language: python
 
 curv_shp.py
 ~~~~~~~~~~~
 
 То же для четырёх кривых, три загружаются обратно:
 
-.. code-block:: python
-
-   task.curv_save_shp("curvs.shp", "iso*")
-   task.clear_data()
-   task.curv_load_shp("curvs.shp", "iso[1-3]")
+.. literalinclude:: ../../examples/python/curv_shp.py
+   :language: python
 
 Два исходных скрипта не перенесены. ``cntr_shp.tcl`` смешивает плоскую
 2D-изолинию с 3D, а ``cntr_save_shp`` фиксирует тип шейпа по первой изолинии,

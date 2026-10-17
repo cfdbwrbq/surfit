@@ -218,6 +218,34 @@ under node, and renders into a real DOM with jsdom.
 Runnable examples
 -----------------
 
+.. figure:: ../_static/map-area.svg
+   :alt: Filled contour map of the area example
+   :width: 70%
+   :align: center
+
+   The area example. Five areas hold fixed values and ``completer`` fills the
+   space between them; the cells that stay undefined are left blank, which is
+   the white wedge in the middle. Drawn by ``save_viewer()`` from the same run
+   as the script.
+
+.. figure:: ../_static/map-faults.svg
+   :alt: Filled contour map of the faults example
+   :width: 70%
+   :align: center
+
+   The fault example: eleven points and four fault lines. The surface jumps
+   across each line instead of smoothing over it.
+
+* ``examples/python/area.py`` — the area example above, end to end.
+* ``examples/python/faults.py`` — points and faults, breaking the surface along
+  four lines.
+* ``examples/python/trend_from_numpy.py`` — an array used as a regional trend.
+* ``examples/python/progress.py`` — the tqdm progress bar.
+* ``examples/python/viewer.py`` — the interactive HTML map.
+
+Runnable examples
+-----------------
+
 * ``examples/python/area.py`` — the area example above, end to end.
 * ``examples/python/trend_from_numpy.py`` — an array used as a regional trend.
 * ``examples/python/progress.py`` — the tqdm progress bar.

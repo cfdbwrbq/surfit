@@ -120,6 +120,15 @@ returns 1 on its own and 0 once another string has been allocated after it. The
 local matcher takes the deterministic reading, treating the set as running to
 the end of the pattern, which is what Tcl returns in the ordinary case.
 
+Documentation figures
+---------------------
+
+The maps under *Runnable examples* are real output, committed as SVG so that building the documentation needs neither node
+nor a browser. They are drawn by the same ``surfit/viewer.js`` the page uses, so
+a figure cannot drift from what ``save_viewer()`` produces. Regenerate them with
+``docs/make_images.py`` after changing the viewer or an example; it needs node,
+d3 and jsdom.
+
 Why byte equality
 -----------------
 

@@ -287,6 +287,10 @@ Terrain and data sources
   digital elevation model generation. *Earth Science Informatics*.
   `doi:10.1007/s12145-020-00504-2 <https://doi.org/10.1007/s12145-020-00504-2>`_
 
+* I. V. Florinsky (2016). *Digital Terrain Modeling: Principles and
+  Methodology*. CRC Press.
+  `doi:10.1016/B978-0-12-804632-6.00001-8 <https://doi.org/10.1016/B978-0-12-804632-6.00001-8>`_
+
 Data formats and standards
 --------------------------
 
@@ -353,6 +357,19 @@ Numerical methods
   Software* 5, 308-323.
   `doi:10.1145/355841.355847 <https://doi.org/10.1145/355841.355847>`_
 
+* D. S. Trefethen, D. Bau III (1997). *Numerical Linear Algebra*. SIAM.
+  `doi:10.1137/1.9780898719574 <https://doi.org/10.1137/1.9780898719574>`_
+* R. Barrett et al. (1994). *Templates for the Solution of Linear Systems:
+  Building Blocks for Iterative Methods*. SIAM.
+  `doi:10.1137/1.9781611971538 <https://doi.org/10.1137/1.9781611971538>`_
+* C. C. Paige, M. A. Saunders (1975). Solution of sparse indefinite systems of
+  linear equations. *SIAM Journal on Numerical Analysis* 12, 617-629.
+  `doi:10.1137/0712047 <https://doi.org/10.1137/0712047>`_
+* C. C. Paige, M. A. Saunders (1982). LSQR: an algorithm for sparse linear
+  equations and sparse least squares. *ACM Transactions on Mathematical
+  Software* 8, 43-71.
+  `doi:10.1145/355984.355989 <https://doi.org/10.1145/355984.355989>`_
+
 Computational geometry
 ----------------------
 
@@ -372,6 +389,13 @@ Computational geometry
 * C. L. Lawson (1977). Software for C1 surface interpolation. In *Mathematical
   Software III*, Academic Press, 161-194.
   `doi:10.1016/B978-0-12-587260-7.50011-X <https://doi.org/10.1016/B978-0-12-587260-7.50011-X>`_
+
+* A. Okabe, B. Boots, K. Sugihara, S. N. Chiu (2000). *Spatial Tessellations:
+  Concepts and Applications of Voronoi Diagrams*. Wiley.
+  `doi:10.1002/9780470317013 <https://doi.org/10.1002/9780470317013>`_
+* F. Aurenhammer (1991). Voronoi diagrams - a survey of a fundamental
+  geometric data structure. *ACM Computing Surveys* 23, 345-405.
+  `doi:10.1145/116873.116880 <https://doi.org/10.1145/116873.116880>`_
 
 Software
 --------

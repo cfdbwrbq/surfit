@@ -30,6 +30,7 @@ import time
 import numpy as np
 
 from . import _surfit as _core
+from ._viewer import render_html, save_viewer, viewer
 
 #: Undefined grid nodes carry FLT_MAX, the core's `undef_value`.
 UNDEF_VALUE = float(np.finfo(np.float32).max)
@@ -347,6 +348,14 @@ class Session:
     def values(self, pattern=None):
         """Values of a surface; without a pattern, the most recent one."""
         return values(pattern)
+
+    def viewer(self, **kwargs):
+        """Self-contained HTML page for the result surface."""
+        return viewer(**kwargs)
+
+    def save_viewer(self, path, **kwargs):
+        """Writes that page to ``path``."""
+        return save_viewer(path, **kwargs)
 
 
 #: Names re-exported from the compiled module, used by Session.__getattr__.

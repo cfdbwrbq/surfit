@@ -225,8 +225,29 @@ void add_surface(py::array_t<double, py::array::c_style | py::array::forcecast> 
 	surfit_surfs->push_back(srf);
 }
 
-/*! Index of the first surface whose name matches, or -1. */
-int surf_index(const std::string & name) {
+/*! Geometry of a surface, in the coordinates of its nodes.
+ *
+ *	d_surf::getMinX() and getMaxX() return the edges of the outer cells, half
+ *	a step beyond the first and last node, so they are corrected here: the
+ *	values sit on the nodes, and a caller placing them on a map wants those.
+ */
+py::dict surf_extent(size_t pos) {
+	d_surf * srf = surf_at(pos);
+	const double step_x = static_cast<double>(srf->getStepX());
+	const double step_y = static_cast<double>(srf->getStepY());
+	py::dict extent;
+	extent["count_x"] = srf->getCountX();
+	extent["count_y"] = srf->getCountY();
+	extent["min_x"] = static_cast<double>(srf->getMinX()) + step_x / 2;
+	extent["max_x"] = static_cast<double>(srf->getMaxX()) - step_x / 2;
+	extent["min_y"] = static_cast<double>(srf->getMinY()) + step_y / 2;
+	extent["max_y"] = static_cast<double>(srf->getMaxY()) - step_y / 2;
+	extent["step_x"] = step_x;
+	extent["step_y"] = step_y;
+	return extent;
+}
+
+/*! Index of the first surface whose name matches, or -1. */int surf_index(const std::string & name) {
 	for (size_t i = 0; i < surfit_surfs->size(); i++) {
 		const char * current = (*surfit_surfs)[i]->getName();
 		if (current != NULL && name == current)
@@ -344,6 +365,8 @@ PYBIND11_MODULE(_surfit, m) {
 	      "index of the surface with this exact name, or -1");
 	m.def("surf_values", &surf_values, py::arg("pos"),
 	      "surface values as a (count_y, count_x) float64 array");
+	m.def("surf_extent", &surf_extent, py::arg("pos"),
+	      "node counts and extent of a surface, as a dict");
 	m.def("add_surface", &add_surface,
 	      py::arg("values"), py::arg("start_x"), py::arg("step_x"),
 	      py::arg("start_y"), py::arg("step_y"), py::arg("name"),

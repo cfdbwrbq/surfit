@@ -188,12 +188,40 @@ The same hook is available directly, for logging of your own:
 It is called while the solve runs with the GIL released, so it may be reached
 from another thread; keep it short, because it runs inside the solver.
 
+Viewer
+------
+
+A result can be written as a page that opens in a browser:
+
+.. code-block:: python
+
+   task.save_viewer("map.html", title="area example", levels=14)
+
+The page draws a filled contour map with real coordinates on the axes, a pointer
+readout showing x, y and the value, and the undefined region clipped out. The
+grid is embedded in the page as float64, so the file is a lossless record of the
+result and can be moved around on its own.
+
+d3 is loaded from a CDN when the page is opened. That is the only thing the page
+needs from outside; pass ``d3_url`` to point at a local copy where there is no
+network.
+
+.. code-block:: python
+
+   task.save_viewer("map.html", d3_url="d3.v7.min.js")
+
+The contour code is in ``surfit/viewer.js`` and is the same code the tests run,
+so it is checked without a browser: ``src/pysurfit/tests/test_viewer.py`` decodes
+the embedded payload back to the original grid, runs the contour computation
+under node, and renders into a real DOM with jsdom.
+
 Runnable examples
 -----------------
 
 * ``examples/python/area.py`` — the area example above, end to end.
 * ``examples/python/trend_from_numpy.py`` — an array used as a regional trend.
 * ``examples/python/progress.py`` — the tqdm progress bar.
+* ``examples/python/viewer.py`` — the interactive HTML map.
 
 Development notes on how the bindings are built and checked are in
 :doc:`development`.

@@ -412,10 +412,10 @@ STEPS = (
     ("clear_rules", []),
 
     # --- the whole task in one datafile --------------------------------
-    #: The task file carries the grid, surfaces, masks, points, contours, curves
-    #: and areas.  Histograms are not part of it - hist_write/hist_read are
-    #: their own path - so hist_size is 0 after the reload.  Recorded here
-    #: deliberately instead of being hidden by an omission.
+    #: The task file carries the grid, surfaces, masks, points, contours, curves,
+    #: areas and histograms.  After file_load the two histograms alive at save
+    #: time - h_map and read_hist - are back; h_wells was deleted earlier and
+    #: stays deleted.  The two hist_size steps below check both states.
     ("file_save", ["all.dat"]),
     ("file_info", ["all.dat"]),
     ("clear_data", []),
@@ -478,11 +478,12 @@ STEPS = (
     ("mask_getName", []),
     ("mask_setName", ["map", "map2"]),
 
-    #: no histogram is left after the reload (histograms are not part of the
-    #: task file), so these check the empty collection as well
+    #: the task file restores the histograms, so h_map and read_hist are here;
+    #: the rename targets one of them, and h_wells is still gone
     ("hist_getName", []),
     ("hist_getNameAt", [0]),
-    ("hist_setName", ["h2", "h_wells"]),
+    ("hist_setName", ["h2", "h_map"]),
+    ("hist_getName", []),
 
     ("cntr_getName", []),
     ("cntr_getNameAt", [0]),

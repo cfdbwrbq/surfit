@@ -77,6 +77,42 @@ def python_points():
     print("after_del=%d" % surfit.pnts_size())
 
 
+def tcl_hist_datafile():
+    return LOAD + """
+pnts_read "data/points.txt" "wells"
+hist_from_pnts "wells" 8 0 1 "h1"
+hist_from_pnts "wells" 4 -1 1 "h2"
+file_save "task.dat"
+clear_data
+puts "empty=[hist_size]"
+file_load "task.dat"
+puts "size=[hist_size]"
+puts "names=[join [lsort [hist_getName]] ,]"
+"""
+
+
+def python_hist_datafile():
+    surfit.clear_data()
+    surfit.pnts_read(os.path.join("data", "points.txt"), "wells")
+    surfit.hist_from_pnts("wells", 8, 0.0, 1.0, "h1")
+    surfit.hist_from_pnts("wells", 4, -1.0, 1.0, "h2")
+    for name in ("h1", "h2"):
+        assert surfit.hist_write("before_%s.txt" % name, name, 3) == [True]
+    assert surfit.file_save("task.dat") is True
+    surfit.clear_data()
+    print("empty=%d" % surfit.hist_size())
+    surfit.file_load("task.dat")
+    print("size=%d" % surfit.hist_size())
+    names = sorted(surfit.hist_getName())
+    print("names=%s" % ",".join(names))
+    assert names == ["h1", "h2"], names
+    for name in ("h1", "h2"):
+        assert surfit.hist_write("after_%s.txt" % name, name, 3) == [True]
+        before = open("before_%s.txt" % name, encoding="utf-8").read()
+        after = open("after_%s.txt" % name, encoding="utf-8").read()
+        assert before == after, "histogram %s changed in the task file" % name
+
+
 def tcl_settings():
     return LOAD + """
 set tol 1e-006
@@ -207,6 +243,7 @@ CASES = (
     ("pnts math", tcl_pnts_math, python_pnts_math,
      ("shifted.txt", "rotated.txt")),
     ("settings", tcl_settings, python_settings, ()),
+    ("hist datafile", tcl_hist_datafile, python_hist_datafile, ("task.dat",)),
 )
 
 
@@ -225,6 +262,7 @@ def prepare(directory, scratch):
 
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
+           "empty=", "names=",
            "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "minx=", "shifted=", "rotated_minx=", "mask_size=", "grid_check=",
            "threads_positive=", "types=")

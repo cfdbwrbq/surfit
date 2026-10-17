@@ -66,7 +66,7 @@
 #include "functional.h"
 #include "cmofs.h"
 #include "hist.h"
-#include "hist_tcl.h"
+#include "hist_internal.h"
 #include "other_tcl.h"
 
 namespace surfit {
@@ -520,6 +520,20 @@ int surfit_manager::load_tag(datafile * df, char * tagname) const {
 		return 1;
 	}
 	
+	if (strcmp(tagname, "hist") == 0) {
+
+		d_hist * res = _hist_load_df(df, NULL);
+		if (res) {
+			_hist_info(res);
+			surfit_hists->push_back(res);
+		}
+
+		if ( !df->readTagName(tagname) )
+			return -1;
+
+		return 1;
+	}
+
 	if (strcmp(tagname, "grid") == 0) {
 		
 		d_grid * res = _grid_load_df(df, NULL);
@@ -581,6 +595,12 @@ bool surfit_manager::save(datafile *df) const {
 	for (cnt = 0; cnt < surfit_areas->size(); cnt++) {
 		d_area * ar = *(surfit_areas->begin()+cnt);
 		if (!_area_save_df(ar, df))
+			return false;
+	}
+
+	for (cnt = 0; cnt < surfit_hists->size(); cnt++) {
+		d_hist * hst = *(surfit_hists->begin()+cnt);
+		if (!_hist_save_df(hst, df))
 			return false;
 	}
 

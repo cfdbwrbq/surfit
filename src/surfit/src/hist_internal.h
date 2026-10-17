@@ -49,6 +49,14 @@ d_hist * _hist_read(const char * filename, REAL minz, REAL maxz, const char * hi
 SURFIT_EXPORT
 bool _hist_write(const d_hist * hist, const char * filename, bool three_columns = false);
 
+//! reads \ref d_hist from surfit datafile
+SURFIT_EXPORT
+d_hist * _hist_load_df(datafile * df, const char * histname);
+
+//! saves \ref d_hist to surfit datafile
+SURFIT_EXPORT
+bool _hist_save_df(const d_hist * hist, datafile * df);
+
 //! prints some info about \ref d_hist
 SURFIT_EXPORT
 void _hist_info(const d_hist * hist);

@@ -166,7 +166,9 @@ Histograms
 A histogram is a distribution of values. ``hist_read`` reads one from a
 columned text file with a value range, ``hist_from_surf`` and
 ``hist_from_pnts`` build one from data, and ``hist_write`` saves it. The
-``hist`` rule adjusts the surface so that its histogram matches:
+``hist`` rule adjusts the surface so that its histogram matches. Histograms are
+part of the native task file, so ``file_save`` and ``file_load`` keep them with
+the rest of the task:
 
 .. code-block:: python
 

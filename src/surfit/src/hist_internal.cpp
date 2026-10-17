@@ -52,6 +52,129 @@ void _add_surfit_hists(d_hist * hst) {
 	surfit_hists->push_back(hst);
 };
 
+bool _hist_save_df(const d_hist * hist, datafile * df) {
+
+	if (!hist || !df)
+		return false;
+
+	// "nothing to write" is not a failure: a histogram with no bins is legal
+	// data, and returning false would truncate every object after it.
+	if (hist->size() == 0)
+		return true;
+
+	if (!hist->getName())
+		writelog(LOG_MESSAGE,"saving histogram with no name to file %s",df->get_filename());
+	else
+		writelog(LOG_MESSAGE,"saving histogram \"%s\" to file %s",hist->getName(),df->get_filename());
+
+	bool res = true;
+	bool op;
+
+	op = df->writeTag("hist");					res = (res && op);
+	if (hist->getName()) {
+		op = df->writeString("name", hist->getName());		res = (res && op);
+	}
+	op = df->writeReal("from", hist->from());			res = (res && op);
+	op = df->writeReal("to", hist->to());				res = (res && op);
+	op = df->writeRealArray("coeff", hist->hst);			res = (res && op);
+	op = df->writeEndTag();						res = (res && op);
+
+	return res;
+};
+
+d_hist * _hist_load_df(datafile * df, const char * histname) {
+
+	if (!df || !df->condition())
+		return NULL;
+
+	vec * coeff = NULL;
+	char * name = NULL;
+	REAL from = 0;
+	REAL to = 0;
+	d_hist * res = NULL;
+
+	if (!df->findTag("hist"))
+		goto exit;
+
+	df->skipTagName();
+
+	if (!df->readWord())
+		goto exit;
+
+	while ( !df->isWord("endtag") ) {
+
+		if ( df->isWord("char") ) {
+			if (!df->readWord()) goto exit;
+			if ( df->isWord("name") ) {
+				if ( !df->readWord() ) goto exit;
+				free(name);
+				name = strdup(df->getWord());
+				goto cont;
+			}
+		}
+
+		if ( df->isWord(REAL_NAME) ) {
+			if (!df->readWord()) goto exit;
+			if ( df->isWord("from") ) {
+				if ( !df->readReal(from) ) goto exit;
+				goto cont;
+			}
+			if ( df->isWord("to") ) {
+				if ( !df->readReal(to) ) goto exit;
+				goto cont;
+			}
+			if (!df->skipReal(false)) goto exit;
+			goto cont;
+		}
+
+		if ( df->isWord("array") ) {
+			if (!df->readWord()) goto exit;
+			if ( df->isWord(REAL_NAME) ) {
+				if (!df->readWord()) goto exit;
+				if ( df->isWord("coeff") ) {
+					if (!df->readRealArray(coeff)) goto exit;
+					goto cont;
+				}
+			}
+			if ( !df->skipArray(false) ) goto exit;
+			goto cont;
+		}
+
+		if ( !df->skip(false) ) goto exit;
+cont:
+		if ( !df->readWord() ) goto exit;
+	}
+
+	if (!coeff) {
+		writelog(LOG_ERROR,"hist_load : empty coeff");
+		goto exit;
+	}
+
+	res = create_hist(from, to, coeff, name);
+	coeff = NULL;
+	free(name);
+	name = NULL;
+
+	if (!histname)
+		return res;
+
+	if (res->getName() && strcmp(res->getName(), histname) == 0)
+		return res;
+
+	res->release();
+	res = NULL;
+
+exit:
+	if (coeff)
+		coeff->release();
+	free(name);
+	if (histname)
+		writelog(LOG_WARNING, "hist_load : this file has no histogram named %s", histname);
+	else
+		writelog(LOG_WARNING, "hist_load : this file has no histogram");
+	return NULL;
+};
+
 REAL get_eq_value(const vec * T, const vec * Z, REAL val,
 		  REAL surf_minz, REAL surf_maxz,
 		  REAL dest_minz, REAL dest_maxz)
@@ -205,13 +328,19 @@ d_hist * _hist_from_vec(const vec * data, REAL minz, REAL maxz, size_t intervs,
 		REAL z = (*data)(i);
 		if (z == undef_value)
 			continue;
+		// operator() answers UINT_MAX outside [from, to]; count only the
+		// values the histogram was asked to cover.
+		if (z < hst->from() || z > hst->to())
+			continue;
 		cnt += 1;
 		size_t pos = (*hst)(z);
 		(*Z)(pos) += 1;
 	}
 
-	for (i = 0; i < intervs; i++) 
-		(*Z)(i) /= (REAL)(cnt);
+	if (cnt > 0) {
+		for (i = 0; i < intervs; i++)
+			(*Z)(i) /= (REAL)(cnt);
+	}
 
 	return hst;
 };

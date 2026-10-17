@@ -152,9 +152,21 @@
             .attr("clip-path", computed.region ? "url(#" + clipId + ")" : null)
             .attr("stroke", "none");
 
-        // Filled bands, drawn from the highest threshold down so lower ones
-        // cover the excess.
-        computed.layers.slice().reverse().forEach(function (layer) {
+        // The lowest threshold sits above the minimum, so the nodes at the
+        // minimum belong to no band and would show through as holes.  The whole
+        // region is laid down in the lowest colour first.
+        if (computed.region) {
+            clipped.append("path")
+                .attr("d", path(computed.region) || "")
+                .attr("fill", colour(computed.min))
+                .attr("data-base", "1");
+        }
+
+        // Each geometry covers the region at or above its threshold, so they
+        // are drawn lowest first: every smaller region paints over the larger
+        // one beneath it.  Reversing this fills the whole map with the colour
+        // of the lowest band.
+        computed.layers.forEach(function (layer) {
             clipped.append("path")
                 .attr("d", path(layer.polygon) || "")
                 .attr("fill", colour(layer.value))

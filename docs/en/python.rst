@@ -243,13 +243,5 @@ Runnable examples
 * ``examples/python/progress.py`` — the tqdm progress bar.
 * ``examples/python/viewer.py`` — the interactive HTML map.
 
-Runnable examples
------------------
-
-* ``examples/python/area.py`` — the area example above, end to end.
-* ``examples/python/trend_from_numpy.py`` — an array used as a regional trend.
-* ``examples/python/progress.py`` — the tqdm progress bar.
-* ``examples/python/viewer.py`` — the interactive HTML map.
-
 Development notes on how the bindings are built and checked are in
 :doc:`development`.

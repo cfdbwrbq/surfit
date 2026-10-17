@@ -36,8 +36,21 @@ const axisTicks = target.querySelectorAll("svg .tick text");
 const readout = target.querySelector(".surfit-readout");
 const legend = target.querySelector(".surfit-legend");
 
+// The bands must be painted lowest-first, otherwise the lowest one covers the
+// map.  Document order is paint order, so this reads the attribute sequence.
+const levels = Array.from(bands).map(function (node) {
+    return Number(node.getAttribute("data-level"));
+});
+const fills = Array.from(bands).map(function (node) {
+    return node.getAttribute("fill");
+});
+
 const report = {
     has_svg: svg !== null,
+    draw_order_ascending: levels.every(function (value, index) {
+        return index === 0 || value > levels[index - 1];
+    }),
+    distinct_fills: new Set(fills).size,
     viewbox: svg ? svg.getAttribute("viewBox") : null,
     bands: bands.length,
     levels: config.levels,
@@ -57,7 +70,10 @@ const report = {
     // Every band needs a non-empty path.
     bands_with_path: Array.from(bands).filter(function (node) {
         return (node.getAttribute("d") || "").length > 0;
-    }).length
+    }).length,
+    // Values at the minimum fall outside every band, so the region is painted
+    // with the lowest colour first; without it they show through as holes.
+    has_base_fill: target.querySelectorAll("path[data-base]").length
 };
 
 if (outPath) {

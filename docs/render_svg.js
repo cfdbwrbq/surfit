@@ -46,7 +46,15 @@ svg.removeAttribute("role");
 svg.setAttribute("role", "img");
 svg.setAttribute("aria-label", config.title || "surface");
 
-fs.writeFileSync(outPath, svg.outerHTML, "utf8");
+// outerHTML drops the namespace, and without xmlns a browser opens the file as
+// an XML tree instead of drawing it - which is exactly what happened.
+svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+const markup = svg.outerHTML;
+if (!/^<svg[^>]*xmlns="http:\/\/www\.w3\.org\/2000\/svg"/.test(markup)) {
+    throw new Error("the serialised svg has no xmlns");
+}
+
+fs.writeFileSync(outPath, '<?xml version="1.0" encoding="UTF-8"?>\n' + markup, "utf8");
 
 const legend = target.querySelector(".surfit-legend");
 process.stdout.write(JSON.stringify({

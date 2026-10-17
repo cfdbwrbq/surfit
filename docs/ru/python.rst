@@ -244,13 +244,5 @@ node и рисует в настоящий DOM через jsdom.
 * ``examples/python/progress.py`` — полоса прогресса на tqdm.
 * ``examples/python/viewer.py`` — интерактивная карта в HTML.
 
-Готовые примеры
----------------
-
-* ``examples/python/area.py`` — пример с площадями выше, целиком.
-* ``examples/python/trend_from_numpy.py`` — массив в роли регионального тренда.
-* ``examples/python/progress.py`` — полоса прогресса на tqdm.
-* ``examples/python/viewer.py`` — интерактивная карта в HTML.
-
 Замечания о том, как устроены привязки и как они проверяются, — в
 :doc:`development`.

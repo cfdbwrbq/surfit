@@ -158,6 +158,11 @@ def test_render(values, extent):
     assert report["bands_with_path"] == report["levels"], report
     assert report["region_clip"] == 1, report
     assert report["axis_ticks"] > 0, "the axes have no labels"
+    # A reversed paint order hides the whole map under the lowest band while
+    # every other check still passes, so it is checked on its own.
+    assert report["draw_order_ascending"] is True, report
+    assert report["distinct_fills"] == report["levels"], report
+    assert report["has_base_fill"] == 1, report
     assert svg.startswith("<svg"), svg[:40]
     return "PASS"
 

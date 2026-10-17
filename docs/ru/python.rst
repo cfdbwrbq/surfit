@@ -109,6 +109,8 @@ Python
   quantile mapping, которым правят смещения климатических и спутниковых полей
   [Themeßl et al. 2011].
 
+Работы, на которые опираются эти утверждения:
+
 * J. Li, A. D. Heap (2014). Spatial interpolation methods applied in the
   environmental sciences: a review. *Environmental Modelling & Software*.
   `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_

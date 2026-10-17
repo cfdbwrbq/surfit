@@ -110,6 +110,8 @@ in mapping practice.
   quantile mapping, used to correct biased climate and remote-sensing fields
   [Themeßl et al. 2011].
 
+The works behind these statements:
+
 * J. Li, A. D. Heap (2014). Spatial interpolation methods applied in the
   environmental sciences: a review. *Environmental Modelling & Software*.
   `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_

@@ -59,6 +59,7 @@ byte.
    tcl
    formats
    commands
+   references
    development
 
 License

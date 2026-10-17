@@ -249,7 +249,8 @@ A solve can be watched while it runs:
 
 The engine reports every solve and every iteration through its logging, and the
 context manager turns that into progress: the phase and the grid size, the
-iteration count, and the current residual.
+iteration count, and the current step error (``max|alpha·p|``) — not the
+residual, as :doc:`how_it_works` explains.
 
 Where that progress is shown depends on where the output goes, which is worth
 knowing because the two cases are genuinely different:
@@ -270,7 +271,7 @@ With ``style="bar"`` on a terminal, the run ends on a line like this:
    cg (14641 cells): 113iter [00:00, 347iter/s, err 4.99215E-06]
 
 The solver does not know the final iteration count in advance, so the bar counts
-iterations and reports the residual in its postfix instead of filling a
+iterations and reports the step error in its postfix instead of filling a
 percentage.
 
 A redrawn bar survives only in a terminal. In a captured stream the carriage

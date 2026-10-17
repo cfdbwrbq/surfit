@@ -142,8 +142,22 @@ Select one with ``set_solver`` and set the tolerance in the Session (or with
    task.set_solver("cg")
 
 ``cg`` is the default and the usual choice. The solver reports the iteration
-count and the achieved error in the log, and ``surfit.progress()`` turns those
-lines into a progress bar; :doc:`python` shows both.
+count and the achieved step (``max|alpha·p|``) in the log, and
+``surfit.progress()`` turns those lines into a progress bar; :doc:`python` shows
+both.
+
+The tolerance is not an error bound
+-----------------------------------
+
+``tol`` limits the step of the solver, not the distance to the solution, and the
+penalty loop stops when the norm of the solution stops changing. Both criteria
+can be much more optimistic than the result. On an 81x81 task ``tol=1e-6`` left
+the surface 0.7% of its value range away from the exact solution; on the
+``mean``/``wmean`` examples the penalty loop stopped after two iterations,
+14-21% away, and only at ``1e-10`` did the same runs agree with the exact
+penalty solution. Expect the actual error to be orders of magnitude larger than
+``tol``: use a value well below the accuracy you need, and check a result that
+matters against a direct solve of the same task.
 
 How the pieces fit
 ------------------

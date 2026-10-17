@@ -125,10 +125,50 @@ def python_surfaces():
     print("after_del=%d" % surfit.surf_size())
 
 
+def tcl_surf_math():
+    return LOAD + """
+set map_name "s"
+area_read "data/area1.txt" "area1"
+grid_get -12 12 0.2 -12 12 0.2
+area 10 "area1"
+surfit
+puts "minz=[lindex [surf_minz $map_name] 0]"
+puts "maxz=[lindex [surf_maxz $map_name] 0]"
+puts "sum=[lindex [surf_sum $map_name] 0]"
+puts "cells=[lindex [surf_cells_in_area "area1" $map_name] 0]"
+surf_mult_value 2 "$map_name"
+puts "doubled=[lindex [surf_maxz $map_name] 0]"
+surf_save "math.dat" "$map_name"
+surf_plus_value_area 5 "$map_name" "area1"
+surf_save "plus.dat" "$map_name"
+puts "after_plus=[lindex [surf_minz $map_name] 0]"
+"""
+
+
+def python_surf_math():
+    surfit.clear_data()
+    surfit.set_map_name("s")
+    surfit.area_read(os.path.join("data", "area1.txt"), "area1")
+    surfit.grid_get(-12, 12, 0.2, -12, 12, 0.2)
+    surfit.area(10, "area1")
+    surfit.surfit()
+    print("minz=%r" % float(surfit.surf_minz("s")[0]))
+    print("maxz=%r" % float(surfit.surf_maxz("s")[0]))
+    print("sum=%r" % float(surfit.surf_sum("s")[0]))
+    print("cells=%r" % float(surfit.surf_cells_in_area("area1", "s")[0]))
+    surfit.surf_mult_value(2, "s")
+    print("doubled=%r" % float(surfit.surf_maxz("s")[0]))
+    surfit.surf_save("math.dat", "s")
+    surfit.surf_plus_value_area(5, "s", "area1")
+    surfit.surf_save("plus.dat", "s")
+    print("after_plus=%r" % float(surfit.surf_minz("s")[0]))
+
+
 CASES = (
     ("areas", tcl_areas, python_areas, ("areas.dat", "areas.txt", "inverted.dat")),
     ("points", tcl_points, python_points, ("wells.txt", "wells.dat")),
     ("surfaces", tcl_surfaces, python_surfaces, ("result.dat",)),
+    ("surf math", tcl_surf_math, python_surf_math, ("math.dat", "plus.dat")),
     ("settings", tcl_settings, python_settings, ()),
 )
 
@@ -148,6 +188,7 @@ def prepare(directory, scratch):
 
 
 MARKERS = ("size=", "after_del=", "final=", "tol=", "omega=", "solver=",
+           "minz=", "maxz=", "sum=", "cells=", "doubled=", "after_plus=",
            "threads_positive=", "types=")
 
 

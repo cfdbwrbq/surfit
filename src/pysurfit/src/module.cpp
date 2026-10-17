@@ -30,6 +30,7 @@
 #include "real.h"
 #include "vec.h"
 #include "boolvec.h"
+#include "intvec.h"
 #include "fileio.h"
 #include "interp.h"
 #include "surfit_state.h"
@@ -95,6 +96,7 @@ using surfit::surfit_surfs;
 // extvec and create_extvec are macros for vec / create_vec in a normal build.
 using surfit::extvec;
 using surfit::create_extvec;
+using surfit::intvec;
 // NB: `surfit` itself is not imported by a using-declaration -- the function
 // surfit::surfit() would clash with the namespace name in the global scope.
 
@@ -108,6 +110,36 @@ py::list drain_boolvec(boolvec * flags) {
 	for (size_t i = 0; i < flags->size(); i++)
 		result.append(py::bool_((*flags)(i)));
 	flags->release();
+	return result;
+}
+
+/*! A REAL vector result: copied into an array, then released.
+
+	These come back from the statistics commands, which return one value per
+	object they matched rather than a flag each.
+*/
+py::array_t<double> drain_vec(vec * values) {
+	if (values == NULL)
+		return py::array_t<double>(0);
+	const size_t size = values->size();
+	py::array_t<double> result(size);
+	double * out = result.mutable_data();
+	for (size_t i = 0; i < size; i++)
+		out[i] = double((*values)(i));
+	values->release();
+	return result;
+}
+
+/*! The integer counterpart, for cell counts and decomposition levels. */
+py::array_t<int> drain_intvec(intvec * values) {
+	if (values == NULL)
+		return py::array_t<int>(0);
+	const size_t size = values->size();
+	py::array_t<int> result(size);
+	int * out = result.mutable_data();
+	for (size_t i = 0; i < size; i++)
+		out[i] = (*values)(i);
+	values->release();
 	return result;
 }
 
@@ -480,6 +512,157 @@ PYBIND11_MODULE(_surfit, m) {
 	}, py::arg("weight") = 1, py::arg("name") = "*", py::arg("d1") = 1,
 	   py::arg("d2") = 2, py::arg("alpha") = 0, py::arg("w") = 1,
 	   "rule: complete inside a mask");
+
+	// --- arithmetic and statistics over surfaces ----------------------
+	// The commands that combine a surface with another one, with a value, or
+	// with an area, plus the statistics that report one number per object.
+	m.def("surf_add_noise", [](double std, const std::string & surface_name) {
+		surfit::surf_add_noise(REAL(std), surface_name.c_str());
+	}, py::arg("std"), py::arg("surface_name") = "*");
+	m.def("surf_adj_hist", [](const std::string & surface_name, const py::object & histogram_name) {
+		std::string histogram_name_storage;
+		return drain_boolvec(surfit::surf_adj_hist(surface_name.c_str(), opt_cstr(histogram_name, histogram_name_storage)));
+	}, py::arg("surface_name") = "*", py::arg("histogram_name") = py::none());
+	m.def("surf_area_maxz", [](const std::string & area_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_area_maxz(area_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_area_mean", [](const std::string & area_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_area_mean(area_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_area_minz", [](const std::string & area_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_area_minz(area_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_area_wmean", [](const std::string & area_name, const std::string & wsurface_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_area_wmean(area_name.c_str(), wsurface_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("wsurface_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_auto_decomp", [](double eps, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_auto_decomp(REAL(eps), surface_name.c_str()));
+	}, py::arg("eps"), py::arg("surface_name") = "*");
+	m.def("surf_cells_in_area", [](const std::string & area_name, const std::string & surface_name) {
+		return drain_intvec(surfit::surf_cells_in_area(area_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_decomp", [](const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_decomp(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_div", [](const std::string & surface1_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_div(surface1_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("surface2_name"));
+	m.def("surf_div_area", [](const std::string & surface1_name, const std::string & area_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_div_area(surface1_name.c_str(), area_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("area_name"), py::arg("surface2_name"));
+	m.def("surf_div_value", [](double val, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_div_value(REAL(val), surface_name.c_str()));
+	}, py::arg("val"), py::arg("surface_name") = "*");
+	m.def("surf_div_value_area", [](double val, const std::string & area_name, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_div_value_area(REAL(val), area_name.c_str(), surface_name.c_str()));
+	}, py::arg("val"), py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_filter_by_mask", [](const std::string & surface_name, const std::string & mask_name) {
+		return drain_boolvec(surfit::surf_filter_by_mask(surface_name.c_str(), mask_name.c_str()));
+	}, py::arg("surface_name") = "*", py::arg("mask_name") = "*");
+	m.def("surf_filter_by_surf", [](double eps, const std::string & surface1_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_filter_by_surf(REAL(eps), surface1_name.c_str(), surface2_name.c_str()));
+	}, py::arg("eps"), py::arg("surface1_name") = "*", py::arg("surface2_name") = "*");
+	m.def("surf_filter_out_area", [](const std::string & surface_name, const std::string & area_name) {
+		return drain_boolvec(surfit::surf_filter_out_area(surface_name.c_str(), area_name.c_str()));
+	}, py::arg("surface_name") = "*", py::arg("area_name") = "*");
+	m.def("surf_full_recons", [](const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_full_recons(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_get_details_level", [](const std::string & surface_name) {
+		return drain_intvec(surfit::surf_get_details_level(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_gradient", [](const std::string & surface_name, const py::object & newname) {
+		std::string newname_storage;
+		return drain_boolvec(surfit::surf_gradient(surface_name.c_str(), opt_cstr(newname, newname_storage)));
+	}, py::arg("surface_name") = "*", py::arg("newname") = py::none());
+	m.def("surf_mask_mean", [](const std::string & mask_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_mask_mean(mask_name.c_str(), surface_name.c_str()));
+	}, py::arg("mask_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_mask_wmean", [](const std::string & mask_name, const std::string & wsurface_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_mask_wmean(mask_name.c_str(), wsurface_name.c_str(), surface_name.c_str()));
+	}, py::arg("mask_name") = "*", py::arg("wsurface_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_maxz", [](const std::string & surface_name) {
+		return drain_vec(surfit::surf_maxz(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_mean", [](const std::string & surface_name) {
+		return drain_vec(surfit::surf_mean(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_minus_area", [](const std::string & surface1_name, const std::string & area_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_minus_area(surface1_name.c_str(), area_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("area_name"), py::arg("surface2_name"));
+	m.def("surf_minus_value", [](double val, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_minus_value(REAL(val), surface_name.c_str()));
+	}, py::arg("val"), py::arg("surface_name") = "*");
+	m.def("surf_minus_value_area", [](double val, const std::string & area_name, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_minus_value_area(REAL(val), area_name.c_str(), surface_name.c_str()));
+	}, py::arg("val"), py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_minz", [](const std::string & surface_name) {
+		return drain_vec(surfit::surf_minz(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_mult", [](const std::string & surface1_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_mult(surface1_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("surface2_name"));
+	m.def("surf_mult_area", [](const std::string & surface1_name, const std::string & area_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_mult_area(surface1_name.c_str(), area_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("area_name"), py::arg("surface2_name"));
+	m.def("surf_mult_value", [](double val, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_mult_value(REAL(val), surface_name.c_str()));
+	}, py::arg("val"), py::arg("surface_name") = "*");
+	m.def("surf_mult_value_area", [](double val, const std::string & area_name, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_mult_value_area(REAL(val), area_name.c_str(), surface_name.c_str()));
+	}, py::arg("val"), py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_plus", [](const std::string & surface1_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_plus(surface1_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("surface2_name"));
+	m.def("surf_plus_area", [](const std::string & surface1_name, const std::string & area_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_plus_area(surface1_name.c_str(), area_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("area_name"), py::arg("surface2_name"));
+	m.def("surf_plus_value_area", [](double val, const std::string & surface_name, const std::string & area_name) {
+		return drain_boolvec(surfit::surf_plus_value_area(REAL(val), surface_name.c_str(), area_name.c_str()));
+	}, py::arg("val"), py::arg("surface_name") = "*", py::arg("area_name") = "*");
+	m.def("surf_project", [](const std::string & surface_name, const py::object & newname) {
+		std::string newname_storage;
+		return drain_boolvec(surfit::surf_project(surface_name.c_str(), opt_cstr(newname, newname_storage)));
+	}, py::arg("surface_name") = "*", py::arg("newname") = py::none());
+	m.def("surf_recons", [](const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_recons(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_resid", [](const std::string & filename, const std::string & surface_name, const std::string & points_name) {
+		return drain_boolvec(surfit::surf_resid(filename.c_str(), surface_name.c_str(), points_name.c_str()));
+	}, py::arg("filename"), py::arg("surface_name") = "*", py::arg("points_name") = "*");
+	m.def("surf_set_area", [](const std::string & surface1_name, const std::string & area_name, const std::string & surface2_name) {
+		return drain_boolvec(surfit::surf_set_area(surface1_name.c_str(), area_name.c_str(), surface2_name.c_str()));
+	}, py::arg("surface1_name"), py::arg("area_name"), py::arg("surface2_name"));
+	m.def("surf_set_value", [](double val, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_set_value(REAL(val), surface_name.c_str()));
+	}, py::arg("val"), py::arg("surface_name") = "*");
+	m.def("surf_set_value_area", [](const std::string & val, const std::string & area_name, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_set_value_area(val.c_str(), area_name.c_str(), surface_name.c_str()));
+	}, py::arg("val"), py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_std", [](double mean, const std::string & surface_name) {
+		return drain_vec(surfit::surf_std(REAL(mean), surface_name.c_str()));
+	}, py::arg("mean"), py::arg("surface_name") = "*");
+	m.def("surf_sum", [](const std::string & surface_name) {
+		return drain_vec(surfit::surf_sum(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_sum_area", [](const std::string & area_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_sum_area(area_name.c_str(), surface_name.c_str()));
+	}, py::arg("area_name") = "*", py::arg("surface_name") = "*");
+	m.def("surf_to_mask", [](double true_from, double true_to, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_to_mask(REAL(true_from), REAL(true_to), surface_name.c_str()));
+	}, py::arg("true_from"), py::arg("true_to"), py::arg("surface_name") = "*");
+	m.def("surf_to_pnts", [](const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_to_pnts(surface_name.c_str()));
+	}, py::arg("surface_name") = "*");
+	m.def("surf_trace_cntr", [](const std::string & surface_name, double step, double from, double to) {
+		return drain_boolvec(surfit::surf_trace_cntr(surface_name.c_str(), REAL(step), REAL(from), REAL(to)));
+	}, py::arg("surface_name") = "*", py::arg("step") = 3.4028234663852886e38, py::arg("from") = 3.4028234663852886e38, py::arg("to") = 3.4028234663852886e38);
+	m.def("surf_undef", [](double new_undef_value, const std::string & surface_name) {
+		return drain_boolvec(surfit::surf_undef(REAL(new_undef_value), surface_name.c_str()));
+	}, py::arg("new_undef_value"), py::arg("surface_name") = "*");
+	m.def("surf_wmean", [](const std::string & wsurface_name, const std::string & surface_name) {
+		return drain_vec(surfit::surf_wmean(wsurface_name.c_str(), surface_name.c_str()));
+	}, py::arg("wsurface_name") = "*", py::arg("surface_name") = "*");
 
 	m.def("area_read", [](const std::string & path, py::object name) {
 		std::string storage;

@@ -82,59 +82,16 @@ the name pattern matched nothing and the rule was **not** added — the original
 Tcl front end ignores that silently, so it is worth checking when a result looks
 unexpected.
 
-What the families are for
--------------------------
+Sources
+-------
 
-The families are not arbitrary: each one is the standard way to express a
-particular kind of measurement or prior knowledge, and each has a long record
-in mapping practice.
-
-* **points** — the primary case of scattered-data interpolation; reviews of
-  environmental mapping compare the methods and their accuracy [Li & Heap
-  2014].
-* **curve, contour** — elevations read from contour lines are still a major
-  source of DEMs, and the interpolation has to preserve the shape between the
-  lines [Bek & Ježek 2011].
-* **surface, trend** — a regional trend is a low-order surface fitted to the
-  data and removed before the local interpolation; the same idea is used in
-  potential-field and geochemical mapping [Agterberg 2023].
-* **fault** — a line across which the field may jump; seismic and geological
-  surfaces are interpolated on each side and then tied across the fault [Xue
-  et al. 2018].
-* **leq, geq** — physical bounds (non-negative concentrations, solubility
-  limits, detection limits); the interpolation has to respect them, not just
-  fit the data [Michalak 2008].
-* **mean, wmean** — an average over a block or a region, the block-kriging
-  problem [Cressie 2006].
-* **hist** — matching the distribution of the result to a target histogram is
-  quantile mapping, used to correct biased climate and remote-sensing fields
-  [Themeßl et al. 2011].
-
-The works behind these statements:
-
-* J. Li, A. D. Heap (2014). Spatial interpolation methods applied in the
-  environmental sciences: a review. *Environmental Modelling & Software*.
-  `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_
-* S. Bek, J. Ježek (2011). Optimization of interpolation parameters when
-  deriving DEM from contour lines. *Stochastic Environmental Research and Risk
-  Assessment* 25, 1049–1055.
-  `doi:10.1007/s00477-011-0482-8 <https://doi.org/10.1007/s00477-011-0482-8>`_
-* F. Agterberg (2023). Trend Surface Analysis. In *Encyclopedia of Mathematical
-  Geosciences*, Springer, 1567–1575.
-  `doi:10.1007/978-3-030-85040-1_461 <https://doi.org/10.1007/978-3-030-85040-1_461>`_
-* Z. Xue, X. Wu, S. Fomel (2018). Predictive painting across faults.
-  *Interpretation* 6, T449–T455.
-  `doi:10.1190/int-2017-0171.1 <https://doi.org/10.1190/int-2017-0171.1>`_
-* A. M. Michalak (2008). A Gibbs sampler for inequality-constrained
-  geostatistical interpolation and inverse modeling. *Water Resources Research*
-  44\. `doi:10.1029/2007WR006645 <https://doi.org/10.1029/2007WR006645>`_
-* N. Cressie (2006). Block kriging for lognormal spatial processes.
-  *Mathematical Geology* 38, 413–443.
-  `doi:10.1007/s11004-005-9022-8 <https://doi.org/10.1007/s11004-005-9022-8>`_
-* M. J. Themeßl, A. Gobiet, A. Leuprecht (2011). Empirical-statistical
-  downscaling and error correction of daily precipitation from regional climate
-  models. *International Journal of Climatology*.
-  `doi:10.1002/joc.2168 <https://doi.org/10.1002/joc.2168>`_
+* points — `doi:10.1016/j.envsoft.2013.12.008 <https://doi.org/10.1016/j.envsoft.2013.12.008>`_
+* curve, contour — `doi:10.1007/s00477-011-0482-8 <https://doi.org/10.1007/s00477-011-0482-8>`_
+* surface, trend — `doi:10.1007/978-3-030-85040-1_461 <https://doi.org/10.1007/978-3-030-85040-1_461>`_
+* fault — `doi:10.1190/int-2017-0171.1 <https://doi.org/10.1190/int-2017-0171.1>`_
+* leq, geq — `doi:10.1029/2007WR006645 <https://doi.org/10.1029/2007WR006645>`_
+* mean, wmean — `doi:10.1007/s11004-005-9022-8 <https://doi.org/10.1007/s11004-005-9022-8>`_
+* hist — `doi:10.1002/joc.2168 <https://doi.org/10.1002/joc.2168>`_
 
 Arrays in and out
 -----------------

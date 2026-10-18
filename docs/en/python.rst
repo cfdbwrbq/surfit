@@ -1,6 +1,11 @@
 Python
 ======
 
+The Python package drives the same engine as the Tcl front end: one
+``Session`` per task, the same command names, and numpy arrays in and out.
+This page is the API reference; the worked tasks are in ``examples/python/``
+and on the :doc:`terrain` and :doc:`flows` pages.
+
 .. code-block:: python
 
    import surfit
@@ -47,40 +52,14 @@ The one exception is ``grid``: the method of that name builds an explicit grid
 Rules
 -----
 
-A rule states something about the resulting surface. The families differ by
-where the condition applies:
+A rule states something about the surface: where it passes through data, where it
+equals a value, where it follows another surface, and how smooth it stays between
+them. :doc:`data_types` lists the families and their variants; :doc:`commands`
+has the syntax and arguments of each command.
 
-.. list-table::
-   :header-rows: 1
-   :widths: 22 78
-
-   * - Family
-     - Meaning
-   * - ``points``
-     - the surface passes through, or near, the measured points
-   * - ``curve``, ``contour``
-     - the surface equals a value along a curve or contour
-   * - ``area``
-     - the surface equals a value inside a polygon
-   * - ``surface``, ``trend``
-     - the surface follows another surface, or a fitted trend
-   * - ``mask``
-     - the rule applies only where a raster mask says so
-   * - ``fault``
-     - the surface may be discontinuous along a line
-   * - ``completer``
-     - the surface stays smooth between the other conditions
-   * - ``leq``, ``geq``, ``mean``, ``wmean``, ``hist``
-     - global bounds, averages and histogram matching
-
-Most families come in variants: the plain command adds a rule, ``_add`` adds it
-with a weight so it is combined with the previous one, and ``_leq`` / ``_geq``
-turn it into an inequality.
-
-Every command returns a list of per-object flags. A result of ``[False]`` means
-the name pattern matched nothing and the rule was **not** added — the original
-Tcl front end ignores that silently, so it is worth checking when a result looks
-unexpected.
+Every command returns one flag per matched object. ``[False]`` means the name
+pattern matched nothing and the rule was **not** added; the Tcl front end ignores
+that silently, so check the flags when a result looks unexpected.
 
 Sources
 -------
@@ -203,20 +182,15 @@ disturbs the other:
    first_grid = first.values()
    second_grid = second.values()
 
-Every call through a Session installs that task's state first, so the calls can
-be interleaved in any order; the results are the same as running each task
-alone. ``src/pysurfit/tests/test_sessions.py`` checks exactly that, comparing
-the interleaved grids byte for byte against solo runs in fresh processes.
+Each Session owns its state, so several tasks can share a process. Calls may be
+interleaved in any order; each task's result is the same as running it alone, and
+``src/pysurfit/tests/test_sessions.py`` checks that byte for byte.
 
-Only one state is active at a time, which is what keeps the switch cheap. Every
-Session call holds a process-wide lock across the switch and the command, so two
-Sessions can be driven from two threads: their calls are serialized, and a solve
-blocks the other Session's calls until it finishes. The solve releases the GIL,
-so Python threads that do not touch surfit keep running.
-
-The lock belongs to Session calls. A module-level function such as
-``surfit.area(...)`` still works on whichever state is active and is not
-protected; use a Session when several threads share the engine.
+A Session call holds a process-wide lock across the state switch. Two Sessions can
+be driven from two threads, but their calls serialize, and a solve blocks the
+other Session until it finishes; the solve releases the GIL. Module-level
+functions such as ``surfit.area(...)`` use whichever state is active and are not
+protected by that lock.
 
 Databases
 ---------
@@ -263,31 +237,13 @@ context manager turns that into progress: the phase and the grid size, the
 iteration count, and the current step error (``max|alpha·p|``) — not the
 residual, as :doc:`how_it_works` explains.
 
-Where that progress is shown depends on where the output goes, which is worth
-knowing because the two cases are genuinely different:
+``style="bar"`` draws a tqdm bar in place and needs ``pip install
+surfit[progress]``; ``style="lines"`` writes one line per event, throttled by
+``every`` seconds; ``style=None`` picks a bar when stderr is a terminal and lines
+otherwise. Use lines when the output is captured, as in CI logs or notebooks.
 
-``style="bar"``
-    a tqdm bar, redrawn in place with carriage returns. This is what you want on
-    a terminal, and it needs tqdm (``pip install surfit[progress]``).
-``style="lines"``
-    one line per event, throttled by ``every`` seconds. Use it in CI logs,
-    notebooks, and anywhere the output is **captured** rather than displayed.
-``style=None`` (default)
-    a bar when stderr is a terminal, lines otherwise.
-
-With ``style="bar"`` on a terminal, the run ends on a line like this:
-
-.. code-block:: text
-
-   cg (14641 cells): 113iter [00:00, 347iter/s, err 4.99215E-06]
-
-The solver does not know the final iteration count in advance, so the bar counts
-iterations and reports the step error in its postfix instead of filling a
-percentage.
-
-A redrawn bar survives only in a terminal. In a captured stream the carriage
-returns collapse the frames into each other and only the last one is left, so
-the default switches to lines automatically:
+In a captured stream the carriage returns collapse the frames into each other,
+so the default switches to lines automatically:
 
 .. code-block:: text
 
@@ -344,14 +300,11 @@ All of these live under ``examples/python/`` and run as written. Each map is tha
 example's own output: ``docs/make_images.py`` imports the example and renders the
 grid it produces, so a figure cannot drift from the code.
 
-Thirty-three of them are ports of the scripts under ``examples/surfit/tests``,
-and each writes a ``.dat`` file byte-identical to the one its Tcl script writes:
-``src/pysurfit/tests/test_examples.py`` runs both and compares them. The two
-scripts the original manual never documented, ``aniso.tcl`` and
-``area_hist.tcl``, are the only ones without a port. ``trend_from_numpy``,
-``progress`` and ``viewer`` have no Tcl original.
-
-The headings follow the grouping of the original manual.
+Thirty-three are ports of the scripts under ``examples/surfit/tests``; each
+writes a ``.dat`` file byte-identical to the one its Tcl script writes, and
+``src/pysurfit/tests/test_examples.py`` runs both and compares them. ``aniso.tcl``
+and ``area_hist.tcl`` have no port; ``trend_from_numpy``, ``progress`` and
+``viewer`` have no Tcl original.
 
 Areas
 ~~~~~

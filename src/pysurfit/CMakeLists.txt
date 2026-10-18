@@ -10,6 +10,10 @@
 # When building through pip the build environment has pybind11 installed but its
 # CMake config is not on the prefix path, so ask the interpreter for the path.
 
+# pybind11's NewTools path calls python_add_library, which comes from
+# CMake's FindPython: load it before pybind11 asks for it.
+find_package(Python COMPONENTS Interpreter Development QUIET)
+
 find_package(pybind11 CONFIG QUIET)
 
 if (NOT pybind11_FOUND)

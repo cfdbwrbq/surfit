@@ -138,6 +138,8 @@ tclsh area.tcl
 
 ## Code style
 
+[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
+
 The Python package and the documentation tooling are checked with
 [wemake-python-styleguide](https://wemake-python-styleguide.readthedocs.io/):
 

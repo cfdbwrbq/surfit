@@ -1,0 +1,2 @@
+# Development checks.  Not needed to build or use surfit.
+wemake-python-styleguide>=1.8

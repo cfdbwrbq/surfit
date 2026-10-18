@@ -37,8 +37,8 @@ def structure(path):
     sections = []
     entries = []
     in_toctree = False
-    with open(path, encoding="utf-8") as handle:
-        for line in handle:
+    with open(path, encoding="utf-8") as source_file:
+        for line in source_file:
             if line.strip().startswith(".. toctree::"):
                 in_toctree = True
                 continue
@@ -82,17 +82,17 @@ def main():
     # a source change without a regeneration is exactly the kind of quiet drift
     # this check is for.
     generator = os.path.join(HERE, "make_command_reference.py")
-    result = subprocess.run([sys.executable, generator, "--check"],
-                            capture_output=True, text=True)
-    if result.returncode != 0:
+    check_result = subprocess.run([sys.executable, generator, "--check"],
+                                   capture_output=True, text=True)
+    if check_result.returncode != 0:
         problems.append("commands.rst is stale: run %s" % generator)
 
     for line in problems:
-        print("FAIL " + line)
+        sys.stdout.write("FAIL %s\n" % line)
 
     if problems:
         return 1
-    print("OK   %d pages, both trees in step" % len(english))
+    sys.stdout.write("OK   %d pages, both trees in step\n" % len(english))
     return 0
 
 

@@ -36,6 +36,9 @@ from ._viewer import render_html, save_viewer, viewer
 
 #: Undefined grid nodes carry FLT_MAX, the core's `undef_value`.
 UNDEF_VALUE = float(np.finfo(np.float32).max)
+_DEFAULT_RTOL = 1e-6
+_ANY = "*"
+_PRIVATE_PREFIX = "_"
 
 
 #: Session calls switch the engine's globals, so only one of them may be in
@@ -46,7 +49,7 @@ _STATE_LOCK = threading.RLock()
 
 def defined_mask(values_array):
     """Boolean mask that is True where `values_array` holds a defined number."""
-    return ~np.isclose(values_array, UNDEF_VALUE, rtol=1e-6)
+    return ~np.isclose(values_array, UNDEF_VALUE, rtol=_DEFAULT_RTOL)
 
 
 def surf_names():
@@ -54,7 +57,7 @@ def surf_names():
     return [_core.surf_name_at(pos) for pos in range(_core.surf_count())]
 
 
-def surf_index(pattern="*"):
+def surf_index(pattern=_ANY):
     """Index of the first surface matching a shell-style pattern, or -1.
 
     The Tcl front end selects objects the same way, by name with wildcards.
@@ -92,9 +95,9 @@ class _ProgressBase:
     outer loop announces ``* Phase <n>, grid size = <w> x <h>``.
     """
 
-    _PHASE = re.compile(r"Phase (\d+), grid size = (\d+) x (\d+)")
-    _SOLVER = re.compile(r"^([A-Za-z0-9_]+): \((\d+)\)")
-    _ITERATION = re.compile(r"iter\s*:\s*(\d+).*?error\s*:\s*([0-9eE.+-]+)")
+    _phase_re = re.compile(r"Phase (\d+), grid size = (\d+) x (\d+)")
+    _solver_re = re.compile(r"^([A-Za-z0-9_]+): \((\d+)\)")
+    _iteration_re = re.compile(r"iter\s*:\s*(\d+).*?error\s*:\s*([0-9eE.+-]+)")
 
     def __enter__(self):
         self._open()
@@ -128,15 +131,15 @@ class _ProgressBase:
         text = message.strip()
         if not text:
             return
-        phase = self._PHASE.search(text)
+        phase = self._phase_re.search(text)
         if phase:
             self.on_phase(*phase.groups())
             return
-        solver = self._SOLVER.match(text)
+        solver = self._solver_re.match(text)
         if solver:
             self.on_solve(*solver.groups())
             return
-        iteration = self._ITERATION.search(text)
+        iteration = self._iteration_re.search(text)
         if iteration:
             self.on_iteration(int(iteration.group(1)), iteration.group(2))
             return
@@ -170,7 +173,7 @@ class _BarProgress(_ProgressBase):
         """tqdm's set_description() appends ": " on top of the one the bar
         format already adds; set_description_str() does not."""
         setter = getattr(self._bar, "set_description_str", None)
-        if setter is not None:
+        if setter:
             setter(text)
         else:
             self._bar.set_description(text)
@@ -204,7 +207,7 @@ class _LineProgress(_ProgressBase):
     def __init__(self, every=2.0, stream=None):
         self._every = every
         self._stream = stream if stream is not None else sys.stderr
-        self._last = 0.0
+        self._last = 0
         self._description = "gridding"
 
     def _write(self, text):
@@ -214,7 +217,7 @@ class _LineProgress(_ProgressBase):
         self._description = "phase %s %sx%s" % (number, width, height)
 
     def on_solve(self, solver, cells):
-        self._last = 0.0
+        self._last = 0
         self._description = "%s (%s cells)" % (solver, cells)
         self._write("-- %s" % self._description)
 
@@ -371,14 +374,14 @@ class Session:
         """
         return self._call(_core.grid, step_x, step_y, percent, name)
 
-    def area(self, value, name="*"):
+    def area(self, value, name=_ANY):
         """Rule: the surface equals `value` inside the area.
 
         `value` may be the string "undef" to leave the area undefined.
         """
         return area(value, name)
 
-    def area_add(self, value, weight, name="*"):
+    def area_add(self, value, weight, name=_ANY):
         """Like :meth:`area`, but with a weight, added to the previous rule."""
         return area_add(value, weight, name)
 
@@ -396,7 +399,7 @@ class Session:
         """Runs the gridding algorithm."""
         surfit()
 
-    def save(self, path, name="*"):
+    def save(self, path, name=_ANY):
         """Saves a surface to a surfit data file."""
         return surf_save(path, name)
 
@@ -408,13 +411,10 @@ class Session:
         Every command is reachable without listing it here, and the Session
         stays in step with the bindings as they grow.
         """
-        if not name.startswith("_"):
-            target = globals().get(name)
-            if callable(target):
-                @functools.wraps(target)
-                def bound(*args, **kwargs):
-                    return self._call(target, *args, **kwargs)
-                return bound
+        target = globals().get(name)
+        if not name.startswith(_PRIVATE_PREFIX) and (
+                name in _COMMANDS or callable(target)):
+            return functools.partial(self._call, target)
         raise AttributeError("%r object has no attribute %r"
                              % (type(self).__name__, name))
 
@@ -422,7 +422,7 @@ class Session:
         """Names of the surfaces in memory."""
         return surf_names()
 
-    def surf_index(self, pattern="*"):
+    def surf_index(self, pattern=_ANY):
         """Index of the first surface matching `pattern`, or -1."""
         return surf_index(pattern)
 
@@ -453,7 +453,7 @@ def _reexport_commands():
     taken = set(globals())
     exported = []
     for name in dir(_core):
-        if name.startswith("_") or name in taken:
+        if name.startswith(_PRIVATE_PREFIX) or name in taken:
             continue
         globals()[name] = getattr(_core, name)
         exported.append(name)
@@ -476,7 +476,7 @@ def _activating(function):
 
 # Applied here rather than by hand, so a method added later cannot forget.
 for _name, _value in list(vars(Session).items()):
-    if not _name.startswith("_") and callable(_value):
+    if not _name.startswith(_PRIVATE_PREFIX) and callable(_value):
         setattr(Session, _name, _activating(_value))
 del _name, _value
 
@@ -485,4 +485,4 @@ del _reexport_commands
 
 from .postgis import read_postgis  # noqa: E402  (after the core re-exports)
 
-__all__ = sorted(name for name in globals() if not name.startswith("_"))
+__all__ = sorted(name for name in globals() if not name.startswith(_PRIVATE_PREFIX))

@@ -9,6 +9,7 @@ Build both languages with ``docs/build.sh``.
 """
 
 import os
+from types import MappingProxyType
 
 from pygments.lexer import include
 from pygments.lexers.tcl import TclLexer
@@ -32,12 +33,12 @@ release = "3.1"
 
 try:
     import sphinx_nefertiti  # noqa: F401
-
-    html_theme = "sphinx_nefertiti"
 except ImportError:  # the theme is optional, alabaster ships with Sphinx
     html_theme = "alabaster"
+else:
+    html_theme = "sphinx_nefertiti"
 
-HEADER_LINKS = {
+HEADER_LINKS = MappingProxyType({
     "en": [
         {"text": "First steps", "link": "first_steps"},
         {"text": "Python", "link": "python"},
@@ -50,7 +51,7 @@ HEADER_LINKS = {
         {"text": "Tcl", "link": "tcl"},
         {"text": "Форматы", "link": "formats"},
     ],
-}
+})
 
 html_theme_options = {
     "style": "green",
@@ -82,7 +83,7 @@ html_short_title = "surfit"
 html_show_sourcelink = False
 
 class SurfitTclLexer(TclLexer):
-    """Pygments' Tcl lexer, with one fix.
+    r"""Pygments' Tcl lexer, with one fix.
 
     The generated example scripts end many lines with a space.  In Pygments'
     lexer the trailing space is matched by ``\\s+`` in the ``params`` state,

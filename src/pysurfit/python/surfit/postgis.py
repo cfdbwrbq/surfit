@@ -49,7 +49,7 @@ def read_postgis(conninfo, query, name="points", psql="psql", timeout=300):
         % (max(1, int(timeout)) * 1000, statement)
     )
 
-    result = subprocess.run(
+    run_result = subprocess.run(
         [
             executable,
             "--no-psqlrc",
@@ -64,21 +64,22 @@ def read_postgis(conninfo, query, name="points", psql="psql", timeout=300):
         text=True,
         timeout=timeout,
     )
-    if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip()
+    if run_result.returncode != 0:
+        detail = run_result.stderr.strip() or run_result.stdout.strip()
         raise RuntimeError(
             "read_postgis: psql failed with exit %d: %s"
-            % (result.returncode, detail))
+            % (run_result.returncode, detail))
 
-    rows = _parse_csv(result.stdout)
+    rows = _parse_csv(run_result.stdout)
     if not rows:
         raise ValueError("read_postgis: the query returned no points")
 
-    handle, path = tempfile.mkstemp(prefix="surfit-postgis-", suffix=".txt")
+    file_handle, path = tempfile.mkstemp(prefix="surfit-postgis-", suffix=".txt")
     try:
-        with os.fdopen(handle, "w", encoding="utf-8") as stream:
-            for x, y, z in rows:
-                stream.write("%.17g\t%.17g\t%.17g\n" % (x, y, z))
+        with os.fdopen(file_handle, "w", encoding="utf-8") as stream:
+            for point_x, point_y, point_z in rows:
+                stream.write("%.17g\t%.17g\t%.17g\n"
+                             % (point_x, point_y, point_z))
         from . import pnts_read
         return pnts_read(path, name)
     finally:
@@ -88,6 +89,20 @@ def read_postgis(conninfo, query, name="points", psql="psql", timeout=300):
             pass
 
 
+def _parse_row(number, row):
+    """Converts one CSV row into a (x, y, z) float triple."""
+    if len(row) != 3:
+        raise ValueError(
+            "read_postgis: row %d has %d columns, expected x, y, z"
+            % (number, len(row)))
+    try:
+        point_x, point_y, point_z = (float(raw_value) for raw_value in row)
+    except ValueError:
+        raise ValueError(
+            "read_postgis: row %d is not numeric: %r" % (number, row)) from None
+    return point_x, point_y, point_z
+
+
 def _parse_csv(text):
     """Turns COPY's CSV output into (x, y, z) float triples."""
     rows = []
@@ -95,14 +110,5 @@ def _parse_csv(text):
     for number, row in enumerate(reader, 1):
         if not row:
             continue
-        if len(row) != 3:
-            raise ValueError(
-                "read_postgis: row %d has %d columns, expected x, y, z"
-                % (number, len(row)))
-        try:
-            x, y, z = (float(value) for value in row)
-        except ValueError:
-            raise ValueError(
-                "read_postgis: row %d is not numeric: %r" % (number, row))
-        rows.append((x, y, z))
+        rows.append(_parse_row(number, row))
     return rows

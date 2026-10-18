@@ -1,0 +1,20 @@
+[flake8]
+select = WPS,E999
+# Tests and examples are user-facing scripts: they use literal numbers,
+# print() and short names on purpose.  Documentation build helpers are
+# one-off generators.  WPS is enforced on the package and on the docs checks.
+extend-exclude =
+    src/pysurfit/tests,
+    examples/python,
+    docs/make_images.py,
+    docs/make_command_reference.py
+# The package facade and the IO/viewer helpers carry deliberate patterns:
+# module-level re-exports, a public API with many methods/arguments, dynamic
+# command dispatch, and psql/tempfile error handling.  These are listed per
+# file, not disabled globally.
+per-file-ignores =
+    src/pysurfit/python/surfit/__init__.py: WPS110,WPS111,WPS122,WPS202,WPS211,WPS214,WPS300,WPS338,WPS410,WPS412,WPS420,WPS421,WPS504,WPS603
+    src/pysurfit/python/surfit/_viewer.py: WPS110,WPS211,WPS300
+    src/pysurfit/python/surfit/postgis.py: WPS210,WPS229,WPS231,WPS238,WPS300,WPS420,WPS501,WPS505
+    docs/check_docs.py: WPS210,WPS220,WPS221,WPS231,WPS232
+    docs/conf.py: WPS226

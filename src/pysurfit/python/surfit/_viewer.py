@@ -21,6 +21,9 @@ from . import _surfit as _core
 #: d3 is fetched when the page is opened; pass ``d3_url`` to point at a local
 #: copy when the machine viewing the file has no network access.
 DEFAULT_D3_URL = "https://cdn.jsdelivr.net/npm/d3@7"
+_COUNT_X = "count_x"
+_COUNT_Y = "count_y"
+_DEFAULT_RTOL = 1e-6
 
 _TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -42,7 +45,7 @@ _TEMPLATE = """<!DOCTYPE html>
 <div class="surfit-source">surfit {version} &middot; {count_x} x {count_y} nodes,
 {defined} defined &middot; rendered with d3</div>
 <script src="{d3_url}"></script>
-<script>window.SURFIT_DATA = {data};</script>
+<script>window.SURFIT_DATA = {payload};</script>
 <script>window.SURFIT_CONFIG = {config};</script>
 <script>{script}</script>
 <script>
@@ -55,9 +58,10 @@ _TEMPLATE = """<!DOCTYPE html>
 
 
 def _viewer_script():
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "viewer.js")
-    with open(path, encoding="utf-8") as handle:
-        return handle.read()
+    here = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(here, "viewer.js")
+    with open(path, encoding="utf-8") as script_file:
+        return script_file.read()
 
 
 def _payload(values, extent):
@@ -67,15 +71,14 @@ def _payload(values, extent):
     the data path is not worth saving a few hundred kilobytes on.
     """
     array = np.ascontiguousarray(values, dtype="<f8")
-    count_x = int(extent["count_x"])
-    count_y = int(extent["count_y"])
-    if array.shape != (count_y, count_x):
+    shape = (int(extent[_COUNT_Y]), int(extent[_COUNT_X]))
+    if array.shape != shape:
         raise ValueError(
             "surface is %s but its extent says %d x %d"
-            % (array.shape, count_y, count_x))
+            % (array.shape, shape[1], shape[0]))
     encoded = base64.b64encode(array.tobytes()).decode("ascii")
-    defined = int(np.count_nonzero(~np.isclose(
-        array, np.finfo(np.float32).max, rtol=1e-6)))
+    close = np.isclose(array, np.finfo(np.float32).max, rtol=_DEFAULT_RTOL)
+    defined = int(np.count_nonzero(~close))
     return encoded, defined
 
 
@@ -90,10 +93,10 @@ def render_html(values, extent, title="surfit surface", levels=12,
     """
     encoded, defined = _payload(values, extent)
 
-    data = {
+    payload = {
         "values": encoded,
-        "count_x": int(extent["count_x"]),
-        "count_y": int(extent["count_y"]),
+        "count_x": int(extent[_COUNT_X]),
+        "count_y": int(extent[_COUNT_Y]),
         "min_x": float(extent["min_x"]),
         "max_x": float(extent["max_x"]),
         "min_y": float(extent["min_y"]),
@@ -113,11 +116,11 @@ def render_html(values, extent, title="surfit surface", levels=12,
     return _TEMPLATE.format(
         title=html.escape(title),
         version="3.1",
-        count_x=data["count_x"],
-        count_y=data["count_y"],
+        count_x=payload["count_x"],
+        count_y=payload["count_y"],
         defined=defined,
         d3_url=d3_url or DEFAULT_D3_URL,
-        data=json.dumps(data),
+        payload=json.dumps(payload),
         config=json.dumps(config),
         script=_viewer_script(),
     )
@@ -138,6 +141,6 @@ def viewer(pos=-1, **kwargs):
 
 def save_viewer(path, pos=-1, **kwargs):
     """Writes the page for a surface to ``path`` and returns the path."""
-    with open(path, "w", encoding="utf-8") as handle:
-        handle.write(viewer(pos, **kwargs))
+    with open(path, "w", encoding="utf-8") as script_file:
+        script_file.write(viewer(pos, **kwargs))
     return path

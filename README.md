@@ -136,6 +136,21 @@ cd examples/surfit/tests
 tclsh area.tcl
 ```
 
+## Code style
+
+The Python package and the documentation tooling are checked with
+[wemake-python-styleguide](https://wemake-python-styleguide.readthedocs.io/):
+
+```bash
+pip install -r requirements-dev.txt
+python3 -m flake8 --config .flake8 src/pysurfit/python docs
+```
+
+Tests and examples are excluded (they are scripts with literal numbers and
+`print`), and `.flake8` documents the package's deliberate exceptions: the
+dynamic re-export facade, the public `Session` API and the psql/tempfile error
+handling.
+
 ## Tests
 
 ```bash

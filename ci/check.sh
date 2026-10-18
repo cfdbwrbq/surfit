@@ -75,6 +75,14 @@ run parity "$PYTHON" "$TESTS/test_parity.py"
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 
+step "wemake-python-styleguide"
+if "$PYTHON" -m flake8 --version >/dev/null 2>&1; then
+    run wps "$PYTHON" -m flake8 --config "$HERE/.flake8" "$HERE/src/pysurfit/python" "$HERE/docs"
+else
+    echo "FAILED: flake8 is not installed; run: pip install -r requirements-dev.txt" >&2
+    FAILED="$FAILED wps-missing"
+fi
+
 step "two tasks in one process"
 run sessions "$PYTHON" "$TESTS/test_sessions.py"
 

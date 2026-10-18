@@ -39,6 +39,11 @@ woven in by Terry Thorsen 1/2003.
 #include <stdlib.h>
 #include <string.h>
 #include "zlib.h"
+
+/* zlib before 1.2.9 has no z_crc_t: its CRC table is an unsigned long one. */
+#if defined(ZLIB_VERNUM) && ZLIB_VERNUM < 0x1290
+typedef unsigned long z_crc_t;
+#endif
 #include "unzip.h"
 
 #ifdef STDC

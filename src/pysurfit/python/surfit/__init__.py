@@ -412,8 +412,7 @@ class Session:
         stays in step with the bindings as they grow.
         """
         target = globals().get(name)
-        if not name.startswith(_PRIVATE_PREFIX) and (
-                name in _COMMANDS or callable(target)):
+        if not name.startswith(_PRIVATE_PREFIX) and callable(target):
             return functools.partial(self._call, target)
         raise AttributeError("%r object has no attribute %r"
                              % (type(self).__name__, name))
@@ -439,25 +438,17 @@ class Session:
         return save_viewer(path, **kwargs)
 
 
-#: Names re-exported from the compiled module, used by Session.__getattr__.
-_COMMANDS = frozenset()
-
-
 def _reexport_commands():
     """Makes every compiled command available under its Tcl name.
 
     Names already defined above win, so the richer Python helpers stay in
     place while the plain command wrappers are re-exported wholesale.
     """
-    global _COMMANDS
     taken = set(globals())
-    exported = []
     for name in dir(_core):
         if name.startswith(_PRIVATE_PREFIX) or name in taken:
             continue
         globals()[name] = getattr(_core, name)
-        exported.append(name)
-    _COMMANDS = frozenset(exported)
 
 
 def _activating(function):
@@ -474,15 +465,18 @@ def _activating(function):
     return wrapper
 
 
-# Applied here rather than by hand, so a method added later cannot forget.
-for _name, _value in list(vars(Session).items()):
-    if not _name.startswith(_PRIVATE_PREFIX) and callable(_value):
-        setattr(Session, _name, _activating(_value))
-del _name, _value
+def _wrap_session_methods():
+    """Applies the state switch to every public Session method.
 
+    Doing it here rather than by hand means a method added later cannot forget
+    the wrapper.
+    """
+    for method_name, method in list(vars(Session).items()):
+        if not method_name.startswith(_PRIVATE_PREFIX) and callable(method):
+            setattr(Session, method_name, _activating(method))
+
+
+_wrap_session_methods()
 _reexport_commands()
-del _reexport_commands
 
 from .postgis import read_postgis  # noqa: E402  (after the core re-exports)
-
-__all__ = sorted(name for name in globals() if not name.startswith(_PRIVATE_PREFIX))

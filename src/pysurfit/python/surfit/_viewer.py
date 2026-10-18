@@ -16,7 +16,7 @@ import os
 
 import numpy as np
 
-from . import _surfit as _core
+from surfit import _surfit as _core
 
 #: d3 is fetched when the page is opened; pass ``d3_url`` to point at a local
 #: copy when the machine viewing the file has no network access.

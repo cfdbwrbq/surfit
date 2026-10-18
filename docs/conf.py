@@ -15,7 +15,13 @@ from pygments.lexer import include
 from pygments.lexers.tcl import TclLexer
 from pygments.token import Keyword, Text, Whitespace
 
-project = "surfit"
+_SURFIT = "surfit"
+_LANG_EN = "en"
+_LANG_RU = "ru"
+_TEXT = "text"
+_LINK = "link"
+
+project = _SURFIT
 author = "M. V. Dmitrievsky, V. N. Kutrunov"
 copyright = "2002-2007 M. V. Dmitrievsky & V. N. Kutrunov"
 
@@ -39,17 +45,17 @@ else:
     html_theme = "sphinx_nefertiti"
 
 HEADER_LINKS = MappingProxyType({
-    "en": [
-        {"text": "First steps", "link": "first_steps"},
-        {"text": "Python", "link": "python"},
-        {"text": "Tcl", "link": "tcl"},
-        {"text": "Formats", "link": "formats"},
+    _LANG_EN: [
+        {_TEXT: "First steps", _LINK: "first_steps"},
+        {_TEXT: "Python", _LINK: "python"},
+        {_TEXT: "Tcl", _LINK: "tcl"},
+        {_TEXT: "Formats", _LINK: "formats"},
     ],
-    "ru": [
-        {"text": "Первые шаги", "link": "first_steps"},
-        {"text": "Python", "link": "python"},
-        {"text": "Tcl", "link": "tcl"},
-        {"text": "Форматы", "link": "formats"},
+    _LANG_RU: [
+        {_TEXT: "Первые шаги", _LINK: "first_steps"},
+        {_TEXT: "Python", _LINK: "python"},
+        {_TEXT: "Tcl", _LINK: "tcl"},
+        {_TEXT: "Форматы", _LINK: "formats"},
     ],
 })
 
@@ -65,21 +71,21 @@ html_theme_options = {
     "logo": "logo.svg",
     "logo_width": 28,
     "logo_height": 28,
-    "logo_alt": "surfit",
+    "logo_alt": _SURFIT,
     "repository_url": "https://github.com/mdmitr/surfit",
-    "repository_name": "surfit",
+    "repository_name": _SURFIT,
     "current_version": release,
-    "header_links": HEADER_LINKS["en"],
+    "header_links": HEADER_LINKS[_LANG_EN],
     "locales": [
-        ("en", "/en/"),
-        ("ru", "/ru/"),
+        (_LANG_EN, "/en/"),
+        (_LANG_RU, "/ru/"),
     ],
 }
 
 html_css_files = ["custom.css"]
 html_js_files = ["copy_code.js"]
-html_title = "surfit"
-html_short_title = "surfit"
+html_title = _SURFIT
+html_short_title = _SURFIT
 html_show_sourcelink = False
 
 class SurfitTclLexer(TclLexer):

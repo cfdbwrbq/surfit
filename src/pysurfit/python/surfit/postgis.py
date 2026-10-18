@@ -4,6 +4,7 @@ The helper deliberately has no Python dependency: it runs ``psql`` (which
 already knows how to read ``.pgpass`` and service files), asks for the result as
 CSV, and feeds the rows through the same loader as ``pnts_read``.
 """
+import contextlib
 import csv
 import io
 import os
@@ -83,10 +84,8 @@ def read_postgis(conninfo, query, name="points", psql="psql", timeout=300):
         from . import pnts_read
         return pnts_read(path, name)
     finally:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(path)
-        except OSError:
-            pass
 
 
 def _parse_row(number, row):

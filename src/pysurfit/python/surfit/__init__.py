@@ -31,8 +31,8 @@ import time
 
 import numpy as np
 
-from . import _surfit as _core
-from ._viewer import render_html, save_viewer, viewer
+from surfit import _surfit as _core
+from surfit._viewer import render_html, save_viewer, viewer
 
 #: Undefined grid nodes carry FLT_MAX, the core's `undef_value`.
 UNDEF_VALUE = float(np.finfo(np.float32).max)
@@ -110,10 +110,12 @@ class _ProgressBase:
         return False
 
     def _open(self):
-        pass
+        """Starts the display; subclasses must implement it."""
+        raise NotImplementedError
 
     def _close(self):
-        pass
+        """Stops the display; subclasses must implement it."""
+        raise NotImplementedError
 
     def on_phase(self, number, width, height):
         """The outer loop moved to a finer grid."""
@@ -339,7 +341,7 @@ class Session:
         try:
             self.close()
         except Exception:  # noqa: BLE001 - never raise from a destructor
-            pass
+            return
 
     def read_areas(self, path, name):
         """Loads polygon areas from a text file under the given name."""
@@ -479,4 +481,4 @@ def _wrap_session_methods():
 _wrap_session_methods()
 _reexport_commands()
 
-from .postgis import read_postgis  # noqa: E402  (after the core re-exports)
+from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)

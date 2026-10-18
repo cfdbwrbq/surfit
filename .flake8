@@ -13,7 +13,7 @@ extend-exclude =
 # command dispatch, and psql/tempfile error handling.  These are listed per
 # file, not disabled globally.
 per-file-ignores =
-    src/pysurfit/python/surfit/__init__.py: WPS110,WPS111,WPS202,WPS211,WPS214,WPS300,WPS338,WPS412,WPS420,WPS421,WPS603
+    src/pysurfit/python/surfit/__init__.py: WPS110,WPS111,WPS202,WPS211,WPS214,WPS338,WPS412,WPS421,WPS603
     src/pysurfit/python/surfit/_viewer.py: WPS110,WPS211
     src/pysurfit/python/surfit/postgis.py: WPS202
     docs/check_docs.py: WPS202,WPS210,WPS231

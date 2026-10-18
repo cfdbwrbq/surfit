@@ -85,6 +85,7 @@ References and development notes:
 
    references
    development
+   stats
 
 License
 -------

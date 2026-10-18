@@ -87,6 +87,7 @@ surfit
 
    references
    development
+   stats
 
 Лицензия
 --------

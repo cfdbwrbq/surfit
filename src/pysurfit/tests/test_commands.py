@@ -248,11 +248,11 @@ puts "maxz=[pnts_maxz]"
 def python_minmax():
     surfit.clear_data()
     surfit.pnts_read(os.path.join("data", "minmax.txt"), "mm")
-    print("minz=%g" % surfit.pnts_minz())
-    print("maxz=%g" % surfit.pnts_maxz())
+    print("minz=%g" % surfit.pnts_minz()[0])
+    print("maxz=%g" % surfit.pnts_maxz()[0])
     # The first z is the minimum; a reduction that starts at begin+1 misses it.
-    assert surfit.pnts_minz() == -100.0, surfit.pnts_minz()
-    assert surfit.pnts_maxz() == 20.0, surfit.pnts_maxz()
+    assert surfit.pnts_minz()[0] == -100.0, surfit.pnts_minz()
+    assert surfit.pnts_maxz()[0] == 20.0, surfit.pnts_maxz()
 
 
 def tcl_hist_datafile():

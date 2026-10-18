@@ -206,7 +206,7 @@ class _LineProgress(_ProgressBase):
 
     def __init__(self, every=2.0, stream=None):
         self._every = every
-        self._stream = stream if stream is not None else sys.stderr
+        self._stream = stream or sys.stderr
         self._last = 0
         self._description = "gridding"
 

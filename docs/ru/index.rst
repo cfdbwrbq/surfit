@@ -87,10 +87,9 @@ surfit
 
    references
    development
-   stats
 
 Лицензия
 --------
 
-surfit распространяется под GNU General Public License версии 2. Про один
-сторонний файл, лицензия которого отличается, написано в :doc:`development`.
+surfit распространяется под GNU General Public License версии 2. Про вендоренную триангуляцию CDT (MPL-2.0)
+написано в :doc:`development`.

@@ -23,8 +23,7 @@ data files, 504 command steps run on both front ends, and `ci/check.sh` runs the
 full suite. AI-assisted code can still contain errors; the software is provided
 under GPL-2, without warranty.
 
-See [AI_DISCLOSURE.md](AI_DISCLOSURE.md) for the full statement and
-`docs/en/stats.rst` for the measured AI session and token counts.
+See [AI_DISCLOSURE.md](AI_DISCLOSURE.md) for the full statement.
 
 ## Python
 

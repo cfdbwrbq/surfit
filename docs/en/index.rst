@@ -85,10 +85,9 @@ References and development notes:
 
    references
    development
-   stats
 
 License
 -------
 
 surfit is distributed under the GNU General Public License, version 2. See
-:doc:`development` for the one third-party file whose licence differs.
+:doc:`development` for the vendored CDT triangulation (MPL-2.0).

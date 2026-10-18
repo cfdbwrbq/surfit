@@ -42,12 +42,6 @@ code can still contain errors, and the software is provided under GPL-2
   `src/surfit/src/third_party/cdt/` keeps its MPL-2.0 notices, but it has no
   commercial-use restriction.
 
-## AI usage in numbers
-
-The measured sessions, requests and token counts are on the documentation
-statistics page: [`docs/en/stats.rst`](docs/en/stats.rst) (and its Russian
-counterpart), with the method used to collect them.
-
 ## If you find a problem
 
 Open an issue with the version (release tag or commit), the command, the input

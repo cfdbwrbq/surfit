@@ -182,7 +182,7 @@ directory holds the original Doxygen sources.
 
 GNU General Public License, version 2. See [LICENSE](LICENSE).
 
-Note that `src/surfit/src/triangle.cpp` is Shewchuk's Triangle, whose licence is
-not GPL: redistribution is free but commercial use requires a separate
-arrangement. That file is on the repository's default build path, so anyone
-shipping a binary should review this first.
+The triangulation code is [CDT](https://github.com/artem-ogre/CDT) (Constrained
+Delaunay Triangulation) by Artem Amirkhanov, licensed under MPL-2.0 and vendored
+in `src/surfit/src/third_party/cdt/`. Its files keep the MPL-2.0 notices; unlike
+Triangle, it has no commercial-use restriction.

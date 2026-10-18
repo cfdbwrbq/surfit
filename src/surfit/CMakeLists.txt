@@ -12,10 +12,8 @@ include_directories(
 	${CMAKE_BINARY_DIR}
 	../sstuff/src
 	../sstuff/src/ptypes
+	src/third_party/cdt
 )
-
-#definitions for triangulation library
-add_definitions(-DANSI_DECLARATORS -DNO_TIMER -DTRILIBRARY)
 
 add_library(${PROJ_NAME} SHARED ${srcs_cpp} ${hdrs})
 

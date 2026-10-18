@@ -249,8 +249,7 @@ License
 
 surfit is free software under the GNU General Public License, version 2.
 
-One file does not share that licence. ``src/surfit/src/triangle.cpp`` is
-Shewchuk's Triangle: it may be redistributed freely, but commercial use requires
-a separate arrangement with the author. Because it is compiled into the engine
-by default, anyone distributing a binary should decide what to do about it —
-either obtain the arrangement or replace the triangulation.
+The triangulation code is CDT (Constrained Delaunay Triangulation), vendored in
+``src/surfit/src/third_party/cdt/`` under the Mozilla Public License 2.0. Its
+files keep their MPL notices; unlike Triangle, there is no commercial-use
+restriction. The rest of the engine remains GPL-2.

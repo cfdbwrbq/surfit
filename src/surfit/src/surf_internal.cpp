@@ -49,7 +49,7 @@
 
 #include "grid_line_user.h"
 #include "grid_user.h"
-#include "triangle.h"
+#include "CDT.h"
 
 #include "threads.h"
 
@@ -58,6 +58,9 @@
 #include <math.h>
 #include <float.h>
 #include <errno.h>
+
+#include <algorithm>
+#include <vector>
 
 namespace surfit {
 
@@ -1270,105 +1273,129 @@ bool _surf_save_df(const d_surf * srf, datafile * df) {
 	return res;
 };
 
+namespace {
+
+std::vector<size_t> convex_hull(const std::vector<CDT::V2d<double> > & points)
+{
+	std::vector<size_t> order(points.size());
+	for (size_t i = 0; i < points.size(); i++)
+		order[i] = i;
+	std::sort(order.begin(), order.end(), [&points](size_t left, size_t right) {
+		if (points[left].x != points[right].x)
+			return points[left].x < points[right].x;
+		return points[left].y < points[right].y;
+	});
+
+	std::vector<size_t> lower;
+	for (size_t pos = 0; pos < order.size(); pos++) {
+		while (lower.size() >= 2) {
+			size_t a = lower[lower.size() - 2];
+			size_t b = lower[lower.size() - 1];
+			size_t c = order[pos];
+			if (::predicates::orient2d<double>(
+					points[a].x, points[a].y,
+					points[b].x, points[b].y,
+					points[c].x, points[c].y) > 0)
+				break;
+			lower.pop_back();
+		}
+		lower.push_back(order[pos]);
+	}
+
+	std::vector<size_t> upper;
+	for (size_t pos = order.size(); pos-- > 0; ) {
+		while (upper.size() >= 2) {
+			size_t a = upper[upper.size() - 2];
+			size_t b = upper[upper.size() - 1];
+			size_t c = order[pos];
+			if (::predicates::orient2d<double>(
+					points[a].x, points[a].y,
+					points[b].x, points[b].y,
+					points[c].x, points[c].y) > 0)
+				break;
+			upper.pop_back();
+		}
+		upper.push_back(order[pos]);
+	}
+
+	lower.pop_back();
+	upper.pop_back();
+	lower.insert(lower.end(), upper.begin(), upper.end());
+	return lower;
+}
+
+} // anonymous namespace
+
 d_surf * triangulate_points(const d_points * pnts, const d_grid * grid)
 {
 	size_t points_cnt = pnts->size();
-
 	if (points_cnt < 3)
 		return NULL;
 
-	struct triangulateio in, mid;
-	in.numberofpoints = points_cnt;
-	in.numberofpointattributes = 0;
-	in.pointlist = (REAL *) malloc(in.numberofpoints * 2 * sizeof(REAL));
-	in.pointattributelist = NULL;
-	in.pointmarkerlist = NULL;
-	in.numberofsegments = 0;
-	in.numberofholes = 0;
-	in.numberofregions = 0;
-	in.regionlist = NULL;
+	std::vector<CDT::V2d<double> > vertices;
+	vertices.reserve(points_cnt);
+	for (size_t i = 0; i < points_cnt; i++)
+		vertices.push_back(CDT::V2d<double>((*(pnts->X))(i), (*(pnts->Y))(i)));
 
-	size_t cnt = 0;
-	size_t i;
-	for (i = 0; i < points_cnt; i++) {
-		in.pointlist[cnt] = (*(pnts->X))(i); 
-		cnt++;
-		in.pointlist[cnt] = (*(pnts->Y))(i); 
-		cnt++;
-	}
-	
-	/* Make necessary initializations so that Triangle can return a */
-	/*   triangulation in `mid' and a voronoi diagram in `vorout'.  */
-	
-	mid.pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
-	/* Not needed if -N switch used or number of point attributes is zero: */
-	mid.pointattributelist = (REAL *) NULL;
-	mid.pointmarkerlist = (int *) NULL; /* Not needed if -N or -B switch used. */
-	mid.trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
-	/* Not needed if -E switch used or number of triangle attributes is zero: */
-	mid.triangleattributelist = (REAL *) NULL;
-	mid.neighborlist = (int *) NULL;         /* Needed only if -n switch used. */
-	/* Needed only if segments are output (-p or -c) and -P not used: */
-	mid.segmentlist = (int *) NULL;
-	/* Needed only if segments are output (-p or -c) and -P and -B not used: */
-	mid.segmentmarkerlist = (int *) NULL;
-	mid.edgelist = (int *) NULL;             /* Needed only if -e switch used. */
-	mid.edgemarkerlist = (int *) NULL;   /* Needed if -e used and -B not used. */
-	
-	
-	/* Triangulate the points.  Switches are chosen to read and write a  */
-	/*   PSLG (p), preserve the convex hull (c), number everything from  */
-	/*   zero (z), assign a regional attribute to each element (A), and  */
-	/*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
-	/*   neighbor list (n).                                              */
-	
-	triangulate((char*)"pczAenQ", &in, &mid, (struct triangulateio *) NULL);
+	CDT::DuplicatesInfo duplicates = CDT::RemoveDuplicates(vertices);
+	if (vertices.size() < 3)
+		return NULL;
 
-	// get surface bound
-
-	vec * x = create_vec(mid.numberofsegments+1);
-	vec * y = create_vec(mid.numberofsegments+1);
-
-	for (i = 0; i < (size_t)mid.numberofsegments; i++)
-	{
-		if (i == 0) {
-			int seg = *(mid.segmentlist + 2*i);
-			(*x)(i) = (*(pnts->X))(seg);
-			(*y)(i) = (*(pnts->Y))(seg);
-		} 
-		int seg = *(mid.segmentlist + 2*i+1);
-		(*x)(i) = (*(pnts->X))(seg);
-		(*y)(i) = (*(pnts->Y))(seg);
-	}
-	(*x)(i) = (*x)(0);
-	(*y)(i) = (*y)(0);
-
-	d_grid * grd = create_grid(grid);
-	d_curv * crv = create_curv(x, y);
-	d_area * area = create_area(crv, true);
-	bitvec * mask = nodes_in_area_mask(area, grd);
-	
-	size_t NN = grd->getCountX();
-	size_t MM = grd->getCountY();
-	size_t size = NN*MM;
-	extvec * coeff = create_extvec(size, undef_value);
-
-	for (i = 0; i < size; i++) {
-		if (mask->get(i) == false) {
-			(*coeff)(i) = undef_value;
-			continue;
+	std::vector<size_t> original(vertices.size(), 0);
+	std::vector<bool> seen(vertices.size(), false);
+	for (size_t pos = 0; pos < duplicates.mapping.size(); pos++) {
+		size_t index = duplicates.mapping[pos];
+		if (!seen[index]) {
+			original[index] = pos;
+			seen[index] = true;
 		}
 	}
 
-	// fill from triangles
+	std::vector<size_t> hull = convex_hull(vertices);
+	if (hull.size() < 3)
+		return NULL;
+
+	CDT::Triangulation<double> cdt;
+	cdt.insertVertices(vertices);
+	cdt.eraseSuperTriangle();
+	if (cdt.triangles.empty())
+		return NULL;
+
+	d_grid * grd = create_grid(grid);
+	vec * x = create_vec(hull.size() + 1);
+	vec * y = create_vec(hull.size() + 1);
+	for (size_t pos = 0; pos < hull.size(); pos++) {
+		size_t index = original[hull[pos]];
+		(*x)(pos) = (*(pnts->X))(index);
+		(*y)(pos) = (*(pnts->Y))(index);
+	}
+	(*x)(hull.size()) = (*x)(0);
+	(*y)(hull.size()) = (*y)(0);
+
+	d_curv * crv = create_curv(x, y);
+	d_area * area = create_area(crv, true);
+	bitvec * mask = nodes_in_area_mask(area, grd);
+
+	size_t NN = grd->getCountX();
+	size_t MM = grd->getCountY();
+	size_t size = NN * MM;
+	extvec * coeff = create_extvec(size, undef_value);
+
+	for (size_t i = 0; i < size; i++) {
+		if (mask->get(i) == false) {
+			(*coeff)(i) = undef_value;
+		}
+	}
+
 	REAL xx[4];
 	REAL yy[4];
 	REAL zz[3];
-	for (i = 0; i < (size_t)mid.numberoftriangles; i++)
-	{
-		int p0 = mid.trianglelist[3*i];
-		int p1 = mid.trianglelist[3*i+1];
-		int p2 = mid.trianglelist[3*i+2];
+	for (size_t pos = 0; pos < cdt.triangles.size(); pos++) {
+		const CDT::Triangle & tri = cdt.triangles[pos];
+		size_t p0 = original[tri.vertices[0]];
+		size_t p1 = original[tri.vertices[1]];
+		size_t p2 = original[tri.vertices[2]];
+
 		xx[0] = (*(pnts->X))(p0);
 		xx[1] = (*(pnts->X))(p1);
 		xx[2] = (*(pnts->X))(p2);
@@ -1412,20 +1439,19 @@ d_surf * triangulate_points(const d_points * pnts, const d_grid * grid)
 			for (I = i_from; I < i_to; I++) {
 				grd->getCoordNode(I, J, x, y);
 				if ( in_region(xx, yy, 3, x, y) ) {
-					size_t pos = two2one(I, J, NN, MM);
+					size_t index = two2one(I, J, NN, MM);
 					REAL z = undef_value;
-					// определители
 					REAL d1, d2, d3;
 					d1 = (yy[1]-yy[0])*(zz[2]-zz[0])-(yy[2]-yy[0])*(zz[1]-zz[0]);
 					d2 = -(xx[1]-xx[0])*(zz[2]-zz[0])+(xx[2]-xx[0])*(zz[1]-zz[0]);
 					d3 = (xx[1]-xx[0])*(yy[2]-yy[0])-(yy[1]-yy[0])*(xx[2]-xx[0]);
-	
+
 					if (d3 == 0) {
-						(*coeff)(pos) = z;
+						(*coeff)(index) = z;
 					}
-	
+
 					z = zz[0] - ((x-xx[0])*d1 + (y-yy[0])*d2)/d3;
-					(*coeff)(pos) = z;
+					(*coeff)(index) = z;
 				}
 			}
 		}
@@ -1437,23 +1463,7 @@ d_surf * triangulate_points(const d_points * pnts, const d_grid * grid)
 	mask->release();
 	area->release();
 
-	free(in.pointlist);
-	free(in.pointattributelist);
-	free(in.pointmarkerlist);
-	free(in.regionlist);
-	free(mid.pointlist);
-	free(mid.pointattributelist);
-	free(mid.pointmarkerlist);
-	free(mid.trianglelist);
-	free(mid.triangleattributelist);
-	free(mid.neighborlist);
-	free(mid.segmentlist);
-	free(mid.segmentmarkerlist);
-	free(mid.edgelist);
-	free(mid.edgemarkerlist);
-
 	return srf;
-
 };
 
 std::vector<d_cntr *> * _surf_trace_cntrs(const d_surf * surf, REAL from, REAL to, REAL step, bool closed)

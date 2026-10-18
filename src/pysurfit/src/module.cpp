@@ -1440,8 +1440,8 @@ PYBIND11_MODULE(_surfit, m) {
 	}, py::arg("weight") = 1, py::arg("D1") = 1, py::arg("D2") = 2,
 	   py::arg("alpha") = 0, py::arg("w") = 1);
 
-	// Overloaded in C++ (the other one is the Triangle entry point), hence the
-	// lambda rather than a plain function pointer.
+	// Overloaded in C++ (the other one is the triangulation entry point), hence
+	// the lambda rather than a plain function pointer.
 	m.def("triangulate", []() { return surfit::triangulate(); });
 
 	// ---- whole-task data files ---------------------------------------------

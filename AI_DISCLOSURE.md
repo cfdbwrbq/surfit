@@ -38,8 +38,9 @@ code can still contain errors, and the software is provided under GPL-2
   review, acceptance and integration are human work. The AI is a tool, not a
   legal author.
 - It does not change the licence. The repository is distributed under
-  GPL-2.0-only; `src/surfit/src/triangle.cpp` (Shewchuk's Triangle) has its own
-  terms, so review it before shipping binaries.
+  GPL-2.0-only; the vendored CDT triangulation in
+  `src/surfit/src/third_party/cdt/` keeps its MPL-2.0 notices, but it has no
+  commercial-use restriction.
 
 ## AI usage in numbers
 

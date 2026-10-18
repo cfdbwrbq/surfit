@@ -1,5 +1,11 @@
 # Agent instructions
 
+## Silent mode: no pushes
+
+While an experiment is silent, do not push anywhere: no `git push`, no tags,
+no releases, no remote branch updates. Commit locally if needed, keep the
+remote untouched, and wait for an explicit request before publishing.
+
 ## Always run everything
 
 Before declaring a change done, run the full suite:

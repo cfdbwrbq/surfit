@@ -23,7 +23,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y \
-            tcl-dev swig libjpeg-dev libnetcdf-dev
+            tcl-dev tk-dev swig libjpeg-dev libnetcdf-dev
 
       - name: python packages
         run: |

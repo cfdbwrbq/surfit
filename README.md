@@ -8,6 +8,24 @@ It interpolates and approximates scattered points, contours, surfaces and areas;
 it can take fault lines, trend surfaces, anisotropy and inequalities into
 account, and it supports a range of data formats.
 
+## How this port was made
+
+The original surfit engine and its Tcl front end were written by M. V.
+Dmitrievsky and V. N. Kutrunov between 2002 and 2015.
+
+The 2026 Python port — pybind11 bindings, the test harness, the build scripts
+and the documentation — was produced with an **AI coding agent under human
+direction and review**. The maintainer is responsible for the code and for its
+correctness.
+
+The port is checked against the original: 49 Tcl examples produce byte-identical
+data files, 504 command steps run on both front ends, and `ci/check.sh` runs the
+full suite. AI-assisted code can still contain errors; the software is provided
+under GPL-2, without warranty.
+
+See [AI_DISCLOSURE.md](AI_DISCLOSURE.md) for the full statement and
+`docs/en/stats.rst` for the measured AI session and token counts.
+
 ## Python
 
 The engine is available as a Python package. It drives the original C++ core,
@@ -17,7 +35,7 @@ boundary as numpy arrays in both directions.
 Runnable versions of both snippets below are in [`examples/python/`](examples/python).
 
 ```bash
-pip install .                     # needs cmake, a C++ compiler and tcl-dev
+pip install .                     # needs cmake and a C++ compiler
 ```
 
 ```python
@@ -88,11 +106,12 @@ Every command of the Tcl front end is available under the same name, so the
 scripts in `examples/` translate one call to one call. `src/pysurfit/tests/`
 contains a runner that does exactly that and compares the output byte for byte.
 
-### One task at a time
+### More than one task
 
-The core keeps its data in process-wide globals, so a `Session` resets that
-state when it is created. Two sessions cannot run concurrently in one process
-yet — that needs the per-instance context planned for stage L2.
+Each `Session` owns its state, so several tasks can share a process. Calls may be
+interleaved; a process-wide lock serializes them, and a solve blocks the other
+Session's calls until it finishes. Module-level functions use whichever state is
+active and are not protected by that lock.
 
 ## Building
 

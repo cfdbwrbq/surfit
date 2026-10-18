@@ -36,10 +36,10 @@ import surfit  # noqa: E402
 
 AREAS = ["area1", "area2", "area3", "area4", "area5"]
 
-# Layout of the coefficient block in a surfit data file: the "coeff" tag, a NUL,
-# a 4-byte element count, then the doubles.
-COEFF_COUNT_OFFSET = 273
-COEFF_DATA_OFFSET = 277
+# The coefficient block is a "coeff" tag, a NUL, a 4-byte element count, then
+# the doubles.  The tag is searched for, so a version string in the header does
+# not move the offsets.
+COEFF_TAG = b"coeff\x00"
 
 
 def core_libraries():
@@ -89,8 +89,13 @@ def coeff_from_file(path):
     """Reads the coefficient block back out of a surfit data file."""
     with open(path, "rb") as handle:
         raw = handle.read()
-    count = int.from_bytes(raw[COEFF_COUNT_OFFSET:COEFF_DATA_OFFSET], "little")
-    return np.frombuffer(raw, dtype="<f8", count=count, offset=COEFF_DATA_OFFSET)
+    tag_at = raw.find(COEFF_TAG)
+    if tag_at < 0:
+        raise ValueError("no coefficient block in %s" % path)
+    count_at = tag_at + len(COEFF_TAG)
+    count = int.from_bytes(raw[count_at:count_at + 4], "little")
+    data_at = count_at + 4
+    return np.frombuffer(raw, dtype="<f8", count=count, offset=data_at)
 
 
 def check_parity(failures):

@@ -53,7 +53,7 @@ set(HAVE_THREADS 1)
 # ----------------------------------
 
 #config
-set(VERSION "3.1")
+set(VERSION "3.1.1")
 CHECK_INCLUDE_FILE(string.h  HAVE_STRING_H)
 CHECK_INCLUDE_FILE(stdlib.h  HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE(unistd.h  HAVE_UNISTD_H)

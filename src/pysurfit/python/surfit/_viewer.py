@@ -115,7 +115,7 @@ def render_html(values, extent, title="surfit surface", levels=12,
 
     return _TEMPLATE.format(
         title=html.escape(title),
-        version="3.1",
+        version="3.1.1",
         count_x=payload["count_x"],
         count_y=payload["count_y"],
         defined=defined,

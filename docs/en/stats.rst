@@ -92,7 +92,7 @@ How these are measured
   ``git diff --shortstat 60fdf62^ HEAD``.
 * Code lines: ``git ls-files`` filtered by extension and counted with ``wc -l``.
 * AI usage: the DSH session logs (``session.v4.jsonl.zstd`` under
-  ``~/.dsh/sessions/--home-gisolog-dev-surfit--/``) are decompressed with
+  ``~/.dsh/sessions/``) are decompressed with
   ``zstd -dc`` and the provider's ``usage`` records are summed per request.
 * CI and build times: ``/usr/bin/time -v`` around the command.
 

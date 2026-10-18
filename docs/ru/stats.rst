@@ -93,7 +93,7 @@
   ``git diff --shortstat 60fdf62^ HEAD``.
 * Строки кода: ``git ls-files`` с фильтром по расширению и подсчётом ``wc -l``.
 * Использование ИИ: логи сессий DSH (``session.v4.jsonl.zstd`` в
-  ``~/.dsh/sessions/--home-gisolog-dev-surfit--/``) распаковываются через
+  ``~/.dsh/sessions/``) распаковываются через
   ``zstd -dc``, записи ``usage`` провайдера суммируются по запросам.
 * Время CI и сборки: ``/usr/bin/time -v`` вокруг команды.
 

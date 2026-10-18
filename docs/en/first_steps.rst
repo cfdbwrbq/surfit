@@ -6,9 +6,8 @@ explicit grid, two rules, a solve, and two ways to keep the result. The example
 is ``examples/python/first_steps.py``; its source is on this page and runs as
 written.
 
-The original manual started with the Tcl shell and the ``funner`` viewer. Neither
-is needed now: the task is a Python object, and the result can be written as a
-page that opens in a browser.
+The task is a Python object, and the result can be written as a page that opens
+in a browser.
 
 You need Python 3 with ``numpy`` and the ``surfit`` package; :doc:`installation`
 has the wheel and the build-from-source path.

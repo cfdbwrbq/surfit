@@ -1,11 +1,9 @@
-Basics: what the words mean
-===========================
+Basics: the vocabulary
+======================
 
-This page is for a first reading. It says, in plain words, what each piece of
-surfit is and where the same idea appears in real work. The links are DOI
-references from :doc:`references`; where something is a design decision of
-surfit rather than a research method, the source is the code and the tests, and
-the text says so.
+A short guide to the vocabulary. Each section says what a term means in surfit
+and where the same idea appears in mapping practice; the full references are in
+:doc:`references`.
 
 Grid, node, cell
 ----------------

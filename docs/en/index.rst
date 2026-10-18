@@ -31,35 +31,58 @@ Features
 Getting started
 ---------------
 
-Start with these documents to get you up and running:
+Installation and one complete task:
 
 .. toctree::
    :maxdepth: 2
 
    installation
-   basics
    first_steps
-   python
-   terrain
-   flows
 
-Advanced use
-------------
+Guides
+------
 
-The two front ends call the same engine: the Python bindings call the C++
-functions the Tcl commands are generated from, so the two agree by construction.
-That is not a claim, it is checked — the test suite runs every Tcl example
-through the Python front end and compares the resulting data files byte for
-byte.
+Task-oriented pages:
 
 .. toctree::
    :maxdepth: 2
 
+   python
+   terrain
+   flows
+
+Concepts
+--------
+
+What the terms mean and how the engine works:
+
+.. toctree::
+   :maxdepth: 2
+
+   basics
    how_it_works
+
+Reference
+---------
+
+Data types, commands, file formats, the Tcl front end:
+
+.. toctree::
+   :maxdepth: 2
+
    data_types
-   tcl
-   formats
    commands
+   formats
+   tcl
+
+Background
+----------
+
+References and development notes:
+
+.. toctree::
+   :maxdepth: 2
+
    references
    development
 

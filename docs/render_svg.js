@@ -23,7 +23,10 @@ const viewerPath = process.argv[2];
 const dataPath = process.argv[3];
 const outPath = process.argv[4];
 
-const viewer = require(path.resolve(viewerPath));
+const rendererPath = process.env.RENDERER === "3d"
+    ? path.join(__dirname, "surface3d.js")
+    : viewerPath;
+const renderer = require(path.resolve(rendererPath));
 const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
 
 const config = {
@@ -34,7 +37,7 @@ const config = {
 };
 
 const target = document.getElementById("figure");
-viewer.render(target, data, config, d3);
+renderer.render(target, data, config, d3);
 
 const svg = target.querySelector("svg");
 if (!svg) {

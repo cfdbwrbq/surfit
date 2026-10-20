@@ -28,6 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT = os.path.join(HERE, "_static")
 EXAMPLES = os.path.join(REPO, "examples", "python")
+AREA_DATA = os.path.join(REPO, "examples", "surfit", "tests", "data")
 NODE_MODULES = os.path.join(os.path.dirname(REPO), "js-test", "node_modules")
 
 #: (figure name, example module, renderer options)
@@ -35,6 +36,11 @@ FIGURES = (
     # areas
     ("map-area", "area", {"levels": 14, "size": 700,
                           "title": "area example"}),
+    ("map-area-3d", "area", {"levels": 10, "size": 700,
+                              "title": "area example, 3-D",
+                              "renderer": "3d",
+                              "areas": ["area1", "area2", "area3",
+                                        "area4", "area5"]}),
     ("map-area-completer", "area_completer", {"levels": 12, "size": 700,
                                               "title": "area_completer example"}),
     ("map-area-ineq", "area_ineq", {"levels": 12, "size": 700,
@@ -147,6 +153,20 @@ def load_example(name):
     return module
 
 
+def area_polygons(names):
+    """Read the simple x y polygons used by the area example."""
+    polygons = []
+    for name in names:
+        points = []
+        with open(os.path.join(AREA_DATA, "%s.txt" % name), encoding="utf-8") as handle:
+            for line in handle:
+                fields = line.split()
+                if len(fields) >= 2:
+                    points.append([float(fields[0]), float(fields[1])])
+        polygons.append({"name": name, "points": points})
+    return polygons
+
+
 def payload(task):
     """The structure the page embeds, taken back out of the generated page."""
     import re
@@ -169,8 +189,11 @@ def main():
 
         with tempfile.TemporaryDirectory() as directory:
             data_path = os.path.join(directory, "data.json")
+            data = payload(task)
+            if config.get("areas"):
+                data["areas"] = area_polygons(config["areas"])
             with open(data_path, "w", encoding="utf-8") as handle:
-                json.dump(payload(task), handle)
+                json.dump(data, handle)
             result = subprocess.run(
                 ["node", renderer, viewer_js, data_path,
                  os.path.join(OUT, "%s.svg" % name)],
@@ -178,7 +201,8 @@ def main():
                 env=dict(os.environ, NODE_PATH=NODE_MODULES,
                          LEVELS=str(config["levels"]),
                          SIZE=str(config["size"]),
-                         TITLE=config["title"]))
+                         TITLE=config["title"],
+                         RENDERER=config.get("renderer", "")))
         print("%s: %s" % (name, result.stdout.decode()))
         surfit.clear_data()
 

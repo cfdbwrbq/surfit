@@ -357,6 +357,16 @@ completer с анизотропией (угол 30 градусов, ``w=2``) в
       .. literalinclude:: ../../examples/surfit/tests/area_completer.tcl
          :language: tcl-src
 
+.. figure:: ../_static/map-area-3d.svg
+   :alt: 3-D surface of the area example with its five areas
+   :width: 68%
+   :align: center
+
+   Тот же пример с площадями в перспективе: поверхность, изолинии и пять
+   площадей. Дыра в середине — это ``area5``, неопределённая намеренно. Фигура
+   строится из того же payload, что и карта выше, скриптом
+   ``docs/surface3d.js``; d3 делает проекцию, затенение и порядок отрисовки.
+
 .. figure:: ../_static/map-area-completer.svg
    :alt: Карта примера area_completer, заливка по изолиниям
    :width: 80%

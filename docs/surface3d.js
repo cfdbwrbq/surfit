@@ -192,41 +192,104 @@
             const bottom = at(i, j + 1) * (1 - tx) + at(i + 1, j + 1) * tx;
             return top * (1 - ty) + bottom * ty;
         }
-        function contourPath(geometry) {
+        function isDefined(px, py) {
+            const ix = Math.max(0, Math.min(width - 1, Math.round(px - 0.5)));
+            const iy = Math.max(0, Math.min(height - 1, Math.round(py - 0.5)));
+            return shape.mask[iy * width + ix] === 1;
+        }
+        function nearestDefinedValue(px, py) {
+            const cx = Math.max(0, Math.min(width - 1, Math.round(px - 0.5)));
+            const cy = Math.max(0, Math.min(height - 1, Math.round(py - 0.5)));
+            for (let radius = 0; radius < 8; radius++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius)
+                            continue;
+                        const x = cx + dx;
+                        const y = cy + dy;
+                        if (x >= 0 && x < width && y >= 0 && y < height &&
+                            shape.mask[y * width + x])
+                            return shape.filled[y * width + x];
+                    }
+                }
+            }
+            return shape.min;
+        }
+        function contourPath(geometry, checkMask, zValue) {
             let path = "";
             geometry.coordinates.forEach(function (polygon) {
                 polygon.forEach(function (ring) {
                     let started = false;
+                    let previous = null;
                     ring.forEach(function (point) {
                         const px = point[0], py = point[1];
-                        const ix = Math.max(0, Math.min(width - 1, Math.round(px - 0.5)));
-                        const iy = Math.max(0, Math.min(height - 1, Math.round(py - 0.5)));
-                        if (!shape.mask[iy * width + ix]) {
+                        const ok = !checkMask || isDefined(px, py);
+                        // A ring can jump across the undefined hole even when
+                        // both endpoints are defined; the midpoint catches it.
+                        const crosses = checkMask && previous !== null &&
+                            !isDefined((previous[0] + px) / 2, (previous[1] + py) / 2);
+                        if (!ok) {
                             started = false;
+                            previous = point;
                             return;
                         }
+                        if (crosses)
+                            started = false;
                         const x = (px / (width - 1)) * 2 - 1;
                         const y = (py / (height - 1)) * 2 - 1;
-                        const z = worldZ(sample(px, py));
+                        const z = worldZ((zValue || sample)(px, py));
                         const projectedPoint = screenWorld(x, y, z);
                         path += (started ? "L" : "M") + projectedPoint[0].toFixed(2) +
                                 "," + projectedPoint[1].toFixed(2);
                         started = true;
+                        previous = point;
                     });
                 });
             });
             return path;
         }
+        // Clip the contour lines to the defined region.  Without this, a
+        // contour ring of the filled grid runs through the hole where area5 is
+        // undefined and leaves short black "hanging" lines over the hole.
+        const region = d3.contours()
+            .size([width, height])
+            .thresholds([0.5])(shape.mask)[0];
+        const clipId = "surfit-3d-region";
+        if (region) {
+            svg.append("defs").append("clipPath")
+                .attr("id", clipId)
+                .append("path")
+                .attr("d", contourPath(region, false))
+                .attr("clip-rule", "evenodd");
+        }
+
         const contourGroup = plot.append("g")
             .attr("fill", "none")
             .attr("stroke", "#10202a")
             .attr("stroke-opacity", 0.55)
-            .attr("stroke-linejoin", "round");
+            .attr("stroke-linejoin", "round")
+            .attr("clip-path", region ? "url(#" + clipId + ")" : null);
         layers.forEach(function (layer) {
             contourGroup.append("path")
                 .attr("d", contourPath(layer))
                 .attr("stroke-width", 0.7);
         });
+
+        // Undefined regions are holes in the mesh.  Fill them in screen
+        // space, otherwise the far side of the surface and its contours show
+        // through the hole as "hanging" lines.
+        const undefinedGrid = new Uint8Array(width * height);
+        for (let i = 0; i < undefinedGrid.length; i++)
+            undefinedGrid[i] = shape.mask[i] ? 0 : 1;
+        const undefinedRegion = d3.contours()
+            .size([width, height])
+            .thresholds([0.5])(undefinedGrid)[0];
+        if (undefinedRegion) {
+            plot.append("path")
+                .attr("d", contourPath(undefinedRegion, false, nearestDefinedValue))
+                .attr("fill", "#ffffff")
+                .attr("stroke", "none");
+        }
 
         // Area outlines from the example, projected onto the surface.
         if (data.areas && data.areas.length) {

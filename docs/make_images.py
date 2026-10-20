@@ -39,6 +39,7 @@ FIGURES = (
     ("map-area-3d", "area", {"levels": 10, "size": 700,
                               "title": "area example, 3-D",
                               "renderer": "3d",
+                              "contours": False,
                               "areas": ["area1", "area2", "area3",
                                         "area4", "area5"]}),
     ("map-area-completer", "area_completer", {"levels": 12, "size": 700,
@@ -153,6 +154,10 @@ def load_example(name):
     return module
 
 
+AREA_Z = {"area1": 10.0, "area2": 20.0, "area3": 30.0,
+          "area4": 40.0, "area5": None}
+
+
 def area_polygons(names):
     """Read the simple x y polygons used by the area example."""
     polygons = []
@@ -163,7 +168,8 @@ def area_polygons(names):
                 fields = line.split()
                 if len(fields) >= 2:
                     points.append([float(fields[0]), float(fields[1])])
-        polygons.append({"name": name, "points": points})
+        polygons.append({"name": name, "points": points,
+                         "z": AREA_Z.get(name)})
     return polygons
 
 
@@ -202,7 +208,8 @@ def main():
                          LEVELS=str(config["levels"]),
                          SIZE=str(config["size"]),
                          TITLE=config["title"],
-                         RENDERER=config.get("renderer", "")))
+                         RENDERER=config.get("renderer", ""),
+                         CONTOURS="0" if config.get("contours") is False else "1"))
         print("%s: %s" % (name, result.stdout.decode()))
         surfit.clear_data()
 

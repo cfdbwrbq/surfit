@@ -33,6 +33,7 @@ const config = {
     levels: Number(process.env.LEVELS || 12),
     size: Number(process.env.SIZE || 820),
     show_lines: process.env.LINES !== "0",
+    contours: process.env.CONTOURS !== "0",
     title: process.env.TITLE || ""
 };
 

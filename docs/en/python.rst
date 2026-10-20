@@ -361,10 +361,12 @@ the data.
    :width: 68%
    :align: center
 
-   The same area example in perspective: the surface, its contour lines and the
-   five areas. The hole in the middle is ``area5``, undefined by design. The
-   figure is generated from the same payload as the map above by
-   ``docs/surface3d.js``; d3 does the projection, shading and painter ordering.
+   The same area example in perspective: the shaded surface and the five areas.
+   The hole in the middle is ``area5``, undefined by design. The figure is
+   generated from the same payload as the map above by ``docs/surface3d.js``;
+   d3 does the projection, shading and painter ordering. The area outlines are
+   flat at their target values; a horizontal rectangle is a parallelogram in an
+   orthographic view.
 
 .. figure:: ../_static/map-area-completer.svg
    :alt: Filled contour map of the area_completer example

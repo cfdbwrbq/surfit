@@ -263,17 +263,19 @@
                 .attr("clip-rule", "evenodd");
         }
 
-        const contourGroup = plot.append("g")
-            .attr("fill", "none")
-            .attr("stroke", "#10202a")
-            .attr("stroke-opacity", 0.55)
-            .attr("stroke-linejoin", "round")
-            .attr("clip-path", region ? "url(#" + clipId + ")" : null);
-        layers.forEach(function (layer) {
-            contourGroup.append("path")
-                .attr("d", contourPath(layer))
-                .attr("stroke-width", 0.7);
-        });
+        if (config.contours !== false) {
+            const contourGroup = plot.append("g")
+                .attr("fill", "none")
+                .attr("stroke", "#10202a")
+                .attr("stroke-opacity", 0.55)
+                .attr("stroke-linejoin", "round")
+                .attr("clip-path", region ? "url(#" + clipId + ")" : null);
+            layers.forEach(function (layer) {
+                contourGroup.append("path")
+                    .attr("d", contourPath(layer))
+                    .attr("stroke-width", 0.7);
+            });
+        }
 
         // Undefined regions are holes in the mesh.  Fill them in screen
         // space, otherwise the far side of the surface and its contours show
@@ -311,7 +313,9 @@
                         Math.round((y - data.min_y) / data.step_y)));
                     const nx = (x - data.min_x) / (data.max_x - data.min_x) * 2 - 1;
                     const ny = (y - data.min_y) / (data.max_y - data.min_y) * 2 - 1;
-                    const z = worldZ(shape.filled[iy * width + ix]) + 0.006;
+                    const z = (area.z === null || area.z === undefined)
+                        ? worldZ(shape.filled[iy * width + ix]) + 0.006
+                        : worldZ(area.z) + 0.006;
                     const projectedPoint = screenWorld(nx, ny, z);
                     path += (path ? "L" : "M") + projectedPoint[0].toFixed(2) +
                             "," + projectedPoint[1].toFixed(2);

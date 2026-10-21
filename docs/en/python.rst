@@ -1268,5 +1268,27 @@ and the undefined cells clipped out.
 .. literalinclude:: ../../examples/python/viewer.py
    :language: python
 
+API traps
+~~~~~~~~~
+
+Creating a :class:`Session` resets the engine's process-wide state. Data loaded
+before it is gone::
+
+    surfit.area_read("area6.txt", "area6")
+    task = surfit.Session(...)      # area6 is no longer in memory
+    task.area_leq(20, "area6")      # empty list: no area matches
+
+Create the session first and load through it::
+
+    task = surfit.Session(...)
+    task.area_read("area6.txt", "area6")
+    task.area_leq(20, "area6")      # [True], and the rule is applied
+
+``names()`` lists **surfaces**, not areas. After loading areas it is therefore
+still empty; inspect them with ``area_size()`` and ``area_getName("*")``.
+Likewise, ``area_leq``/``area_geq`` return one flag per matched area and return
+an empty list when the name does not match. They do not raise: check the return
+value, or the rule silently does nothing.
+
 Development notes on how the bindings are built and checked are in
 :doc:`development`.

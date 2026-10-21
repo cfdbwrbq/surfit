@@ -20,3 +20,7 @@ fine while developing, but not as the final verification.
 
 For performance changes, run both the old and the new tree through the full
 suite, and record the comparison in the handoff notes.
+
+## Plans
+
+Deferred direction and the agent-first notes are in [PLANS.md](PLANS.md).

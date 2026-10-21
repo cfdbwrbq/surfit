@@ -1,0 +1,25 @@
+# Plans
+
+## Deferred
+
+### Agent-first (AI-first) repository
+
+Not part of the current release; do this **later**, after the current work.
+
+The direction is to make the repository self-describing for agents instead of
+relying on conversation history:
+
+- keep [.agents/skills/surfit/SKILL.md](.agents/skills/surfit/SKILL.md) as the
+  usage entry point and keep it current when new traps are found;
+- keep build, test and release procedures in `AGENTS.md` / `HANDOFF.md`, not in
+  the usage skill — the two scopes must not mix;
+- add a small, machine-readable map of the tree and the commands an agent needs
+  (build, full suite, docs, release gate);
+- link the Python API traps in the docs from that map so the same rule is not
+  maintained in two places.
+
+### Keep the usage skill growing
+
+While the skill is new, every new surfit usage trap goes into the skill and,
+when it is user-facing, into `docs/en/python.rst` and `docs/ru/python.rst`.
+This is an ongoing task, not a one-time document.

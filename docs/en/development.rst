@@ -92,6 +92,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_weights.py``
+     - per-point weights change the cell average; a zero weight drops a point
+       and a short vector is rejected
    * - ``python3 src/pysurfit/tests/test_synthetic.py``
      - a plane, a Gaussian and a sinusoid are sampled, solved and compared with
        the known truth, including a held-out 30% of the points; this is an

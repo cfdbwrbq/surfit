@@ -347,13 +347,22 @@ class Session:
         """Loads polygon areas from a text file under the given name."""
         return area_read(path, name)
 
-    def read_points(self, path, name, **columns):
+    def read_points(self, path, name, weights=None, **columns):
         """Loads scattered points from a columned text file.
 
         Extra keyword arguments are passed on to :func:`pnts_read`, so
         ``columns=...`` maps to col1..col4, delimiter, skip_lines.
+
+        ``weights`` is an optional sequence with one positive value per point;
+        without it every point has weight 1.  Points that share a grid cell are
+        averaged with these weights.
         """
-        return pnts_read(path, name, **columns)
+        result = pnts_read(path, name, **columns)
+        if weights is not None and not pnts_set_weights(name, list(weights)):
+            raise ValueError(
+                "read_points: %r has %d weights, not one per point"
+                % (name, len(weights)))
+        return result
 
     def read_curves(self, path, name):
         """Loads 2D curves from a columned text file."""

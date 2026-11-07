@@ -146,7 +146,13 @@ public:
 
 	//! names array
 	strvec * names;
-	
+
+	//! per-point weights; NULL means every point has weight 1
+	vec * W;
+
+	//! replaces the per-point weights; the size must match the points
+	bool set_weights(const std::vector<double> & weights);
+
 	//! this = this + pnts
 	bool plus(const d_points * pnts);
 

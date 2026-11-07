@@ -79,6 +79,10 @@ task.area_geq(15, "area6")              # surface >= 15 inside area6
 ```python
 task.pnts_read("points.txt", "p", 1, 2, 3, 0, " \t", 0, 250)
 task.points("p")          # exact at the point nodes, averaged per grid cell
+
+# optional per-point positive weights (Python only):
+task.read_points("points.txt", "p", weights=[1.0, 0.5, ...])
+# or: task.pnts_set_weights("p", weights)
 ```
 
 Arguments after the name are `col1 col2 col3 col4 delimiter skip_lines grow_by`;

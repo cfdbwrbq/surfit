@@ -75,6 +75,9 @@ run parity "$PYTHON" "$TESTS/test_parity.py"
 step "injection-recovery on analytic fields"
 run synthetic "$PYTHON" "$TESTS/test_synthetic.py"
 
+step "per-point weights"
+run weights "$PYTHON" "$TESTS/test_weights.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

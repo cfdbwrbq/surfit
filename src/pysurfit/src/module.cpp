@@ -50,6 +50,7 @@
 #include "grid.h"
 #include "solvers.h"
 #include "pnts_tcl.h"
+#include "points.h"
 #include "curv_tcl.h"
 #include "cntr_tcl.h"
 #include "mask_tcl.h"
@@ -1125,6 +1126,21 @@ PYBIND11_MODULE(_surfit, m) {
 	m.def("points_leq", [](const std::string & name, double penalty) {
 		return drain_boolvec(surfit::points_leq(name.c_str(), penalty));
 	}, py::arg("name") = "*", py::arg("penalty_factor") = 0);
+	m.def("pnts_set_weights", [](const std::string & name,
+	                             const std::vector<double> & weights) {
+		bool found = false;
+		for (auto it = surfit::surfit_pnts->begin();
+		     it != surfit::surfit_pnts->end(); ++it) {
+			surfit::d_points * pnts = *it;
+			if (::StringMatch(name.c_str(), pnts->getName())) {
+				if (!pnts->set_weights(weights))
+					return false;
+				found = true;
+			}
+		}
+		return found;
+	}, py::arg("name") = "*", py::arg("weights"),
+	   "set per-point positive weights; one value per point");
 	m.def("points_geq", [](const std::string & name, double penalty) {
 		return drain_boolvec(surfit::points_geq(name.c_str(), penalty));
 	}, py::arg("name") = "*", py::arg("penalty_factor") = 0);

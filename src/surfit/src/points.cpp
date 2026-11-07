@@ -62,7 +62,10 @@ d_points * create_points(const d_points * ipnts)
 	strvec * names = NULL;
 	if (ipnts->names)
 		names = create_strvec(*(ipnts->names));
-	return new d_points(X, Y, Z, names, ipnts->getName());
+	d_points * copy = new d_points(X, Y, Z, names, ipnts->getName());
+	if (ipnts->W)
+		copy->W = create_vec(*(ipnts->W));
+	return copy;
 };
 
 d_points::d_points() : data("pnts") {
@@ -70,6 +73,7 @@ d_points::d_points() : data("pnts") {
 	Y = NULL;
 	Z = NULL;
 	names = NULL;
+	W = NULL;
 };
 
 d_points::d_points(vec *& iX, vec *& iY, vec *& iZ, 
@@ -82,6 +86,7 @@ d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
 	iZ = NULL;
 	setName(ipoints_name);
 	names = NULL;
+	W = NULL;
 };
 
 d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
@@ -96,6 +101,7 @@ d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
 	iZ = NULL;
 	setName(ipoints_name);
 	names = inames;
+	W = NULL;
 };
 
 d_points::~d_points() {
@@ -107,12 +113,26 @@ d_points::~d_points() {
 		Z->release();
 	if (names)
 		names->release();
+	if (W)
+		W->release();
 };
 
 size_t d_points::size() const {
 	if (Z)
 		return Z->size();
 	return 0;
+};
+
+bool d_points::set_weights(const std::vector<double> & weights) {
+	if (weights.size() != size())
+		return false;
+	vec * next = create_vec(weights.size());
+	for (size_t i = 0; i < weights.size(); i++)
+		(*next)(i) = weights[i];
+	if (W)
+		W->release();
+	W = next;
+	return true;
 };
 
 REAL d_points::minx() const {
@@ -339,18 +359,31 @@ void sub_points::release() {
 
 REAL sub_points::value(const d_points * pnts) const {
 	std::vector<size_t>::const_iterator ptr;
-	
+
 	REAL value = REAL(0);
 	REAL temp_value;
 	int cnt = 0;
 	vec::const_iterator z_ptr = pnts->Z->const_begin();
+	const bool weighted = pnts->W && pnts->W->size() == pnts->size();
+	vec::const_iterator w_ptr = weighted ? pnts->W->const_begin() : NULL;
+	REAL weight_sum = REAL(0);
 	for (ptr = point_numbers->begin(); ptr != point_numbers->end(); ptr++) {
 		temp_value = *(z_ptr + *ptr);
 		if (temp_value == undef_value)
 			return undef_value;
-		value += temp_value;
+		if (weighted) {
+			const REAL weight = *(w_ptr + *ptr);
+			if (!(weight > 0))
+				continue;
+			value += temp_value * weight;
+			weight_sum += weight;
+		} else {
+			value += temp_value;
+		}
 		cnt++;
 	}
+	if (weighted)
+		return weight_sum > 0 ? value / weight_sum : undef_value;
 	value /= REAL(cnt);
 	return value;
 };

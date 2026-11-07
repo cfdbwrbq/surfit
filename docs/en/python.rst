@@ -49,6 +49,22 @@ same name, so ``task.points("wells")`` means the same as ``points("wells")``.
 The one exception is ``grid``: the method of that name builds an explicit grid
 (Tcl's ``grid_get``), and ``grid_auto`` is Tcl's ``grid``.
 
+Point weights
+-------------
+
+``read_points`` accepts an optional ``weights`` sequence, one positive value
+per point::
+
+    task.read_points("wells.txt", "wells", weights=sigma_inv)
+
+or, after reading, ``task.pnts_set_weights("wells", sigma_inv)``.  Points that
+fall into the same grid cell are then averaged with these weights instead of
+arithmetically; a zero weight drops a point.  A vector of the wrong length is
+rejected.  This is a Python-side extension; the Tcl reader has no per-point
+weights.  Weights are not a statistical error map: the solver still returns a
+single surface and no covariance.
+
+
 Rules
 -----
 

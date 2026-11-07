@@ -269,3 +269,49 @@ def _session_residuals(task, x, y, z, weights, surface):
     values = task.values(surface)
     extent = _core.surf_extent(position)
     return point_residuals(values, extent, x, y, z, weights)
+
+def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5):
+    """Build a JSON-ready quality report for a solved surface.
+
+    The report is deliberately a summary, not the full covariance: grid
+    extent, residuals, outlier flags, point counts and provenance metadata.
+    """
+    position = _position(task, surface)
+    if position < 0:
+        raise KeyError("no surface matches %r" % (surface,))
+    values = task.values(surface)
+    extent = _core.surf_extent(position)
+    stats = point_residuals(values, extent, x, y, z, weights)
+    flags, _ = outlier_mask(values, extent, x, y, z, weights, threshold)
+    defined = _defined(values)
+    return {
+        "map_name": getattr(task, "_map_name", None),
+        "surface": task.surf_names()[position],
+        "grid": {
+            "count_x": int(extent["count_x"]),
+            "count_y": int(extent["count_y"]),
+            "min_x": float(extent["min_x"]),
+            "max_x": float(extent["max_x"]),
+            "min_y": float(extent["min_y"]),
+            "max_y": float(extent["max_y"]),
+            "step_x": float(extent["step_x"]),
+            "step_y": float(extent["step_y"]),
+            "defined": int(defined.sum()),
+            "total": int(defined.size),
+        },
+        "points": {
+            "n": int(np.asarray(x).size),
+            "used": int(stats["n"]),
+            "outliers": int(flags.sum()),
+        },
+        "residuals": {
+            "rmse": stats["rmse"],
+            "bias": stats["bias"],
+            "weighted_mse": stats["weighted_mse"],
+            "chi2": stats["chi2"],
+            "dof": int(stats["dof"]),
+            "values": stats["residuals"].tolist(),
+        },
+        "outlier_flags": flags.tolist(),
+        "metadata": task.metadata,
+    }

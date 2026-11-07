@@ -172,6 +172,31 @@ The model and rules stay fixed; only point weights change.  It is still an
 outer IRLS loop, not a robust inner solver.
 
 
+Quality report and GeoTIFF
+--------------------------
+
+``task.report(x, y, z, weights=None)`` returns a JSON-ready summary: grid
+extent, point counts, residuals, outlier flags and metadata.  Write it next to
+the map::
+
+    task.save_report("result.report.json", x, y, z, weights=sigma_inv)
+    task.save_geotiff("result.tif", crs="EPSG:32637")
+
+``save_geotiff`` is optional: it imports GDAL lazily and raises a clear
+ImportError when the system GDAL bindings are absent.  The raster is north-up,
+nodes are cell centres, undefined nodes use the surfit nodata value, and the
+CRS string is passed to ``osr.SpatialReference.SetFromUserInput``.
+
+Strict rules
+------------
+
+By default an empty match is Tcl-compatible: ``area_leq`` returns ``[]`` and the
+rule is not added.  Opt in to an error when that is more useful::
+
+    task = surfit.Session(..., strict=True)
+    task.area_geq(0, "missing")   # ValueError: area_geq matched no data
+
+
 Rules
 -----
 

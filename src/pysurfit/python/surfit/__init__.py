@@ -40,6 +40,15 @@ _DEFAULT_RTOL = 1e-6
 _ANY = "*"
 _PRIVATE_PREFIX = "_"
 
+#: Rules whose empty result normally means "the name matched nothing".
+_STRICT_RULES = frozenset((
+    "area_leq", "area_geq", "area_mean", "area_wmean",
+    "area_surf_leq", "area_surf_geq", "points_leq", "points_geq",
+    "contour_leq", "contour_geq", "curve_leq", "curve_geq",
+    "mask_leq", "mask_geq", "mask_mean", "mask_wmean",
+    "surface_leq", "surface_geq", "leq", "geq", "mean", "wmean",
+))
+
 
 #: Session calls switch the engine's globals, so only one of them may be in
 #: flight at a time.  The lock is process-wide and re-entrant: a method may
@@ -287,9 +296,10 @@ class Session:
     Session's call waits for the lock until it finishes.
     """
 
-    def __init__(self, map_name="map", tol=None, metadata=None):
+    def __init__(self, map_name="map", tol=None, metadata=None, strict=False):
         self._map_name = map_name
         self._metadata = dict(metadata or {})
+        self._strict = bool(strict)
         with _STATE_LOCK:
             self._state = _core.state_create()
             self._dems = _core.globe_dems_create()
@@ -331,7 +341,11 @@ class Session:
     def _call(self, target, *args, **kwargs):
         with _STATE_LOCK:
             self._activate()
-            return target(*args, **kwargs)
+            result = target(*args, **kwargs)
+        if (self._strict and getattr(target, "__name__", "") in _STRICT_RULES
+                and not result):
+            raise ValueError("%s matched no data" % target.__name__)
+        return result
 
     def close(self):
         """Frees this task's state and everything it holds.
@@ -471,6 +485,32 @@ class Session:
         """Flags residuals farther than ``threshold`` MADs from the median."""
         return _session_outliers(self, x, y, z, weights, surface, threshold)
 
+    def report(self, x, y, z, weights=None, surface=None, threshold=3.5):
+        """Returns a JSON-ready quality summary for the latest surface."""
+        return quality_report(self, x, y, z, weights, surface, threshold)
+
+    def save_geotiff(self, path, crs=None, surface=None):
+        """Writes the latest surface as a GeoTIFF (GDAL optional)."""
+        if surface is None:
+            position = _core.surf_count() - 1
+        else:
+            position = self.surf_index(surface)
+        if position < 0:
+            raise KeyError("no surface matches %r" % (surface,))
+        return save_geotiff(path, self.values(surface),
+                            _core.surf_extent(position), crs)
+
+    def save_report(self, path, x, y, z, weights=None, surface=None,
+                    threshold=3.5):
+        """Writes the quality summary as JSON next to the map."""
+        import json
+
+        document = quality_report(self, x, y, z, weights, surface, threshold)
+        with open(path, "w", encoding="utf-8") as stream:
+            json.dump(document, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        return path
+
     def viewer(self, **kwargs):
         """Self-contained HTML page for the result surface."""
         return viewer(**kwargs)
@@ -524,4 +564,5 @@ _reexport_commands()
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
 from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty, ensemble,
-    outlier_mask, point_residuals)
+    outlier_mask, point_residuals, quality_report)
+from surfit.geotiff import save_geotiff  # noqa: E402

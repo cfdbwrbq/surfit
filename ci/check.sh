@@ -93,6 +93,12 @@ run uncertainty "$PYTHON" "$TESTS/test_uncertainty.py"
 step "robust IRLS"
 run robust "$PYTHON" "$TESTS/test_robust.py"
 
+step "strict rule matching"
+run strict "$PYTHON" "$TESTS/test_strict.py"
+
+step "GeoTIFF output"
+run geotiff "$PYTHON" "$TESTS/test_geotiff.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

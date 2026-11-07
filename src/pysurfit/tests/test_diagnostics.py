@@ -7,6 +7,7 @@ verifies that ``Session.residuals`` sees the solved cell value.
   python3 test_diagnostics.py
 """
 
+import json
 import os
 import sys
 import tempfile
@@ -80,10 +81,20 @@ def session_check():
         task.points("p")
         task.solve()
         stats = task.residuals([0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
+        report = task.report([0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
+        report_path = os.path.join(directory, "report.json")
+        task.save_report(report_path, [0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
+        with open(report_path, encoding="utf-8") as stream:
+            saved = json.load(stream)
     assert stats["n"] == 2, stats
     assert np.isclose(stats["rmse"], 5.0)
     assert np.isclose(stats["bias"], 0.0)
+    assert report["points"]["n"] == 2
+    assert report["grid"]["count_x"] == 8
+    assert saved["map_name"] == "diag"
+    assert saved["residuals"]["rmse"] == report["residuals"]["rmse"]
     print("PASS: Session.residuals sees the solved cell")
+    print("PASS: quality report is JSON-serialisable")
 
 
 def main():

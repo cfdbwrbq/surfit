@@ -172,6 +172,31 @@ posterior. Стоит один полный solve на реплику.
 внешний IRLS-цикл, а не встроенный robust solver.
 
 
+Quality report и GeoTIFF
+------------------------
+
+``task.report(x, y, z, weights=None)`` возвращает готовую к JSON сводку:
+extent, число точек, остатки, флаги выбросов и метаданные. Пишите её рядом с
+картой::
+
+    task.save_report("result.report.json", x, y, z, weights=sigma_inv)
+    task.save_geotiff("result.tif", crs="EPSG:32637")
+
+``save_geotiff`` необязателен: GDAL импортируется лениво и даёт понятный
+ImportError, если системных привязок нет. Растр north-up, узлы — центры
+ячеек, undefined-узлы используют nodata surfit, а CRS передаётся в
+``osr.SpatialReference.SetFromUserInput``.
+
+Strict-режим
+------------
+
+По умолчанию пустое совпадение совместимо с Tcl: ``area_leq`` возвращает
+``[]``, правило не добавляется. Если нужна ошибка, включите::
+
+    task = surfit.Session(..., strict=True)
+    task.area_geq(0, "missing")   # ValueError: area_geq matched no data
+
+
 Правила
 -------
 

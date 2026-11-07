@@ -136,6 +136,9 @@ from surfit.diagnostics import robust_solve
 
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")
+task.save_report("result.report.json", x, y, z, weights=sigma_inv)
+task.save_geotiff("result.tif", crs="EPSG:32637")  # GDAL optional
+# strict=True turns an empty rule match into ValueError
 ```
 
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a

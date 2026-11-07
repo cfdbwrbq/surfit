@@ -105,9 +105,11 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
-     - остатки берутся по ближайшему узлу; RMSE, bias, weighted MSE и chi-square
-       проверяются вручную, выброс по MAD отмечается, а веса Huber/Tukey
-       проверяются
+     - остатки, MAD-выброс, Huber/Tukey и JSON quality report
+   * - ``python3 src/pysurfit/tests/test_geotiff.py``
+     - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
+   * - ``python3 src/pysurfit/tests/test_strict.py``
+     - opt-in strict mode превращает пустое совпадение площади в ValueError
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - веса точек меняют среднее по ячейке; нулевой вес выбрасывает точку,
        а короткий вектор отвергается

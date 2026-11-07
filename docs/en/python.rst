@@ -154,6 +154,24 @@ This is ensemble spread under resampling, not a covariance matrix or a
 posterior.  It costs one full solve per replicate.
 
 
+The outer IRLS driver
+---------------------
+
+``robust_solve(build, x, y, z, loss="huber", iterations=4)`` is the same loop
+packaged: ``build(weights)`` must return a solved task, and the driver updates
+the weights and rebuilds until the requested number of iterations::
+
+    from surfit.diagnostics import robust_solve
+
+    result = robust_solve(build, x, y, z, loss="huber", iterations=4)
+    result["task"].values()
+    result["weights"]
+    result["stats"]
+
+The model and rules stay fixed; only point weights change.  It is still an
+outer IRLS loop, not a robust inner solver.
+
+
 Rules
 -----
 

@@ -130,6 +130,10 @@ from surfit.diagnostics import bootstrap_uncertainty
 # stats = bootstrap_uncertainty(build, len(x), replicates=50, seed=7)
 # ensemble spread, not a covariance matrix
 
+from surfit.diagnostics import robust_solve
+# result = robust_solve(build, x, y, z, loss="huber", iterations=4)
+# outer IRLS: build(weights) returns a solved task
+
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")
 ```

@@ -90,6 +90,9 @@ run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 step "bootstrap uncertainty"
 run uncertainty "$PYTHON" "$TESTS/test_uncertainty.py"
 
+step "robust IRLS"
+run robust "$PYTHON" "$TESTS/test_robust.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

@@ -154,6 +154,24 @@ callback должен вернуть решённую задачу или мас
 posterior. Стоит один полный solve на реплику.
 
 
+Внешний IRLS-драйвер
+--------------------
+
+``robust_solve(build, x, y, z, loss="huber", iterations=4)`` — тот же цикл в
+виде функции: ``build(weights)`` должен вернуть решённую задачу, драйвер
+обновляет веса и пересобирает задачу заданное число раз::
+
+    from surfit.diagnostics import robust_solve
+
+    result = robust_solve(build, x, y, z, loss="huber", iterations=4)
+    result["task"].values()
+    result["weights"]
+    result["stats"]
+
+Модель и правила фиксированы; меняются только веса точек. Это по-прежнему
+внешний IRLS-цикл, а не встроенный robust solver.
+
+
 Правила
 -------
 

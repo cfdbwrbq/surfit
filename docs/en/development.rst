@@ -92,6 +92,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_robust.py``
+     - four outer IRLS iterations down-weight a 100-among-zeros outlier and
+       move the cell from 4.76 to about 1.43
    * - ``python3 src/pysurfit/tests/test_uncertainty.py``
      - ensemble mean/spread on two fields, then four real bootstrap surfaces
        from resampled points

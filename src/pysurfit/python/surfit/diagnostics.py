@@ -145,6 +145,10 @@ def robust_weights(residuals, scale=None, loss="huber", tuning=None):
     if scale is None:
         centre = float(np.median(residuals)) if residuals.size else 0.0
         scale = 1.4826 * float(np.median(np.abs(residuals - centre)))
+        if not scale or scale <= 0:
+            # Four equal inliers and one outlier give MAD=0.  Fall back to the
+            # standard deviation so the outlier is still visible.
+            scale = float(np.std(residuals))
     if not scale or scale <= 0:
         return np.ones(residuals.shape, dtype=float)
     if loss == "huber":
@@ -206,6 +210,50 @@ def bootstrap_uncertainty(build, count, replicates=100, seed=0):
             result = result.values()
         fields.append(np.asarray(result, dtype=float))
     return ensemble(fields)
+
+
+def robust_solve(build, x, y, z, weights=None, loss="huber", iterations=4,
+                  scale=None):
+    """Run IRLS around a task builder.
+
+    ``build(weights)`` must create and solve a task with those point weights.
+    The driver solves, estimates residuals, updates the weights with the
+    selected robust loss and repeats.  The model and the rules stay fixed; only
+    the point weights change.
+
+    Returns ``{"task": final_task, "weights": weights, "stats": stats,
+    "iterations": iterations}``.  This is an outer IRLS loop: the engine's
+    inner solve is still least squares.
+    """
+    if iterations < 1:
+        raise ValueError("iterations must be positive")
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    z = np.asarray(z, dtype=float).ravel()
+    if not (x.size == y.size == z.size):
+        raise ValueError("x, y and z must have the same length")
+    if weights is None:
+        base = np.ones(x.size, dtype=float)
+    else:
+        base = np.asarray(weights, dtype=float).ravel()
+        if base.size != x.size:
+            raise ValueError("weights must have one value per point")
+    current = base.copy()
+    task = None
+    stats = None
+    for _ in range(iterations):
+        task = build(current)
+        if not hasattr(task, "residuals"):
+            raise TypeError("build() must return a task with residuals()")
+        stats = task.residuals(x, y, z, weights=current)
+        if stats["n"] == 0:
+            break
+        correction = robust_weights(stats["residuals"], scale=scale, loss=loss)
+        current[stats["used"]] = base[stats["used"]] * correction
+    task = build(current)
+    stats = task.residuals(x, y, z, weights=current)
+    return {"task": task, "weights": current, "stats": stats,
+            "iterations": iterations}
 
 
 def _position(task, surface):

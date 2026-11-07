@@ -46,6 +46,14 @@ the rules, but all data and rules must be created on that session.
 
 ## Rules that are easy to get wrong
 
+### Min/max and equality rules
+
+The complete table of result-shaping rules — global, points, areas, contours,
+curves, masks, surfaces and surface-to-surface bounds — is in
+[RULES.md](RULES.md). Read it before adding a bound: the direction, `inside`,
+penalty behaviour and condition order all matter. `area_leq`/`area_geq` are
+conditions, not a clip, and they do not raise when the area name is missing.
+
 ### Areas
 
 ```python

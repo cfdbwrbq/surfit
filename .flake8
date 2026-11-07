@@ -18,4 +18,5 @@ per-file-ignores =
     src/pysurfit/python/surfit/postgis.py: WPS202
     src/pysurfit/python/surfit/diagnostics.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS238,WPS358,WPS432
     src/pysurfit/python/surfit/geotiff.py: WPS110,WPS210,WPS221,WPS358,WPS432
+    src/pysurfit/python/surfit/tiled.py: WPS110,WPS111,WPS210,WPS211,WPS213,WPS221,WPS231,WPS232,WPS238,WPS362,WPS432,WPS478
     docs/check_docs.py: WPS202,WPS210,WPS231

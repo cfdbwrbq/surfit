@@ -139,6 +139,11 @@ task.save_metadata("result.meta.json")
 task.save_report("result.report.json", x, y, z, weights=sigma_inv)
 task.save_geotiff("result.tif", crs="EPSG:32637")  # GDAL optional
 # strict=True turns an empty rule match into ValueError
+
+from surfit.tiled import solve_point_tiles
+# result = solve_point_tiles(x, y, z, extent, step,
+#     inner=256, halo=32, memmap_path="map.f64")
+# point-only out-of-core mosaic
 ```
 
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a

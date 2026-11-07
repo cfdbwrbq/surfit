@@ -106,6 +106,9 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - остатки, MAD-выброс, Huber/Tukey и JSON quality report
+   * - ``python3 src/pysurfit/tests/test_tiled.py``
+     - синтетическое поле 41x41 решается девятью перекрывающимися тайлами и
+       пишется в memmap; во внутренних узлах мозаики нет undefined
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``

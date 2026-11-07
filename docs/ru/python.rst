@@ -197,6 +197,27 @@ Strict-режим
     task.area_geq(0, "missing")   # ValueError: area_geq matched no data
 
 
+Out-of-core тайлы
+-----------------
+
+``surfit.tiled.solve_point_tiles`` решает задачу по точкам тайл за тайлом и
+пишет мозаику в ``numpy.memmap``::
+
+    from surfit.tiled import solve_point_tiles
+
+    result = solve_point_tiles(
+        x, y, z, (-10, 10, -10, 10), 0.5,
+        inner=256, halo=32, memmap_path="map.f64",
+        geotiff_path="map.tif", crs="EPSG:32637")
+
+    result["values"]       # memmap, (count_y, count_x)
+    result["tiles"]
+
+Копируется только внутренняя часть перекрывающихся тайлов, поэтому швы видят
+те же данные, что и середина. Драйвер только для точек: контурам, площадям и
+поверхностям нужно собственное обрезание.
+
+
 Правила
 -------
 

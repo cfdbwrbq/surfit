@@ -99,6 +99,9 @@ run strict "$PYTHON" "$TESTS/test_strict.py"
 step "GeoTIFF output"
 run geotiff "$PYTHON" "$TESTS/test_geotiff.py"
 
+step "out-of-core tiled mosaic"
+run tiled "$PYTHON" "$TESTS/test_tiled.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

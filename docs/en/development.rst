@@ -105,6 +105,9 @@ Testing
      - CRS/units/source survive on the task and in the JSON sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - residuals, MAD outlier, Huber/Tukey and the JSON quality report
+   * - ``python3 src/pysurfit/tests/test_tiled.py``
+     - a 41x41 synthetic field is solved in nine overlapping tiles and written
+       to a memmap; the mosaic has no undefined inner nodes
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - GeoTIFF values, geotransform, CRS and nodata (skips without GDAL)
    * - ``python3 src/pysurfit/tests/test_strict.py``

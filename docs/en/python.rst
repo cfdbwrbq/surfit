@@ -197,6 +197,27 @@ rule is not added.  Opt in to an error when that is more useful::
     task.area_geq(0, "missing")   # ValueError: area_geq matched no data
 
 
+Out-of-core tiles
+-----------------
+
+``surfit.tiled.solve_point_tiles`` solves a point task tile by tile and writes
+the mosaic into a ``numpy.memmap``::
+
+    from surfit.tiled import solve_point_tiles
+
+    result = solve_point_tiles(
+        x, y, z, (-10, 10, -10, 10), 0.5,
+        inner=256, halo=32, memmap_path="map.f64",
+        geotiff_path="map.tif", crs="EPSG:32637")
+
+    result["values"]       # memmap, (count_y, count_x)
+    result["tiles"]
+
+Only the inner part of each overlapping tile is copied, so seams see the same
+data as the middle.  This driver is point-only: contours, areas and surfaces
+would need their own clipping rules.
+
+
 Rules
 -----
 

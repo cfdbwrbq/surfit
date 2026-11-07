@@ -467,6 +467,10 @@ class Session:
         """Residual statistics of sample points against the result."""
         return _session_residuals(self, x, y, z, weights, surface)
 
+    def outliers(self, x, y, z, weights=None, surface=None, threshold=3.5):
+        """Flags residuals farther than ``threshold`` MADs from the median."""
+        return _session_outliers(self, x, y, z, weights, surface, threshold)
+
     def viewer(self, **kwargs):
         """Self-contained HTML page for the result surface."""
         return viewer(**kwargs)
@@ -518,4 +522,5 @@ _wrap_session_methods()
 _reexport_commands()
 
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
-from surfit.diagnostics import _session_residuals, point_residuals  # noqa: E402
+from surfit.diagnostics import (  # noqa: E402
+    _session_outliers, _session_residuals, outlier_mask, point_residuals)

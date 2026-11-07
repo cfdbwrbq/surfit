@@ -119,6 +119,8 @@ page = task.viewer()                          # self-contained HTML
 
 stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
 # stats: n, residuals, rmse, bias, weighted_mse, chi2, dof
+flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
+# flags are suggestions; zero their weights and re-solve
 
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")

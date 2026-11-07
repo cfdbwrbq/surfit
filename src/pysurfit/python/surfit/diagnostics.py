@@ -73,6 +73,8 @@ def point_residuals(values, extent, x, y, z, weights=None):
         return {
             "n": 0,
             "residuals": used,
+            "predicted": predicted,
+            "used": usable,
             "rmse": float("nan"),
             "bias": float("nan"),
             "weighted_mse": float("nan"),
@@ -85,12 +87,46 @@ def point_residuals(values, extent, x, y, z, weights=None):
     return {
         "n": n,
         "residuals": used,
+        "predicted": predicted,
+        "used": usable,
         "rmse": float(np.sqrt(np.mean(used * used))),
         "bias": float(np.mean(used)),
         "weighted_mse": weighted_sse / weight_sum,
         "chi2": weighted_sse,
         "dof": n - 1,
     }
+
+
+def outlier_mask(values, extent, x, y, z, weights=None, threshold=3.5):
+    """Flags points whose residual is far from the residual median.
+
+    Uses the median absolute deviation (MAD), scaled to sigma.  A point is
+    flagged when ``|r - median(r)| > threshold * 1.4826 * MAD``.  Fewer than
+    three usable points produce no flags.
+
+    Returns ``(flags, stats)``; ``flags`` has one boolean per input point.
+    A flag is a suggestion, not a robust loss: drop or down-weight the point
+    yourself and re-solve.
+    """
+    stats = point_residuals(values, extent, x, y, z, weights)
+    flags = np.zeros(np.asarray(x).size, dtype=bool)
+    residuals = stats["residuals"]
+    if residuals.size < 3:
+        return flags, stats
+    median = float(np.median(residuals))
+    mad = float(np.median(np.abs(residuals - median)))
+    sigma = 1.4826 * mad
+    if sigma > 0:
+        flags[stats["used"]] = np.abs(residuals - median) > threshold * sigma
+    return flags, stats
+
+
+def _session_outliers(task, x, y, z, weights, surface, threshold):
+    position = _position(task, surface)
+    if position < 0:
+        raise KeyError("no surface matches %r" % (surface,))
+    return outlier_mask(task.values(surface), _core.surf_extent(position),
+                        x, y, z, weights, threshold)
 
 
 def _position(task, surface):

@@ -100,7 +100,7 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - остатки берутся по ближайшему узлу; RMSE, bias, weighted MSE и chi-square
-       проверяются вручную на сетке 2x2 и на решённой ячейке
+       проверяются вручную, а выброс по MAD отмечается
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - веса точек меняют среднее по ячейке; нулевой вес выбрасывает точку,
        а короткий вектор отвергается

@@ -21,7 +21,7 @@ BIN = os.environ.get("SURFIT_BIN",
 sys.path.insert(0, BIN)
 
 import surfit  # noqa: E402
-from surfit.diagnostics import point_residuals  # noqa: E402
+from surfit.diagnostics import outlier_mask, point_residuals  # noqa: E402
 
 EXTENT = {"min_x": 0.0, "min_y": 0.0, "step_x": 1.0, "step_y": 1.0,
           "count_x": 2, "count_y": 2}
@@ -49,6 +49,13 @@ def pure_check():
     stats = point_residuals(undefined, EXTENT, [0.2], [0.2], [1.0])
     assert stats["n"] == 0
     print("PASS: undefined cells are skipped")
+
+    flags, stats = outlier_mask(
+        values, EXTENT, [0.2] * 5, [0.2] * 5,
+        [1.0, 1.1, 0.9, 1.0, 10.0])
+    assert stats["n"] == 5
+    assert flags.tolist() == [False, False, False, False, True], flags
+    print("PASS: a large residual is flagged by MAD")
 
 
 def session_check():

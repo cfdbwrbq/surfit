@@ -81,6 +81,10 @@ use inverse-variance weights if you want it to mean the usual chi-square.  This
 is a diagnostic, not an error map: the engine still returns one surface and no
 covariance.
 
+``task.outliers(x, y, z, threshold=3.5)`` returns a boolean mask for residuals
+farther than ``threshold`` scaled MADs from the median.  It is a suggestion,
+not a robust loss: zero the weights of the flagged points and solve again.
+
 The lower-level ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
 takes the array and the ``surf_extent`` dict directly.
 

@@ -85,6 +85,29 @@ covariance.
 farther than ``threshold`` scaled MADs from the median.  It is a suggestion,
 not a robust loss: zero the weights of the flagged points and solve again.
 
+
+Robust reweighting
+------------------
+
+``surfit.diagnostics.robust_weights(residuals, loss="huber")`` returns IRLS
+weights for the residuals: Huber keeps a down-weighted point, Tukey drops it
+beyond the tuning constant.  The engine still solves least squares; rebuild the
+task with the new weights and solve again, a few times::
+
+    from surfit.diagnostics import robust_weights
+
+    weights = base_weights
+    for iteration in range(4):
+        task = build_task(weights)       # your loader/rule setup
+        task.solve()
+        stats = task.residuals(x, y, z, weights=weights)
+        weights[stats["used"]] = base_weights[stats["used"]] * \
+            robust_weights(stats["residuals"], loss="huber")
+
+This is a robust **workflow**, not a robust solver: the engine's inner solve is
+still least squares.
+
+
 The lower-level ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
 takes the array and the ``surf_extent`` dict directly.
 

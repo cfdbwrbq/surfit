@@ -85,6 +85,29 @@ Python
 остатков, удалённых от медианы больше чем на ``threshold`` MAD. Это
 подсказка, а не robust loss: обнулите веса отмеченных точек и решите снова.
 
+
+Робастное перевзвешивание
+-------------------------
+
+``surfit.diagnostics.robust_weights(residuals, loss="huber")`` возвращает
+IRLS-веса остатков: Huber оставляет точку с уменьшенным весом, Tukey
+обнуляет её за порогом. Движок по-прежнему решает least squares; пересоберите
+задачу с новыми весами и решите ещё несколько раз::
+
+    from surfit.diagnostics import robust_weights
+
+    weights = base_weights
+    for iteration in range(4):
+        task = build_task(weights)       # ваш loader/rule setup
+        task.solve()
+        stats = task.residuals(x, y, z, weights=weights)
+        weights[stats["used"]] = base_weights[stats["used"]] * \
+            robust_weights(stats["residuals"], loss="huber")
+
+Это робастный **workflow**, а не робастный solver: внутренняя задача движка
+остаётся least squares.
+
+
 Низкоуровневая ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
 принимает массив и dict из ``surf_extent`` напрямую.
 

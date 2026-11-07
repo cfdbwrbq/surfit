@@ -122,6 +122,10 @@ stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
 flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
 # flags are suggestions; zero their weights and re-solve
 
+from surfit.diagnostics import robust_weights
+# IRLS: rebuild the task with robust_weights(residuals) and solve again;
+# the engine's inner solve is still least squares.
+
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")
 ```

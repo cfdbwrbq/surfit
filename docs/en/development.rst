@@ -99,7 +99,8 @@ Testing
      - CRS/units/source survive on the task and in the JSON sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - residuals use the nearest node; RMSE, bias, weighted MSE and chi-square
-       are computed by hand, and a MAD outlier is flagged
+       are computed by hand, a MAD outlier is flagged, and Huber/Tukey weights
+       are checked
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - per-point weights change the cell average; a zero weight drops a point
        and a short vector is rejected

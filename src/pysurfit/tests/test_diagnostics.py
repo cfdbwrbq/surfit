@@ -21,7 +21,8 @@ BIN = os.environ.get("SURFIT_BIN",
 sys.path.insert(0, BIN)
 
 import surfit  # noqa: E402
-from surfit.diagnostics import outlier_mask, point_residuals  # noqa: E402
+from surfit.diagnostics import (  # noqa: E402
+    outlier_mask, point_residuals, robust_weights)
 
 EXTENT = {"min_x": 0.0, "min_y": 0.0, "step_x": 1.0, "step_y": 1.0,
           "count_x": 2, "count_y": 2}
@@ -56,6 +57,16 @@ def pure_check():
     assert stats["n"] == 5
     assert flags.tolist() == [False, False, False, False, True], flags
     print("PASS: a large residual is flagged by MAD")
+
+    residuals = np.array([0.0, 1.0, 2.0, 10.0])
+    huber = robust_weights(residuals, scale=1.0, loss="huber")
+    assert np.isclose(huber[0], 1.0)
+    assert np.isclose(huber[3], 1.345 / 10.0)
+    tukey = robust_weights(residuals, scale=1.0, loss="tukey")
+    assert np.isclose(tukey[0], 1.0)
+    assert np.isclose(tukey[3], 0.0)
+    assert 0.0 < tukey[2] < tukey[1] < 1.0
+    print("PASS: Huber and Tukey weights")
 
 
 def session_check():

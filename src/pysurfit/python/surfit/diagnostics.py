@@ -129,6 +129,36 @@ def _session_outliers(task, x, y, z, weights, surface, threshold):
                         x, y, z, weights, threshold)
 
 
+def robust_weights(residuals, scale=None, loss="huber", tuning=None):
+    """Return IRLS weights for a robust loss.
+
+    ``loss="huber"`` uses the Huber weight and ``"tukey"`` the Tukey biweight.
+    ``scale`` is the residual scale; by default it is ``1.4826 * MAD``.  A
+    point with a small residual keeps weight 1; a large one is down-weighted
+    (Huber) or zeroed (Tukey).
+
+    This is the weighting step, not a solver.  Rebuild the task with these
+    weights and solve again; repeat a few times.  The engine still minimizes
+    least squares inside each iteration.
+    """
+    residuals = np.asarray(residuals, dtype=float)
+    if scale is None:
+        centre = float(np.median(residuals)) if residuals.size else 0.0
+        scale = 1.4826 * float(np.median(np.abs(residuals - centre)))
+    if not scale or scale <= 0:
+        return np.ones(residuals.shape, dtype=float)
+    if loss == "huber":
+        cutoff = 1.345 if tuning is None else tuning
+        values = np.abs(residuals) / scale
+        return np.where(values <= cutoff, 1.0, cutoff / np.maximum(values, 1e-300))
+    if loss == "tukey":
+        cutoff = 4.685 if tuning is None else tuning
+        values = np.abs(residuals) / scale
+        inner = np.maximum(1.0 - (values / cutoff) ** 2, 0.0)
+        return inner ** 2
+    raise ValueError("unknown robust loss %r" % (loss,))
+
+
 def _position(task, surface):
     if surface is None:
         return _core.surf_count() - 1

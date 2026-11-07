@@ -126,6 +126,10 @@ from surfit.diagnostics import robust_weights
 # IRLS: rebuild the task with robust_weights(residuals) and solve again;
 # the engine's inner solve is still least squares.
 
+from surfit.diagnostics import bootstrap_uncertainty
+# stats = bootstrap_uncertainty(build, len(x), replicates=50, seed=7)
+# ensemble spread, not a covariance matrix
+
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")
 ```

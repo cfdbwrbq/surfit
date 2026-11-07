@@ -159,6 +159,55 @@ def robust_weights(residuals, scale=None, loss="huber", tuning=None):
     raise ValueError("unknown robust loss %r" % (loss,))
 
 
+def ensemble(fields):
+    """Mean, spread and percentiles of several surface arrays.
+
+    Each field is a ``(count_y, count_x)`` array.  Undefined nodes are ignored
+    per cell; ``n`` reports how many fields were defined there.  This is an
+    ensemble spread, not a covariance or a posterior.
+    """
+    arrays = [np.asarray(field, dtype=float) for field in fields]
+    if not arrays:
+        raise ValueError("ensemble needs at least one field")
+    shape = arrays[0].shape
+    if any(array.shape != shape for array in arrays):
+        raise ValueError("all fields in an ensemble must have the same shape")
+    stack = np.stack(arrays)
+    stack = np.where(_defined(stack), stack, np.nan)
+    count = np.sum(~np.isnan(stack), axis=0)
+    return {
+        "mean": np.nanmean(stack, axis=0),
+        "std": np.nanstd(stack, axis=0),
+        "p05": np.nanpercentile(stack, 5, axis=0),
+        "p95": np.nanpercentile(stack, 95, axis=0),
+        "n": count,
+        "fields": stack,
+    }
+
+
+def bootstrap_uncertainty(build, count, replicates=100, seed=0):
+    """Resample ``count`` point indices and collect the resulting surfaces.
+
+    ``build(sample)`` must return a solved task or a surface array.  The helper
+    draws ``count`` indices with replacement for each replicate, so the caller
+    can rebuild the points from ``sample``.  The model is fixed; only the
+    sampled data vary.
+    """
+    if count <= 0:
+        raise ValueError("count must be positive")
+    if replicates < 2:
+        raise ValueError("replicates must be at least 2")
+    rng = np.random.default_rng(seed)
+    fields = []
+    for iteration in range(replicates):
+        sample = rng.integers(0, count, count)
+        result = build(sample)
+        if hasattr(result, "values"):
+            result = result.values()
+        fields.append(np.asarray(result, dtype=float))
+    return ensemble(fields)
+
+
 def _position(task, surface):
     if surface is None:
         return _core.surf_count() - 1

@@ -92,6 +92,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_uncertainty.py``
+     - ensemble mean/spread on two fields, then four real bootstrap surfaces
+       from resampled points
    * - ``python3 src/pysurfit/tests/test_cross_validation.py``
      - four rotating held-out folds predict every point from a surface that
        did not see it; the mean RMSE is checked against the field span

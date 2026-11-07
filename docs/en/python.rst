@@ -131,6 +131,29 @@ contains those fields plus ``map_name``.  It records provenance, it does not
 reproject the grid or validate the CRS.
 
 
+Uncertainty by ensemble
+-----------------------
+
+``surfit.diagnostics.ensemble(fields)`` returns the mean, standard deviation,
+5th/95th percentiles and per-cell defined count of several surface arrays.
+``bootstrap_uncertainty(build, count, replicates=100, seed=0)`` draws
+``count`` point indices with replacement and calls ``build(sample)``; the
+callback must return a solved task or an array::
+
+    from surfit.diagnostics import bootstrap_uncertainty
+
+    def build(sample):
+        task = make_task(x[sample], y[sample], z[sample])
+        task.solve()
+        return task
+
+    stats = bootstrap_uncertainty(build, len(x), replicates=100, seed=7)
+    stats["std"], stats["p05"], stats["p95"]
+
+This is ensemble spread under resampling, not a covariance matrix or a
+posterior.  It costs one full solve per replicate.
+
+
 Rules
 -----
 

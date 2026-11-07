@@ -87,6 +87,9 @@ run metadata "$PYTHON" "$TESTS/test_metadata.py"
 step "four-fold cross-validation"
 run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 
+step "bootstrap uncertainty"
+run uncertainty "$PYTHON" "$TESTS/test_uncertainty.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

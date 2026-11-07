@@ -523,4 +523,5 @@ _reexport_commands()
 
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
 from surfit.diagnostics import (  # noqa: E402
-    _session_outliers, _session_residuals, outlier_mask, point_residuals)
+    _session_outliers, _session_residuals, bootstrap_uncertainty, ensemble,
+    outlier_mask, point_residuals)

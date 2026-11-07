@@ -131,6 +131,29 @@ CRS, единицы и источник не помещаются в ``.dat`` и
 сетки и не проверка CRS.
 
 
+Неопределённость ансамблем
+-------------------------
+
+``surfit.diagnostics.ensemble(fields)`` возвращает среднее, стандартное
+отклонение, 5/95-перцентили и число определённых полей в каждой ячейке.
+``bootstrap_uncertainty(build, count, replicates=100, seed=0)`` выбирает
+``count`` индексов точек с возвращением и вызывает ``build(sample)``;
+callback должен вернуть решённую задачу или массив::
+
+    from surfit.diagnostics import bootstrap_uncertainty
+
+    def build(sample):
+        task = make_task(x[sample], y[sample], z[sample])
+        task.solve()
+        return task
+
+    stats = bootstrap_uncertainty(build, len(x), replicates=100, seed=7)
+    stats["std"], stats["p05"], stats["p95"]
+
+Это разброс ансамбля при пересемплировании, а не ковариационная матрица и не
+posterior. Стоит один полный solve на реплику.
+
+
 Правила
 -------
 

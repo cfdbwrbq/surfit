@@ -15,8 +15,9 @@ ci/check.sh --full
 ```
 
 That means all 35 Tcl/Python scripts, all 49 examples, the 29 realworld
-pipelines, the analytic injection-recovery check, the per-point weight check,
-the documentation checks, WPS and the wheel smoke test. A subset is
+pipelines, the analytic injection-recovery check, the per-point weight and
+residual-diagnostic checks, the documentation checks, WPS and the wheel smoke
+test. A subset is
 fine while developing, but not as the final verification.
 
 For performance changes, run both the old and the new tree through the full

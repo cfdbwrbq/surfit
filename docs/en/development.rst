@@ -92,6 +92,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_diagnostics.py``
+     - residuals use the nearest node; RMSE, bias, weighted MSE and chi-square
+       are computed by hand on a 2x2 grid and against a solved cell
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - per-point weights change the cell average; a zero weight drops a point
        and a short vector is rejected

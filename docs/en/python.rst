@@ -65,6 +65,26 @@ weights.  Weights are not a statistical error map: the solver still returns a
 single surface and no covariance.
 
 
+Residual diagnostics
+--------------------
+
+``task.residuals(x, y, z, weights=None, surface=None)`` compares sample points
+with the solved surface at their nearest nodes::
+
+    stats = task.residuals(x, y, z, weights=sigma_inv)
+    stats["rmse"], stats["bias"], stats["chi2"], stats["n"]
+
+It returns ``n``, ``residuals``, ``rmse``, ``bias``, ``weighted_mse``, ``chi2``
+and ``dof``.  Points outside the grid or on undefined nodes are skipped; zero
+weights are skipped too.  ``chi2`` is the sum of weighted squared residuals, so
+use inverse-variance weights if you want it to mean the usual chi-square.  This
+is a diagnostic, not an error map: the engine still returns one surface and no
+covariance.
+
+The lower-level ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
+takes the array and the ``surf_extent`` dict directly.
+
+
 Rules
 -----
 

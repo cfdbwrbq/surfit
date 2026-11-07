@@ -116,6 +116,9 @@ task.solve()
 task.save("result.dat")                       # native surfit data file
 task.surf_save_grd("result.grd", "result")    # Surfer grid
 page = task.viewer()                          # self-contained HTML
+
+stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
+# stats: n, residuals, rmse, bias, weighted_mse, chi2, dof
 ```
 
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a

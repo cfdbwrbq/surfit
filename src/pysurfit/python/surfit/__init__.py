@@ -440,6 +440,10 @@ class Session:
         """Values of a surface; without a pattern, the most recent one."""
         return values(pattern)
 
+    def residuals(self, x, y, z, weights=None, surface=None):
+        """Residual statistics of sample points against the result."""
+        return _session_residuals(self, x, y, z, weights, surface)
+
     def viewer(self, **kwargs):
         """Self-contained HTML page for the result surface."""
         return viewer(**kwargs)
@@ -491,3 +495,4 @@ _wrap_session_methods()
 _reexport_commands()
 
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
+from surfit.diagnostics import _session_residuals, point_residuals  # noqa: E402

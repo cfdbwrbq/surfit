@@ -78,6 +78,9 @@ run synthetic "$PYTHON" "$TESTS/test_synthetic.py"
 step "per-point weights"
 run weights "$PYTHON" "$TESTS/test_weights.py"
 
+step "residual diagnostics"
+run diagnostics "$PYTHON" "$TESTS/test_diagnostics.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

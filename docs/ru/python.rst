@@ -66,6 +66,25 @@ Python
 поверхность без ковариации.
 
 
+Остатки и chi-square
+--------------------
+
+``task.residuals(x, y, z, weights=None, surface=None)`` сравнивает точки с
+решением в ближайших узлах::
+
+    stats = task.residuals(x, y, z, weights=sigma_inv)
+    stats["rmse"], stats["bias"], stats["chi2"], stats["n"]
+
+Возвращает ``n``, ``residuals``, ``rmse``, ``bias``, ``weighted_mse``, ``chi2``
+и ``dof``. Точки вне сетки и на неопределённых узлах пропускаются; нулевые
+веса тоже. ``chi2`` — сумма взвешенных квадратов остатков, поэтому для
+обычного chi-square нужны веса, обратные дисперсии. Это диагностика, а не
+карта ошибок: движок по-прежнему возвращает одну поверхность без ковариации.
+
+Низкоуровневая ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
+принимает массив и dict из ``surf_extent`` напрямую.
+
+
 Правила
 -------
 

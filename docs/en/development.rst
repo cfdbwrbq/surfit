@@ -92,6 +92,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_parity.py``
      - the saved file matches the Tcl one, ``values()`` matches the coefficient
        block inside that file, and an array survives the round trip
+   * - ``python3 src/pysurfit/tests/test_synthetic.py``
+     - a plane, a Gaussian and a sinusoid are sampled, solved and compared with
+       the known truth; this is an accuracy/bias check, not a parity check
    * - ``python3 src/pysurfit/tests/test_all_commands.py``
      - every command of both front ends, the plugins included, is run through
        both from one table; the values, the warnings and the files written must

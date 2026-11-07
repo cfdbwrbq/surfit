@@ -72,6 +72,9 @@ run examples "$PYTHON" "$TESTS/test_examples.py"
 step "parity and numpy round trip"
 run parity "$PYTHON" "$TESTS/test_parity.py"
 
+step "injection-recovery on analytic fields"
+run synthetic "$PYTHON" "$TESTS/test_synthetic.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

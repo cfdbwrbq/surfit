@@ -81,6 +81,12 @@ run weights "$PYTHON" "$TESTS/test_weights.py"
 step "residual diagnostics"
 run diagnostics "$PYTHON" "$TESTS/test_diagnostics.py"
 
+step "provenance metadata"
+run metadata "$PYTHON" "$TESTS/test_metadata.py"
+
+step "four-fold cross-validation"
+run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
+
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
 

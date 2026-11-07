@@ -119,6 +119,9 @@ page = task.viewer()                          # self-contained HTML
 
 stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
 # stats: n, residuals, rmse, bias, weighted_mse, chi2, dof
+
+task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
+task.save_metadata("result.meta.json")
 ```
 
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a

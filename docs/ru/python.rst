@@ -85,6 +85,25 @@ Python
 принимает массив и dict из ``surf_extent`` напрямую.
 
 
+Метаданные происхождения
+------------------------
+
+CRS, единицы и источник не помещаются в ``.dat`` или ``.grd``, поэтому
+храните их в задаче и пишите JSON рядом::
+
+    task = surfit.Session(
+        map_name="result",
+        metadata={"crs": "EPSG:32637", "x_units": "м", "y_units": "м"})
+
+    task.set_metadata(z_units="м", source="кампания 2026")
+    task.save("result.dat")
+    task.save_metadata("result.meta.json")
+
+``task.metadata`` возвращает копию; ``set_metadata`` добавляет поля; в sidecar
+попадают они и ``map_name``. Это фиксация происхождения, а не перепроекция
+сетки и не проверка CRS.
+
+
 Правила
 -------
 

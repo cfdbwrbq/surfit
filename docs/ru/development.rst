@@ -93,6 +93,11 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - сохранённый файл совпадает с Tcl-версией, ``values()`` совпадает с
        блоком коэффициентов внутри этого файла, а массив переживает круговой
        рейс
+   * - ``python3 src/pysurfit/tests/test_cross_validation.py``
+     - четыре вращающихся held-out фолда предсказывают каждую точку
+       поверхностью, которая её не видела; средний RMSE сверяется с размахом
+   * - ``python3 src/pysurfit/tests/test_metadata.py``
+     - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - остатки берутся по ближайшему узлу; RMSE, bias, weighted MSE и chi-square
        проверяются вручную на сетке 2x2 и на решённой ячейке

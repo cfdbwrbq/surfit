@@ -85,6 +85,25 @@ The lower-level ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
 takes the array and the ``surf_extent`` dict directly.
 
 
+Provenance metadata
+-------------------
+
+CRS, units and source do not fit in a ``.dat`` or ``.grd`` file, so keep them
+on the task and write a JSON sidecar::
+
+    task = surfit.Session(
+        map_name="result",
+        metadata={"crs": "EPSG:32637", "x_units": "m", "y_units": "m"})
+
+    task.set_metadata(z_units="m", source="campaign 2026")
+    task.save("result.dat")
+    task.save_metadata("result.meta.json")
+
+``task.metadata`` returns a copy; ``set_metadata`` adds fields; the sidecar
+contains those fields plus ``map_name``.  It records provenance, it does not
+reproject the grid or validate the CRS.
+
+
 Rules
 -----
 

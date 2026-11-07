@@ -287,7 +287,9 @@ class Session:
     Session's call waits for the lock until it finishes.
     """
 
-    def __init__(self, map_name="map", tol=None):
+    def __init__(self, map_name="map", tol=None, metadata=None):
+        self._map_name = map_name
+        self._metadata = dict(metadata or {})
         with _STATE_LOCK:
             self._state = _core.state_create()
             self._dems = _core.globe_dems_create()
@@ -295,6 +297,27 @@ class Session:
             set_map_name(map_name)
             if tol is not None:
                 set_tol(tol)
+
+    @property
+    def metadata(self):
+        """A copy of the task's provenance metadata."""
+        return dict(self._metadata)
+
+    def set_metadata(self, **values):
+        """Adds CRS, units, source or other provenance fields."""
+        self._metadata.update(values)
+        return self.metadata
+
+    def save_metadata(self, path):
+        """Writes the metadata as JSON next to the saved surface."""
+        import json
+
+        document = dict(self._metadata)
+        document["map_name"] = self._map_name
+        with open(path, "w", encoding="utf-8") as stream:
+            json.dump(document, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        return path
 
     def _activate(self):
         """Makes this task's state and DEM container the active ones."""

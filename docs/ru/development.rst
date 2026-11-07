@@ -113,6 +113,9 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``
      - opt-in strict mode превращает пустое совпадение площади в ValueError
+   * - ``python3 src/pysurfit/tests/test_context.py``
+     - у каждой Session свой data manager; clear_data в одной не трогает
+       другую, а grid_auto использует менеджер своей задачи
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - веса точек меняют среднее по ячейке; нулевой вес выбрасывает точку,
        а короткий вектор отвергается

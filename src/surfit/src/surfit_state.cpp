@@ -39,6 +39,8 @@
 #include "variables_tcl.h"
 #include "variables_internal.h"
 
+#include "data_manager.h"
+
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,6 +61,7 @@ namespace surfit {
 	X(pnts_container *, pnts, surfit_pnts)                              \
 	X(surfs_container *, surfs, surfit_surfs)                           \
 	X(std::vector<functional *> *, functionals, functionals)            \
+	X(data_manager *, data, surfit_data_manager)                       \
 	X(d_grid *, grid, surfit_grid)                                      \
 	X(float, tol, tol)                                                  \
 	X(REAL, undef_value, undef_value)                                   \
@@ -104,6 +107,7 @@ surfit_state * state_origin() {
 	if (origin == NULL) {
 		origin = new surfit_state();
 		globals_to_state(origin);
+		origin->owns_data = false;
 		if (active_state == NULL)
 			active_state = origin;
 	}
@@ -150,6 +154,16 @@ surfit_state * state_create() {
 	state->surfs = new surfs_container();
 
 	state->functionals = new std::vector<functional *>;
+
+	// Managers are stateless dispatchers over the task globals; the state gets
+	// its own manager list but borrows the manager objects.
+	state->data = new data_manager(false);
+	state->owns_data = true;
+	if (origin->data) {
+		for (size_t i = 0; i < origin->data->get_managers_count(); i++)
+			state->data->add_manager(const_cast<manager *>(origin->data->get_manager(i)));
+	}
+
 	state->grid = NULL;
 
 	state->method_grid = NULL;
@@ -224,6 +238,10 @@ void state_release(surfit_state * state) {
 		release_elements(state->surfs->begin(), state->surfs->end());
 		delete state->surfs;
 	}
+
+	if (state->data && state->owns_data)
+		delete state->data;
+	state->data = NULL;
 
 	if (state->functionals) {
 		size_t i;

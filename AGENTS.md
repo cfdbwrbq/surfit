@@ -17,7 +17,7 @@ ci/check.sh --full
 That means all 35 Tcl/Python scripts, all 49 examples, the 29 realworld
 pipelines, the analytic injection-recovery check, the per-point weight,
 residual/outlier-diagnostic, provenance-metadata, cross-validation and
-bootstrap-uncertainty, robust-IRLS, strict-rule, GeoTIFF and out-of-core tiled checks, the
+bootstrap-uncertainty, robust-IRLS, strict-rule, GeoTIFF, out-of-core tiled and per-session-manager checks, the
 documentation checks, WPS and the wheel smoke test. A subset is
 fine while developing, but not as the final verification.
 

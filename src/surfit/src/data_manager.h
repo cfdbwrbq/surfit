@@ -94,8 +94,8 @@ public:
 class SURFIT_EXPORT data_manager {
 public:
 
-	//! constructor
-	data_manager();
+	//! constructor; borrowed managers are not released by this object
+	data_manager(bool own_managers = true);
 	//! destructor
 	~data_manager();
 
@@ -140,8 +140,10 @@ public:
 	void set_manager(manager * m, int pos);
 
 private:
-	//! vector of managers 
+	//! vector of managers
 	std::vector<manager *> *  managers;
+	//! whether the destructor releases the managers
+	bool owns_managers;
 };
 
 }; // namespace surfit;

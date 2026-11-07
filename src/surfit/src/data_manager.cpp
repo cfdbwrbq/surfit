@@ -100,13 +100,14 @@ char * file_info(const char * filename) {
 //
 //////////////////////////////
 
-data_manager::data_manager() {
+data_manager::data_manager(bool own_managers) {
 	managers = new std::vector<manager*>;
 	managers->reserve(1000);
+	owns_managers = own_managers;
 };
 
 data_manager::~data_manager() {
-	if (managers) {
+	if (managers && owns_managers) {
 		release_elements(managers->begin(), managers->end());
 	}
 	delete managers;

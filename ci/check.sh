@@ -116,6 +116,9 @@ fi
 step "two tasks in one process"
 run sessions "$PYTHON" "$TESTS/test_sessions.py"
 
+step "per-session managers"
+run context "$PYTHON" "$TESTS/test_context.py"
+
 step "the object and settings commands, against Tcl"
 run commands "$PYTHON" "$TESTS/test_commands.py"
 

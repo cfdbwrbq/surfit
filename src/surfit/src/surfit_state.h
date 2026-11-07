@@ -38,6 +38,7 @@ class surfs_container;
 class d_grid;
 class bitvec;
 class functional;
+class data_manager;
 
 /*! \file
     \brief one task's state
@@ -69,6 +70,10 @@ struct SURFIT_EXPORT surfit_state {
 
 	//! gridding rules, in the order they were added
 	std::vector<functional *> * functionals;
+
+	//! per-task manager list; borrowed managers are shared
+	data_manager * data;
+	bool owns_data;
 
 	//! the target grid
 	d_grid * grid;

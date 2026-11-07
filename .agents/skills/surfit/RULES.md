@@ -121,6 +121,61 @@ Worked examples: `examples/python/area_ineq.py`, `mask_ineq.py`,
 `points_ineq.py`, `surface_ineq.py`, `area_mean.py`, `area_wmean.py`,
 `mask_mean.py`, `mask_wmean.py`, `mean.py`, `wmean.py`.
 
+## Composition recipes
+
+Most “new rule” needs are two existing rules, not a new functional.
+
+### Two-sided band
+
+```python
+task.area_geq(15, "area6")
+task.area_leq(20, "area6")
+task.area(10, "area1")       # functional after the conditions
+```
+
+Same for a mask:
+
+```python
+task.mask_geq(-10, "m")
+task.mask_leq(10, "m")
+```
+
+### Outside the polygon
+
+```python
+task.area_leq(0, "area1", inside=0)   # result <= 0 outside area1
+```
+
+### Complement of a mask
+
+```python
+task.mask_not("m")   # invert the mask in place
+task.mask_geq(0, "m")
+```
+
+Duplicate the mask first if both the original and its complement are needed.
+
+### Moving bound from another surface
+
+```python
+task.surf_load_grd("bound.grd", "bound")
+task.area_surf_leq("bound", "area6")   # result <= bound inside area6
+task.area_surf_geq("bound", "area6")   # result >= bound inside area6
+```
+
+This is more useful than a global `surface_leq` when the bound only applies in
+one area.
+
+### Point envelope
+
+```python
+task.points_geq("wells")   # surface at wells >= measured values
+task.points_leq("wells")   # surface at wells <= measured values
+```
+
+Using both together forces equality at the wells; use one side for an envelope.
+For a literal bound at every node use `geq`/`leq`, not `points_*`.
+
 ## Rules that are not min/max
 
 `completer`, `trend`, `fault`, `area_completer`, `mask_completer` and

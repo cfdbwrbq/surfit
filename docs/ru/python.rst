@@ -218,6 +218,25 @@ Out-of-core тайлы
 поверхностям нужно собственное обрезание.
 
 
+Serial-режим pool (временно)
+----------------------------
+
+Пока у sstuff нет настоящего per-session контекста, два solve не должны
+делить его глобальный pool. ``Session(serial=True)`` принудительно ставит один
+worker на этот solve и восстанавливает прежний размер::
+
+    task = surfit.Session(map_name="serial", serial=True)
+    task.solve()
+
+То же для module-level кода::
+
+    with surfit.serial_threads():
+        surfit.surfit()
+
+Это **process-wide предохранитель**, а не параллельное исполнение. Он делает
+solve последовательным и воспроизводимым, пока контекст sstuff не готов.
+
+
 Правила
 -------
 

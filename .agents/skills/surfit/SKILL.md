@@ -139,6 +139,7 @@ task.save_metadata("result.meta.json")
 task.save_report("result.report.json", x, y, z, weights=sigma_inv)
 task.save_geotiff("result.tif", crs="EPSG:32637")  # GDAL optional
 # strict=True turns an empty rule match into ValueError
+# Session(serial=True) is a temporary one-worker sstuff safety mode
 
 from surfit.tiled import solve_point_tiles
 # result = solve_point_tiles(x, y, z, extent, step,

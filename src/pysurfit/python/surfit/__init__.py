@@ -22,6 +22,7 @@ Every command the compiled core exposes is re-exported here under the same
 name the Tcl front end uses, so a Tcl script maps one call to one call.
 """
 
+import contextlib
 import fnmatch
 import functools
 import re
@@ -59,6 +60,22 @@ _STATE_LOCK = threading.RLock()
 def defined_mask(values_array):
     """Boolean mask that is True where `values_array` holds a defined number."""
     return ~np.isclose(values_array, UNDEF_VALUE, rtol=_DEFAULT_RTOL)
+
+
+@contextlib.contextmanager
+def serial_threads():
+    """Temporarily force the engine's internal pool to one worker.
+
+    This is the short-term, process-wide safety mode: it prevents two solves
+    from sharing ``slaves``/``jobs`` while the real per-session sstuff context
+    is still being built.  The previous pool size is restored on exit.
+    """
+    previous = get_threads()
+    init_threads(1)
+    try:
+        yield
+    finally:
+        init_threads(previous)
 
 
 def surf_names():
@@ -296,10 +313,12 @@ class Session:
     Session's call waits for the lock until it finishes.
     """
 
-    def __init__(self, map_name="map", tol=None, metadata=None, strict=False):
+    def __init__(self, map_name="map", tol=None, metadata=None, strict=False,
+                 serial=False):
         self._map_name = map_name
         self._metadata = dict(metadata or {})
         self._strict = bool(strict)
+        self._serial = bool(serial)
         with _STATE_LOCK:
             self._state = _core.state_create()
             self._dems = _core.globe_dems_create()
@@ -444,8 +463,21 @@ class Session:
                            name)
 
     def solve(self):
-        """Runs the gridding algorithm."""
-        surfit()
+        """Runs the gridding algorithm.
+
+        ``Session(serial=True)`` forces the internal pool to one worker for
+        this solve and restores the previous size afterwards.  This is a
+        temporary safety mode, not per-session sstuff state.
+        """
+        if not self._serial:
+            surfit()
+            return
+        previous = get_threads()
+        init_threads(1)
+        try:
+            surfit()
+        finally:
+            init_threads(previous)
 
     def save(self, path, name=_ANY):
         """Saves a surface to a surfit data file."""

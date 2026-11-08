@@ -113,6 +113,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``
      - opt-in strict mode превращает пустое совпадение площади в ValueError
+   * - ``python3 src/pysurfit/tests/test_serial.py``
+     - serial-режим ставит внутренний pool на один worker и восстанавливает его
    * - ``python3 src/pysurfit/tests/test_context.py``
      - у каждой Session свой data manager; clear_data в одной не трогает
        другую, а grid_auto использует менеджер своей задачи

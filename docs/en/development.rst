@@ -112,6 +112,8 @@ Testing
      - GeoTIFF values, geotransform, CRS and nodata (skips without GDAL)
    * - ``python3 src/pysurfit/tests/test_strict.py``
      - opt-in strict mode turns an empty area match into a ValueError
+   * - ``python3 src/pysurfit/tests/test_serial.py``
+     - serial mode forces the internal pool to one worker and restores it
    * - ``python3 src/pysurfit/tests/test_context.py``
      - each Session owns its data manager; clear_data in one does not touch the
        other, and grid_auto uses the task's own manager

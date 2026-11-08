@@ -218,6 +218,25 @@ data as the middle.  This driver is point-only: contours, areas and surfaces
 would need their own clipping rules.
 
 
+Serial pool mode (temporary)
+----------------------------
+
+Until sstuff gets a real per-session context, two solves must not share its
+global worker pool.  ``Session(serial=True)`` forces the pool to one worker for
+that solve and restores the previous size::
+
+    task = surfit.Session(map_name="serial", serial=True)
+    task.solve()
+
+The same scope is available around module-level work::
+
+    with surfit.serial_threads():
+        surfit.surfit()
+
+This is a **process-wide safety valve**, not parallel execution.  It makes
+solves serial and reproducible while the sstuff context is still missing.
+
+
 Rules
 -----
 

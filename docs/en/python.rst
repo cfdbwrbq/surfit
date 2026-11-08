@@ -1465,8 +1465,8 @@ and the undefined cells clipped out.
 API traps
 ~~~~~~~~~
 
-Creating a :class:`Session` resets the engine's process-wide state. Data loaded
-before it is gone::
+Creating a :class:`Session` starts a new task on the calling thread. Data
+loaded into that thread's module-level state before it is not part of the task::
 
     surfit.area_read("area6.txt", "area6")
     task = surfit.Session(...)      # area6 is no longer in memory

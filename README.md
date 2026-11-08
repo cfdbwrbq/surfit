@@ -107,10 +107,13 @@ contains a runner that does exactly that and compares the output byte for byte.
 
 ### More than one task
 
-Each `Session` owns its state, so several tasks can share a process. Calls may be
-interleaved; a process-wide lock serializes them, and a solve blocks the other
-Session's calls until it finishes. Module-level functions use whichever state is
-active and are not protected by that lock.
+Each `Session` owns its state, so several tasks can share a process.  The
+engine's globals are thread-local: two Sessions in two threads can solve in
+parallel, and calls on one Session are serialized by that Session's own lock.
+A Session can also be created in one thread and used in another; every call
+stores the task snapshot back so the next thread sees the latest grid and
+settings.  Module-level functions use the calling thread's library state, so
+parallel work belongs in Sessions.
 
 ## Building
 

@@ -202,9 +202,10 @@ public:
  *
  *	A host that keeps several tasks alive should use globe_state.h instead of
  *	this pointer: the state carries the container together with the display
- *	flag and releases both in the right order.
+ *	flag and releases both in the right order.  It is thread_local, like the
+ *	rest of the installed task's globals.
  */
-extern GLOBE_EXPORT dems_container * globe_dems;
+extern GLOBE_EXPORT thread_local dems_container * globe_dems;
 
 //! creates an empty DEM container; the caller owns it
 //! (globe_state_create() in globe_state.h is the per-task version)

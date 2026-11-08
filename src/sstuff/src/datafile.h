@@ -36,7 +36,7 @@ class boolvec;
 class strvec;
 
 //! 1 - create new file, 0 - create or append if file already exists
-extern SSTUFF_EXPORT int datafile_modE;
+extern SSTUFF_EXPORT thread_local int datafile_modE;
 
 //! buffer size for reading
 #define BUFFER 2048

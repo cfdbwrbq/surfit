@@ -128,6 +128,9 @@ run sstuff-state "$PYTHON" "$TESTS/test_sstuff_state.py"
 step "per-task plugin context"
 run plugin-state "$PYTHON" "$TESTS/test_plugin_state.py"
 
+step "thread-local engine state, two solves in two threads"
+run threadlocal "$PYTHON" "$TESTS/test_threadlocal_state.py"
+
 step "serial sstuff pool mode"
 run serial "$PYTHON" "$TESTS/test_serial.py"
 

@@ -102,7 +102,7 @@ public:
 };
 
 //! containter of \ref d_cntr objects
-extern SURFIT_EXPORT cntrs_container * surfit_cntrs;
+extern SURFIT_EXPORT thread_local cntrs_container * surfit_cntrs;
 
 //! converts \ref d_cntr to \ref d_points (uses 4 directions)
 SURFIT_EXPORT

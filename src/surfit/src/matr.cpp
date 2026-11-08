@@ -69,7 +69,7 @@ struct matr_mult_job : public job
 	size_t J_from, J_to;
 };
 
-matr_mult_job matr_mult_jobs[MAX_CPU];
+thread_local matr_mult_job matr_mult_jobs[MAX_CPU];
 #endif
 
 void matr::mult(const extvec * b, extvec * r) {
@@ -152,7 +152,7 @@ struct matr_rect_mult_job : public job
 	size_t J_from, J_to;
 };
 
-matr_rect_mult_job matr_rect_mult_jobs[MAX_CPU];
+thread_local matr_rect_mult_job matr_rect_mult_jobs[MAX_CPU];
 #endif
 
 

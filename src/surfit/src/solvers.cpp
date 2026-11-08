@@ -128,7 +128,7 @@ void solvers_info() {
 };
 
 #ifdef DEBUG
-static int debug_cnt = 0;
+static thread_local int debug_cnt = 0;
 int get_real_index(std::vector<int> * zero_rows, int pos, int max)
 {
 	int cnt = zero_rows->size();
@@ -456,7 +456,7 @@ struct axpy_job : public job
 
 };
 
-axpy_job axpy_jobs[MAX_CPU];
+thread_local axpy_job axpy_jobs[MAX_CPU];
 
 void axpy(REAL a, const extvec & x, extvec & y)
 {
@@ -514,7 +514,7 @@ struct xpay_job : public job
 
 };
 
-xpay_job xpay_jobs[MAX_CPU];
+thread_local xpay_job xpay_jobs[MAX_CPU];
 
 void xpay(REAL a, const extvec & x, extvec & y)
 {
@@ -569,7 +569,7 @@ struct times_job : public job
 	REAL res;
 };
 
-times_job times_jobs[MAX_CPU];
+thread_local times_job times_jobs[MAX_CPU];
 
 REAL threaded_times(const extvec * a, const extvec * b)
 {

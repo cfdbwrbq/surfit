@@ -954,7 +954,7 @@ void surfs_container::push_back(d_surf * elem)
 	data->push_back(elem);
 };
 
-surfs_container * surfit_surfs = NULL;
+thread_local surfs_container * surfit_surfs = NULL;
 
 
 /*! \struct surf_garbage

@@ -113,7 +113,7 @@ public:
 };
 
 //! container of \ref d_curv objects
-extern SURFIT_EXPORT curvs_container * surfit_curvs;
+extern SURFIT_EXPORT thread_local curvs_container * surfit_curvs;
 
 //! converts \ref d_curv to \ref d_points
 SURFIT_EXPORT

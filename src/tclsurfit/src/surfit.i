@@ -137,23 +137,23 @@ namespace surfit {
 
 %include "real.h"
 
-extern bool stop_execution;
+extern thread_local bool stop_execution;
 
-extern float tol; 
-extern REAL undef_value;
+extern thread_local float tol;
+extern thread_local REAL undef_value;
 
-extern REAL sor_omega;
-extern REAL ssor_omega;
+extern thread_local REAL sor_omega;
+extern thread_local REAL ssor_omega;
 
-extern char * map_name;
+extern thread_local char * map_name;
 
-extern int reproject_faults;
-extern int reproject_undef_areas;
-extern int process_isolated_areas;
+extern thread_local int reproject_faults;
+extern thread_local int reproject_undef_areas;
+extern thread_local int process_isolated_areas;
 
-extern size_t penalty_max_iter;
-extern REAL penalty_weight;
-extern REAL penalty_weight_mult;
+extern thread_local size_t penalty_max_iter;
+extern thread_local REAL penalty_weight;
+extern thread_local REAL penalty_weight_mult;
 
 void init_threads(int amount);
 int get_threads();

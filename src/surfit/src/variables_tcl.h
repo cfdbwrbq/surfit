@@ -24,71 +24,71 @@
 
 namespace surfit {
 
-	extern SURFIT_EXPORT bool stop_execution;
+	extern SURFIT_EXPORT thread_local bool stop_execution;
 
 	/*! \ingroup surfit_variables
 	    value to interprete as undefined
 	*/
-	extern SURFIT_EXPORT REAL undef_value;
+	extern SURFIT_EXPORT thread_local REAL undef_value;
 
 	/*! \ingroup surfit_variables
 	    use this variable to manage tolerance of iterative linear 
 	    system solver algorithm. If this value is too big, iterative algorithm 
 	    will make low number of iterations. It leads to rought result.
 	*/
-	extern SURFIT_EXPORT float tol;
+	extern SURFIT_EXPORT thread_local float tol;
 
 	/*! \ingroup surfit_variables
 	    parameter for SOR method
 	*/
-	extern SURFIT_EXPORT REAL sor_omega;
+	extern SURFIT_EXPORT thread_local REAL sor_omega;
 
 	/*! \ingroup surfit_variables
 	    parameter for SSOR method
 	*/
-	extern SURFIT_EXPORT REAL ssor_omega;
+	extern SURFIT_EXPORT thread_local REAL ssor_omega;
 
 	/*! \ingroup surfit_variables
 	    if write_mat=1, then surfit dumps matrices to file surfit.mat
 	*/
-	extern SURFIT_EXPORT bool write_mat;
+	extern SURFIT_EXPORT thread_local bool write_mat;
 
 	#define SURFIT_MAT "surfit.mat"
 
 	/*! \ingroup surfit_variables
 	    this name prints in solve procedure
 	*/
-	extern SURFIT_EXPORT char * map_name;
+	extern SURFIT_EXPORT thread_local char * map_name;
 
 	/*! \ingroup surfit_variables
 	    enables/disables reprojecting with faults
 	*/
-	extern SURFIT_EXPORT int reproject_faults;
+	extern SURFIT_EXPORT thread_local int reproject_faults;
 
 	/*! \ingroup surfit_variables
 	    enables/disables reprojecting with \ref d_area "areas" with undefined vale
 	*/
-	extern SURFIT_EXPORT int reproject_undef_areas;
+	extern SURFIT_EXPORT thread_local int reproject_undef_areas;
 
 	/*! \ingroup surfit_variables
 	    enables/disables processing of areas, isolated by faults and areas with undefined value
 	*/
-	extern SURFIT_EXPORT int process_isolated_areas;
+	extern SURFIT_EXPORT thread_local int process_isolated_areas;
 
 	/*! \ingroup surfit_variables
 	    number of maximum iterations for \ref penalty "penalty algorithm"
 	*/
-	extern SURFIT_EXPORT size_t penalty_max_iter;
+	extern SURFIT_EXPORT thread_local size_t penalty_max_iter;
 
 	/*! \ingroup surfit_variables
 	    starting weight in \ref penalty "penalty algorithm"
 	*/
-	extern SURFIT_EXPORT REAL penalty_weight;
+	extern SURFIT_EXPORT thread_local REAL penalty_weight;
 
 	/*! \ingroup surfit_variables
 	    multiplication factor for \ref penalty_weight() "penalty_weight"
         */
-	extern SURFIT_EXPORT REAL penalty_weight_mult;
+	extern SURFIT_EXPORT thread_local REAL penalty_weight_mult;
 
 }; // namespace surfit
 

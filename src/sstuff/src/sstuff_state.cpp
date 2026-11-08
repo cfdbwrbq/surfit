@@ -26,6 +26,9 @@
 
 #include <string.h>
 
+#include <mutex>
+#include <vector>
+
 namespace surfit {
 
 /*! Public settings, in one list.
@@ -34,7 +37,8 @@ namespace surfit {
  *	they stay globals and remain the live values the engine uses.  A state
  *	stores a snapshot of them; install/release copy between the two.  The list
  *	is shared by both directions so a field cannot be forgotten in one and
- *	remembered in the other.
+ *	remembered in the other.  The globals are thread_local, together with the
+ *	installed state: each thread swaps its own copy.
  */
 #ifdef HAVE_THREADS
 #define SSTUFF_STATE_CPU(X) X(size_t, cpu, cpu)
@@ -49,11 +53,11 @@ namespace surfit {
 	X(bool, fileio_append, fileio_append)                               \
 	X(int, datafile_modE, datafile_modE)
 
-//! state whose settings are in the globals right now
-static sstuff_state * active_state = NULL;
+//! state whose settings are in this thread's globals right now
+static thread_local sstuff_state * active_state = NULL;
 
-//! the library's own state, created on first use
-static sstuff_state * origin_state = NULL;
+//! this thread's library state, created on first use
+static thread_local sstuff_state * origin_state = NULL;
 
 static void globals_to_state(sstuff_state * state) {
 #define SSTUFF_STATE_OUT(type, field, global) state->field = global;
@@ -66,6 +70,61 @@ static void state_to_globals(const sstuff_state * state) {
 	SSTUFF_STATE_FIELDS(SSTUFF_STATE_IN)
 #undef SSTUFF_STATE_IN
 }
+
+namespace {
+
+/*
+ * Releasing a context must clear it out of the other threads that installed it.
+ * The active pointer is thread_local, so each thread registers the address of
+ * its slot; the tables are leaked on purpose, because a worker thread can exit
+ * during static destruction.
+ */
+std::mutex & active_slot_mutex() {
+	static std::mutex * mutex = new std::mutex;
+	return *mutex;
+}
+
+std::vector<sstuff_state **> & active_slots() {
+	static std::vector<sstuff_state **> * slots =
+		new std::vector<sstuff_state **>;
+	return *slots;
+}
+
+struct active_slot_guard {
+	~active_slot_guard() {
+		std::lock_guard<std::mutex> lock(active_slot_mutex());
+		std::vector<sstuff_state **> & slots = active_slots();
+		for (size_t i = 0; i < slots.size(); i++) {
+			if (slots[i] == &active_state) {
+				slots.erase(slots.begin() + i);
+				break;
+			}
+		}
+	}
+};
+
+thread_local bool active_slot_registered = false;
+
+void ensure_active_slot_registered() {
+	if (active_slot_registered)
+		return;
+	static thread_local active_slot_guard guard;
+	(void)guard;
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	active_slots().push_back(&active_state);
+	active_slot_registered = true;
+}
+
+void clear_active_slots(sstuff_state * state) {
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	std::vector<sstuff_state **> & slots = active_slots();
+	for (size_t i = 0; i < slots.size(); i++) {
+		if (*slots[i] == state)
+			*slots[i] = NULL;
+	}
+}
+
+} // anonymous namespace
 
 //! closes and frees everything a state owns, except the state itself
 static void state_free_resources(sstuff_state * state) {
@@ -132,6 +191,7 @@ sstuff_state * sstuff_state_origin() {
 	if (origin_state == NULL) {
 		origin_state = new sstuff_state();
 		globals_to_state(origin_state);
+		ensure_active_slot_registered();
 		if (active_state == NULL)
 			active_state = origin_state;
 	}
@@ -139,9 +199,42 @@ sstuff_state * sstuff_state_origin() {
 }
 
 sstuff_state * sstuff_state_active() {
-	if (active_state == NULL)
-		sstuff_state_origin();
+	if (active_state == NULL) {
+		// First use in this thread, or the installed state was released by
+		// another thread.  Bind the library state without reading the stale
+		// globals that may still point at the released task.
+		sstuff_state * origin = sstuff_state_origin();
+		state_to_globals(origin);
+		active_state = origin;
+	}
 	return active_state;
+}
+
+void sstuff_state_copy_settings(sstuff_state * destination,
+                                const sstuff_state * source) {
+	if (destination == NULL || source == NULL)
+		return;
+	destination->cpu = source->cpu;
+	destination->loglevel = source->loglevel;
+	destination->stop_on_error = source->stop_on_error;
+	destination->fileio_append = source->fileio_append;
+	destination->datafile_modE = source->datafile_modE;
+	destination->log_hook = source->log_hook;
+}
+
+void sstuff_state_apply_settings(const sstuff_state * source) {
+	if (source == NULL)
+		return;
+	loglevel = source->loglevel;
+	stop_on_error = source->stop_on_error;
+	fileio_append = source->fileio_append;
+	datafile_modE = source->datafile_modE;
+}
+
+void sstuff_state_store(sstuff_state * state) {
+	if (state == NULL || state != active_state)
+		return;
+	globals_to_state(state);
 }
 
 sstuff_state * sstuff_state_create() {
@@ -157,12 +250,7 @@ sstuff_state * sstuff_state_create() {
 
 	// Settings are inherited; resources are not.  A task opens its own log and
 	// starts its own worker pool, so two tasks cannot share either one.
-	state->cpu = origin->cpu;
-	state->loglevel = origin->loglevel;
-	state->stop_on_error = origin->stop_on_error;
-	state->fileio_append = origin->fileio_append;
-	state->datafile_modE = origin->datafile_modE;
-	state->log_hook = origin->log_hook;
+	sstuff_state_copy_settings(state, origin);
 
 	return state;
 }
@@ -171,17 +259,26 @@ void sstuff_state_install(sstuff_state * state) {
 	if (state == NULL)
 		state = sstuff_state_origin();
 
-	if (active_state == NULL)
-		sstuff_state_origin();
+	ensure_active_slot_registered();
+	if (active_state == NULL) {
+		// First use in this thread, or the installed state was released by
+		// another thread.  Bind the library state; the globals may point at the
+		// released task, so they are overwritten, never read back.
+		sstuff_state * origin = sstuff_state_origin();
+		state_to_globals(origin);
+		active_state = origin;
+	}
+
+	// The globals are the live values, so keep the installed state's snapshot
+	// current even when it is already installed; a context built in one thread
+	// is then installed in another with the settings the build left behind.
+	globals_to_state(active_state);
 
 	if (active_state == state) {
 		sstuff_pool_ensure(state);
 		return;
 	}
 
-	// The free functions write straight into the globals, so the outgoing state
-	// has to be read back out before it is replaced.
-	globals_to_state(active_state);
 	state_to_globals(state);
 
 	// The pool follows the installed cpu count; this is cheap when it already
@@ -199,7 +296,9 @@ void sstuff_state_release(sstuff_state * state) {
 	if (origin_state != NULL && state == origin_state)
 		return;
 
-	if (active_state == state)
+	bool was_active_here = (active_state == state);
+	clear_active_slots(state);
+	if (was_active_here)
 		sstuff_state_install(sstuff_state_origin());
 
 	delete state;

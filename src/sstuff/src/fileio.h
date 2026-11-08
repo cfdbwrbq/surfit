@@ -50,14 +50,14 @@ namespace surfit {
 #define LOG_SILENT 5
 
 //! global variable for stopping calculations or other operations 
-extern SSTUFF_EXPORT int stop_on_error;
+extern SSTUFF_EXPORT thread_local int stop_on_error;
 
 //! current log level (LOG_MESSAGE, LOG_ERROR or other). According to this variable
 //! outputs functions writes all messages with level <= loglevel to logfile
-extern SSTUFF_EXPORT int loglevel;
+extern SSTUFF_EXPORT thread_local int loglevel;
 
 //! this variable shows how to work with file - append or rewrite it. 
-extern SSTUFF_EXPORT bool fileio_append;
+extern SSTUFF_EXPORT thread_local bool fileio_append;
 
 /*! \brief logfile's "printf" function
     \param errlevel errorlevel ( 0 - messages, 1 - errors, 2 - warnings, 3 - debug )

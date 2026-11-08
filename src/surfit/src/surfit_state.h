@@ -55,9 +55,12 @@ struct sstuff_state;
     them, and the state that was installed before is copied back out first, so
     nothing is lost while a task is not active.
 
-    Only one state is active at a time, which is what makes the swap cheap.  Two
-    tasks can therefore be interleaved in one thread -- one per notebook cell,
-    say -- but not run concurrently from two threads.
+    The globals and the installed-state pointer are thread_local.  Each thread
+    therefore has its own view of the engine, and two tasks can run in two
+    threads at the same time.  A state can be created in one thread and used in
+    another: installing it copies its snapshot into the calling thread's
+    globals.  Releasing a state clears it out of every thread that still has it
+    installed, so the next install in that thread starts from the library state.
 */
 struct SURFIT_EXPORT surfit_state {
 	//! loaded and produced objects
@@ -111,19 +114,46 @@ struct SURFIT_EXPORT surfit_state {
 	size_t penalty_iter_counter;
 };
 
-//! the state the library was initialised with, captured on first use
+//! the library state of the calling thread, captured on first use
 SURFIT_EXPORT surfit_state * state_origin();
 
-//! the state currently installed in the globals
+//! the state currently installed in the calling thread's globals
 SURFIT_EXPORT surfit_state * state_active();
 
 //! a new empty state, with the default settings
 SURFIT_EXPORT surfit_state * state_create();
 
-//! makes \a state the active one, saving whatever was active before
+/*! \brief captures the library defaults used by threads that have no state yet
+
+    A front end that may use the library from more than one thread calls this
+    from its initialisation, in the thread the globals were initialised in, so
+    the defaults are complete (managers registered, settings final).  Calling it
+    again is harmless; the first call wins.
+*/
+SURFIT_EXPORT void state_init_defaults();
+
+/*! \brief makes \a state the calling thread's active one
+
+    The outgoing state is written back to its snapshot first, even when it is
+    already the active one, so a task built in one thread can be installed in
+    another without losing the values the build left in the globals.
+*/
 SURFIT_EXPORT void state_install(surfit_state * state);
 
-//! frees a state and everything it holds; the origin state is left alone
+/*! \brief writes the calling thread's globals back into the installed state
+
+    A command runs straight on the globals, so a task finished in one thread and
+    used in another would otherwise be installed with the snapshot its fields
+    had before the last command.  The Session wrapper calls this after every
+    command.
+*/
+SURFIT_EXPORT void state_store();
+
+/*! \brief frees a state and everything it holds; the origin state is left alone
+
+    Every thread that still has the state installed is switched back to its
+    library state first, so no thread keeps a pointer to the freed task.
+*/
 SURFIT_EXPORT void state_release(surfit_state * state);
 
 };// namespace surfit

@@ -504,7 +504,7 @@ void pnts_container::push_back(d_points * elem)
 	data->push_back(elem);
 };
 
-pnts_container * surfit_pnts = NULL;
+thread_local pnts_container * surfit_pnts = NULL;
 
 /*! \struct pnts_garbage
     \brief struct for deletion of \ref d_points pointers

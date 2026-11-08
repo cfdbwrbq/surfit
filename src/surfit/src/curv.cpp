@@ -241,7 +241,7 @@ void curvs_container::push_back(d_curv * elem)
 	data->push_back(elem);
 };
 
-curvs_container * surfit_curvs = NULL;
+thread_local curvs_container * surfit_curvs = NULL;
 
 
 /*! \struct curv_garbage

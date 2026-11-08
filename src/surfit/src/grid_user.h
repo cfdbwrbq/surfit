@@ -46,34 +46,34 @@ Gridding generates a Z value at each grid node by interpolating or approximating
 //! Starting size of the solver's own grid, before the first phase
 const size_t GRID_START_SIZE = 8;
 
-extern SURFIT_EXPORT d_grid * surfit_grid;	
+extern SURFIT_EXPORT thread_local d_grid * surfit_grid;
 
 //! current \ref d_grid using for gridding calculations
-extern SURFIT_EXPORT d_grid * method_grid;
+extern SURFIT_EXPORT thread_local d_grid * method_grid;
 
 //! previous \ref d_grid used for gridding calculations
-extern SURFIT_EXPORT d_grid * method_prev_grid;
+extern SURFIT_EXPORT thread_local d_grid * method_prev_grid;
 
 //! the solution vector
-extern SURFIT_EXPORT extvec * method_X;
+extern SURFIT_EXPORT thread_local extvec * method_X;
 
 //! this vector have true values for the cells that already solved
-extern SURFIT_EXPORT bitvec * method_mask_solved;
+extern SURFIT_EXPORT thread_local bitvec * method_mask_solved;
 
 //! this vector have true values for the cells that are marked as undefined
-extern SURFIT_EXPORT bitvec * method_mask_undefined;
+extern SURFIT_EXPORT thread_local bitvec * method_mask_undefined;
 
 //! grid size in OX direction for the current phase
-extern SURFIT_EXPORT size_t method_basis_cntX;
+extern SURFIT_EXPORT thread_local size_t method_basis_cntX;
 
 //! grid size in OY direction for the current phase
-extern SURFIT_EXPORT size_t method_basis_cntY;
+extern SURFIT_EXPORT thread_local size_t method_basis_cntY;
 
 //! number of the current phase
-extern SURFIT_EXPORT size_t method_phase_counter;
+extern SURFIT_EXPORT thread_local size_t method_phase_counter;
 
 //! number of cells in each direction for initial (small) grid
-extern SURFIT_EXPORT size_t basis_cnt;
+extern SURFIT_EXPORT thread_local size_t basis_cnt;
 
 //! constructs grid to the latest calculation phase
 SURFIT_EXPORT

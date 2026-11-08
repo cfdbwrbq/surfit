@@ -30,7 +30,7 @@ void job::release() {
 };
 
 //! live pool size; the installed state carries the matching snapshot
-size_t cpu = 1;
+thread_local size_t cpu = 1;
 
 namespace surfit {
 

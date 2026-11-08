@@ -8,6 +8,11 @@
  *	one state of its own for the commands that run outside any task, which is
  *	what the Tcl front end and the module-level Python functions use.
  *
+ *	The display flag and the installed container pointer are thread_local, like
+ *	the engine's own globals: each thread installs the task it is working on.
+ *	Releasing a state clears it out of every thread that still has it
+ *	installed.
+ *
  *	The old container-level API (globe_dems_create() and friends) is kept for
  *	the front ends that use it today; a container made by it belongs to the
  *	caller, while a container inside a globe_state belongs to that state.
@@ -23,6 +28,9 @@
 #include "dem.h"
 #include "dem_show.h"
 #include "free_elements.h"
+
+#include <mutex>
+#include <vector>
 
 namespace surfit {
 
@@ -42,26 +50,83 @@ struct globe_state {
  *
  *	It is the installed state's value, like \ref globe_dems is the installed
  *	state's container: globe_state_install() copies it in and install() of the
- *	next state copies the current value back out first.
+ *	next state copies the current value back out first.  It is thread_local, so
+ *	two threads can show or hide their own task's DEM.
  */
-int draw_dem = 1;
+thread_local int draw_dem = 1;
 
-//! the installed state; NULL until the first state is asked for
-static globe_state * active_state = NULL;
+//! the state installed in this thread's globals; NULL until the first install
+static thread_local globe_state * active_state = NULL;
 
-//! the library's own state, captured before anything is installed
-static globe_state * library_state = NULL;
+//! this thread's library state, captured before anything is installed
+static thread_local globe_state * library_state = NULL;
+
+namespace {
+
+/*! Clears a released state out of every thread that installed it.
+ *
+ *	The active pointer is thread_local, so each thread registers the address of
+ *	its slot and unregisters it on exit.  The tables are leaked on purpose: a
+ *	worker thread can exit during static destruction.
+ */
+std::mutex & active_slot_mutex() {
+	static std::mutex * mutex = new std::mutex;
+	return *mutex;
+}
+
+std::vector<globe_state **> & active_slots() {
+	static std::vector<globe_state **> * slots =
+		new std::vector<globe_state **>;
+	return *slots;
+}
+
+struct active_slot_guard {
+	~active_slot_guard() {
+		std::lock_guard<std::mutex> lock(active_slot_mutex());
+		std::vector<globe_state **> & slots = active_slots();
+		for (size_t i = 0; i < slots.size(); i++) {
+			if (slots[i] == &active_state) {
+				slots.erase(slots.begin() + i);
+				break;
+			}
+		}
+	}
+};
+
+thread_local bool active_slot_registered = false;
+
+void ensure_active_slot_registered() {
+	if (active_slot_registered)
+		return;
+	static thread_local active_slot_guard guard;
+	(void)guard;
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	active_slots().push_back(&active_state);
+	active_slot_registered = true;
+}
+
+void clear_active_slots(globe_state * state) {
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	std::vector<globe_state **> & slots = active_slots();
+	for (size_t i = 0; i < slots.size(); i++) {
+		if (*slots[i] == state)
+			*slots[i] = NULL;
+	}
+}
+
+} // anonymous namespace
 
 globe_state * globe_state_origin() {
 	if (library_state == NULL) {
 		library_state = new globe_state;
-		// dem_garbage in dem.cpp makes the library container at startup.  Keep
-		// the same fallback here for an embedding that uses the library
-		// without running that static construction.
+		// dem_garbage in dem.cpp makes the library container at startup.  In a
+		// thread other than the one that ran it -- the globals are thread_local
+		// -- the container has to be made here.
 		if (globe_dems == NULL)
 			globe_dems = new dems_container();
 		library_state->dems = globe_dems;
 		library_state->draw_dem = draw_dem;
+		ensure_active_slot_registered();
 		if (active_state == NULL)
 			active_state = library_state;
 	}
@@ -69,7 +134,15 @@ globe_state * globe_state_origin() {
 }
 
 globe_state * globe_state_active() {
-	globe_state_origin();
+	if (active_state == NULL) {
+		// First use in this thread, or the installed state was released by
+		// another thread: bind the library state, overwriting globals that may
+		// still point at the released task.
+		globe_state * origin = globe_state_origin();
+		globe_dems = origin->dems;
+		draw_dem = origin->draw_dem;
+		active_state = origin;
+	}
 	return active_state;
 }
 
@@ -85,10 +158,17 @@ void globe_state_install(globe_state * state) {
 	if (state == NULL)
 		return;
 
-	globe_state_origin();
+	globe_state * origin = globe_state_origin();
+	ensure_active_slot_registered();
 
-	if (active_state == state)
-		return;
+	if (active_state == NULL) {
+		// First use in this thread, or the state it had was released elsewhere:
+		// start from this thread's library state.  The globals may point at a
+		// released task, so they are overwritten, never read.
+		globe_dems = origin->dems;
+		draw_dem = origin->draw_dem;
+		active_state = origin;
+	}
 
 	// The globals may have been changed directly (the container-level API and
 	// dem_show.h keep both writable), so the outgoing state is read back out
@@ -97,6 +177,11 @@ void globe_state_install(globe_state * state) {
 	// through globe_dems_install() must be released by that caller, not by the
 	// state that happened to be installed when it appeared.
 	active_state->draw_dem = draw_dem;
+
+	if (active_state == state) {
+		state->draw_dem = draw_dem;
+		return;
+	}
 
 	globe_dems = state->dems;
 	draw_dem = state->draw_dem;
@@ -111,9 +196,11 @@ void globe_state_release(globe_state * state) {
 	if (state == globe_state_origin())
 		return;
 
-	// Restore the origin first, so the globals never point at the container
-	// this function is about to free.
-	if (active_state == state)
+	// Restore the library state in every thread first, so no thread keeps a
+	// pointer to the freed task; then free the container this state owns.
+	bool was_active_here = (active_state == state);
+	clear_active_slots(state);
+	if (was_active_here)
 		globe_state_install(globe_state_origin());
 
 	globe_dems_release(state->dems);

@@ -48,7 +48,7 @@ namespace surfit {
 //
 ////////////////////////////////////////////////
 
-d_grid         *  surfit_grid         = NULL;
+thread_local d_grid         *  surfit_grid         = NULL;
 
 /*! \struct grid_garbage
     \brief struct for deletion of \ref grid pointers
@@ -70,15 +70,15 @@ struct grid_garbage : public binman {
 
 grid_garbage gird_garb;
 
-d_grid * method_grid = NULL;
-d_grid * method_prev_grid = NULL;
-extvec * method_X = NULL;
-bitvec * method_mask_solved = NULL;
-bitvec * method_mask_undefined = NULL;
-size_t basis_cnt = GRID_START_SIZE;
-size_t method_basis_cntX = GRID_START_SIZE;
-size_t method_basis_cntY = GRID_START_SIZE;
-size_t method_phase_counter = 0;
+thread_local d_grid * method_grid = NULL;
+thread_local d_grid * method_prev_grid = NULL;
+thread_local extvec * method_X = NULL;
+thread_local bitvec * method_mask_solved = NULL;
+thread_local bitvec * method_mask_undefined = NULL;
+thread_local size_t basis_cnt = GRID_START_SIZE;
+thread_local size_t method_basis_cntX = GRID_START_SIZE;
+thread_local size_t method_basis_cntY = GRID_START_SIZE;
+thread_local size_t method_phase_counter = 0;
 
 /////////////////////////////////////////////////
 //

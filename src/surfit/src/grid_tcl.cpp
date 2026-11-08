@@ -44,7 +44,7 @@
 
 namespace surfit {
 
-extern d_grid * surfit_grid;
+extern thread_local d_grid * surfit_grid;
 
 void grid_unload() {
 	if (surfit_grid) {

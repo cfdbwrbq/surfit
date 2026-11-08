@@ -27,8 +27,8 @@
 
 namespace surfit {
 
-static int noname_counter = 0;
-static int id_counter = 0;
+static thread_local int noname_counter = 0;
+static thread_local int id_counter = 0;
 
 data::data(const char * itype) {
 	name = NULL;

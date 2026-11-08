@@ -176,7 +176,7 @@ void cntrs_container::push_back(d_cntr * elem)
 	data->push_back(elem);
 };
 
-cntrs_container * surfit_cntrs = NULL;
+thread_local cntrs_container * surfit_cntrs = NULL;
 
 /*! \struct cntr_garbage
     \brief struct for deletion of \ref cntr pointers

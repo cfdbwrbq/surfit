@@ -135,7 +135,7 @@ public:
 };
 
 //! container of \ref d_mask objects
-extern SURFIT_EXPORT masks_container * surfit_masks;
+extern SURFIT_EXPORT thread_local masks_container * surfit_masks;
 
 }; // namespace surfit
 

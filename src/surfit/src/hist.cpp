@@ -166,7 +166,7 @@ void hists_container::push_back(d_hist * elem)
 	data->push_back(elem);
 };
 
-hists_container * surfit_hists = NULL;
+thread_local hists_container * surfit_hists = NULL;
 
 /*! \struct hist_garbage
     \brief struct for deletion of \ref hist pointers

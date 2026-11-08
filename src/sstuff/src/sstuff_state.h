@@ -38,11 +38,11 @@
     search cursor, the RNG -- live only in the state.
 
     The install/release pair is the same pattern as surfit_state: the core owns
-    one sstuff_state per surfit_state and installs it in state_install().  Only
-    one state is active at a time, which is what makes the swap cheap.  Two
-    tasks can be interleaved in one thread; running them concurrently from two
-    threads still requires the active state to become thread-local, which is the
-    next step for the core (see AUDIT_STATE.md).
+    one sstuff_state per surfit_state and installs it in state_install().  The
+    installed state, the library state and the mirrored globals are all
+    thread_local, so two tasks in two threads keep their pools, logs, file
+    searches, save modes and random streams apart.  Releasing a state clears it
+    out of every thread that still has it installed.
 */
 
 #ifndef SSTUFF_EXPORT
@@ -56,13 +56,40 @@ namespace surfit {
 //! opaque per-task context (defined in sstuff_state_impl.h, inside libsstuff)
 struct sstuff_state;
 
-//! the library's own state, captured on first use; owned by libsstuff
+//! the calling thread's library state, captured on first use; owned by libsstuff
 SSTUFF_EXPORT
 sstuff_state * sstuff_state_origin();
 
-//! the state currently installed in the globals; never NULL
+//! the state installed in the calling thread's globals; never NULL
 SSTUFF_EXPORT
 sstuff_state * sstuff_state_active();
+
+/*! \brief copies the five public settings and the log hook from \a source
+
+    The settings are inherited by a new context; the resources (pool, log,
+    file cursor, RNG) stay with the context that owns them.  Used when a task
+    is created from another thread's library state.
+*/
+SSTUFF_EXPORT
+void sstuff_state_copy_settings(sstuff_state * destination,
+                                const sstuff_state * source);
+
+/*! \brief copies \a source's mirrored settings into this thread's globals
+
+    Used to bind a thread to the library state without installing it: the worker
+    pool count is deliberately not copied, because the pool of the library state
+    is the thread's own and a thread that only runs tasks must not start one.
+*/
+SSTUFF_EXPORT
+void sstuff_state_apply_settings(const sstuff_state * source);
+
+/*! \brief writes this thread's mirrored settings into \a state
+
+    A no-op unless \a state is exactly the context installed in this thread, so
+    storing one task's snapshot cannot write another task's globals into it.
+*/
+SSTUFF_EXPORT
+void sstuff_state_store(sstuff_state * state);
 
 /*! \brief a new context with a copy of the current settings
 

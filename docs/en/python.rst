@@ -218,12 +218,13 @@ data as the middle.  This driver is point-only: contours, areas and surfaces
 would need their own clipping rules.
 
 
-Serial pool mode (temporary)
-----------------------------
+Serial pool mode
+----------------
 
-Until sstuff gets a real per-session context, two solves must not share its
-global worker pool.  ``Session(serial=True)`` forces the pool to one worker for
-that solve and restores the previous size::
+The worker pool belongs to the task, so it is normally sized from the machine
+and shared by nothing.  ``Session(serial=True)`` forces this task's pool to one
+worker for that solve and restores the previous size, which is useful for
+measuring a serial result or for keeping a small task off the other cores::
 
     task = surfit.Session(map_name="serial", serial=True)
     task.solve()
@@ -233,8 +234,7 @@ The same scope is available around module-level work::
     with surfit.serial_threads():
         surfit.surfit()
 
-This is a **process-wide safety valve**, not parallel execution.  It makes
-solves serial and reproducible while the sstuff context is still missing.
+Other Sessions, in this thread or in another one, keep their own pools.
 
 
 Rules
@@ -374,11 +374,17 @@ Each Session owns its state, so several tasks can share a process. Calls may be
 interleaved in any order; each task's result is the same as running it alone, and
 ``src/pysurfit/tests/test_sessions.py`` checks that byte for byte.
 
-A Session call holds a process-wide lock across the state switch. Two Sessions can
-be driven from two threads, but their calls serialize, and a solve blocks the
-other Session until it finishes; the solve releases the GIL. Module-level
-functions such as ``surfit.area(...)`` use whichever state is active and are not
-protected by that lock.
+The engine's globals and the installed task are thread-local, so each call
+installs its task in the calling thread only. Two Sessions driven from two
+threads therefore run at the same time: both solves compute in parallel, and a
+solve releases the GIL. Calls on the *same* Session are serialized by one
+re-entrant lock per task, because its state is shared while one thread uses it.
+
+A Session can be created in one thread and used in another; each call copies
+the task's stored snapshot into the calling thread and stores it back when the
+call returns. Module-level functions such as ``surfit.area(...)`` use the
+calling thread's own library state; they are not tied to any Session, so do
+parallel work through Sessions rather than through module functions.
 
 Databases
 ---------

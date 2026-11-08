@@ -46,6 +46,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <mutex>
+#include <thread>
+#include <vector>
+
 namespace surfit {
 
 /*! Every global a task owns, in one list.
@@ -89,7 +93,13 @@ namespace surfit {
 	X(size_t, basis_cnt, basis_cnt)                                     \
 	X(size_t, penalty_iter_counter, penalty_iter_counter)
 
-static surfit_state * active_state = NULL;
+/*! The state installed in this thread's globals.
+ *
+ *	Every thread owns one.  The engine's globals are thread_local as well, so
+ *	two threads can each have a different task installed at the same time; this
+ *	pointer says which task *this* thread's globals currently hold.
+ */
+static thread_local surfit_state * active_state = NULL;
 
 static void globals_to_state(surfit_state * state) {
 #define SURFIT_STATE_OUT(type, field, global) state->field = global;
@@ -103,22 +113,171 @@ static void state_to_globals(const surfit_state * state) {
 #undef SURFIT_STATE_IN
 }
 
+namespace {
+
+/*
+ * Releasing a state has to clear it out of every thread that may still have it
+ * installed.  A thread's active_state is a thread_local pointer, so the only
+ * way to reach it from another thread is to remember its address: each thread
+ * registers the address of its slot once and unregisters it on exit.  The
+ * process-wide tables are deliberately leaked (allocated with new, never
+ * destroyed): a worker thread may exit during static destruction, and its
+ * unregister step must not touch an already-destroyed container.
+ */
+std::mutex & active_slot_mutex() {
+	static std::mutex * mutex = new std::mutex;
+	return *mutex;
+}
+
+std::vector<surfit_state **> & active_slots() {
+	static std::vector<surfit_state **> * slots =
+		new std::vector<surfit_state **>;
+	return *slots;
+}
+
+//! removes this thread's slot when the thread exits
+struct active_slot_guard {
+	~active_slot_guard() {
+		std::lock_guard<std::mutex> lock(active_slot_mutex());
+		std::vector<surfit_state **> & slots = active_slots();
+		for (size_t i = 0; i < slots.size(); i++) {
+			if (slots[i] == &active_state) {
+				slots.erase(slots.begin() + i);
+				break;
+			}
+		}
+	}
+};
+
+thread_local bool active_slot_registered = false;
+
+void ensure_active_slot_registered() {
+	if (active_slot_registered)
+		return;
+	// Constructing the guard registers the thread exit cleanup; the slot is
+	// visible to state_release() from that point on.
+	static thread_local active_slot_guard guard;
+	(void)guard;
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	active_slots().push_back(&active_state);
+	active_slot_registered = true;
+}
+
+//! clears the released state out of every thread's active slot
+void clear_active_slots(surfit_state * state) {
+	std::lock_guard<std::mutex> lock(active_slot_mutex());
+	std::vector<surfit_state **> & slots = active_slots();
+	for (size_t i = 0; i < slots.size(); i++) {
+		if (*slots[i] == state)
+			*slots[i] = NULL;
+	}
+}
+
+/*
+ * Every thread needs a library state (the state module-level calls run on).  A
+ * thread that never has a task installed derives one from this process-wide,
+ * immutable template: the defaults captured after library initialisation, in
+ * the thread that owns the globals the library was initialised in.  The
+ * capture thread itself keeps using its live globals as the library state, so
+ * module-level data and settings still survive a switch to another task.
+ */
+std::mutex & defaults_mutex() {
+	static std::mutex * mutex = new std::mutex;
+	return *mutex;
+}
+
+surfit_state * library_defaults = NULL;
+std::thread::id defaults_thread;
+
+//! fills library_defaults from the globals; the caller holds defaults_mutex()
+void capture_library_defaults() {
+	if (library_defaults != NULL)
+		return;
+	library_defaults = new surfit_state();
+	globals_to_state(library_defaults);
+	library_defaults->owns_data = false;
+	library_defaults->sstuff = sstuff_state_origin();
+	defaults_thread = std::this_thread::get_id();
+}
+
+/*! \brief a private library state for a thread that has none yet
+ *
+ *	The default's containers are copied as new empty ones: module-level data
+ *	loaded in one thread is not silently visible in another.  The managers are
+ *	borrowed, exactly like a task's manager list, because they are stateless
+ *	dispatchers.  The names are copied because they are owned strings.
+ */
+surfit_state * clone_library_state(const surfit_state * source) {
+	surfit_state * state = new surfit_state();
+	*state = *source;
+
+	state->areas = new areas_container();
+	state->cntrs = new cntrs_container();
+	state->curvs = new curvs_container();
+	state->hists = new hists_container();
+	state->masks = new masks_container();
+	state->pnts = new pnts_container();
+	state->surfs = new surfs_container();
+	state->functionals = new std::vector<functional *>;
+
+	state->data = new data_manager(false);
+	state->owns_data = false;
+	if (source->data) {
+		for (size_t i = 0; i < source->data->get_managers_count(); i++)
+			state->data->add_manager(
+				const_cast<manager *>(source->data->get_manager(i)));
+	}
+
+	state->sstuff = sstuff_state_create();
+	if (source->sstuff)
+		sstuff_state_copy_settings(state->sstuff, source->sstuff);
+
+	state->grid = NULL;
+	state->method_grid = NULL;
+	state->method_prev_grid = NULL;
+	state->method_X = NULL;
+	state->method_mask_solved = NULL;
+	state->method_mask_undefined = NULL;
+
+	state->map_name = source->map_name ? strdup(source->map_name) : NULL;
+	state->solver_name = source->solver_name ? strdup(source->solver_name)
+	                                         : NULL;
+
+	return state;
+}
+
+} // anonymous namespace
+
+void state_init_defaults() {
+	std::lock_guard<std::mutex> lock(defaults_mutex());
+	capture_library_defaults();
+}
+
 surfit_state * state_origin() {
-	static surfit_state * origin = NULL;
-	if (origin == NULL) {
+	static thread_local surfit_state * origin = NULL;
+	if (origin != NULL)
+		return origin;
+
+	std::lock_guard<std::mutex> lock(defaults_mutex());
+	capture_library_defaults();
+
+	ensure_active_slot_registered();
+	if (std::this_thread::get_id() == defaults_thread) {
+		// The capture thread's globals already hold the library state; taking
+		// them keeps module-level data and settings alive across a switch.
 		origin = new surfit_state();
 		globals_to_state(origin);
 		origin->owns_data = false;
 		origin->sstuff = sstuff_state_origin();
-		if (active_state == NULL)
-			active_state = origin;
+	} else {
+		origin = clone_library_state(library_defaults);
 	}
 	return origin;
 }
 
 surfit_state * state_active() {
 	if (active_state == NULL)
-		state_origin();
+		state_install(state_origin());
 	return active_state;
 }
 
@@ -162,6 +321,8 @@ surfit_state * state_create() {
 	state->data = new data_manager(false);
 	state->owns_data = true;
 	state->sstuff = sstuff_state_create();
+	if (origin->sstuff)
+		sstuff_state_copy_settings(state->sstuff, origin->sstuff);
 	if (origin->data) {
 		for (size_t i = 0; i < origin->data->get_managers_count(); i++)
 			state->data->add_manager(const_cast<manager *>(origin->data->get_manager(i)));
@@ -188,19 +349,45 @@ void state_install(surfit_state * state) {
 	if (state == NULL)
 		return;
 
-	if (active_state == NULL)
-		state_origin();
+	surfit_state * origin = state_origin();
+	ensure_active_slot_registered();
 
-	if (active_state == state)
-		return;
+	// First call in this thread, or the state this thread had installed was
+	// released by another thread: start from this thread's library state.  The
+	// thread's globals may point at a released task, so they are overwritten,
+	// never read.
+	if (active_state == NULL) {
+		state_to_globals(origin);
+		// Bind the sstuff mirrors only: installing the library state here would
+		// start a worker pool that a thread solving a task never uses.
+		sstuff_state_apply_settings(origin->sstuff);
+		active_state = origin;
+	}
 
-	// The engine writes straight into the globals, so the outgoing state has to
-	// be read back out before it is replaced.
+	// The globals are the live values, so whichever state they hold is written
+	// back first -- even when that is the state being installed.  Without this,
+	// a task built in one thread would be installed in another with the stale
+	// snapshot its fields had when the build started (tol, grid, scratch).
 	globals_to_state(active_state);
+
+	if (active_state == state) {
+		if (state != origin)
+			sstuff_state_install(active_state->sstuff);
+		return;
+	}
+
 	state_to_globals(state);
 	sstuff_state_install(state->sstuff);
-
 	active_state = state;
+}
+
+void state_store() {
+	if (active_state == NULL)
+		return;
+	globals_to_state(active_state);
+	// The sstuff mirrors are globals too; write them into the installed context
+	// (a no-op when the installed context is a different object).
+	sstuff_state_store(active_state->sstuff);
 }
 
 void state_release(surfit_state * state) {
@@ -211,7 +398,12 @@ void state_release(surfit_state * state) {
 	if (state == state_origin())
 		return;
 
-	if (active_state == state)
+	// Clear the state out of every thread before it is freed: another thread
+	// may still have it installed, and its next install will bind the library
+	// state instead of reading the freed task.
+	bool was_active_here = (active_state == state);
+	clear_active_slots(state);
+	if (was_active_here)
 		state_install(state_origin());
 
 	if (state->areas) {
@@ -291,4 +483,4 @@ void state_release(surfit_state * state) {
 	delete state;
 }
 
-};// namespace surfit
+}; // namespace surfit

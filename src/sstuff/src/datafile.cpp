@@ -51,7 +51,7 @@
 
 namespace surfit {
 
-int datafile_modE = 1; // 1 - create new file, 0 - create or append if file already exists
+thread_local int datafile_modE = 1; // 1 - create new file, 0 - create or append if file already exists
 
 void add_word(char * contents, const char * word) {
 	int old_len = strlen(contents);
@@ -74,7 +74,7 @@ datafile::datafile(const char * filename, int imode) {
 
 	datafile_filename = strdup(filename);
 
-	extern int datafile_modE;
+	extern thread_local int datafile_modE;
 
 	// write mode
 	if (imode == DF_MODE_WRITE) {

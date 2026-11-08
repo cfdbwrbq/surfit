@@ -50,30 +50,30 @@
 
 namespace surfit {
 
-float tol = float(1e-5);
-char * solver_name = NULL;
-bool write_mat = false;
-bool stop_execution = false;
+thread_local float tol = float(1e-5);
+thread_local char * solver_name = NULL;
+thread_local bool write_mat = false;
+thread_local bool stop_execution = false;
 
-int reproject_faults = 1;
-int reproject_undef_areas = 0;
-int process_isolated_areas = 1;
+thread_local int reproject_faults = 1;
+thread_local int reproject_undef_areas = 0;
+thread_local int process_isolated_areas = 1;
 
-size_t penalty_max_iter = 99;
-REAL penalty_weight = 1; //0.0001;
-REAL penalty_weight_mult = 10;
+thread_local size_t penalty_max_iter = 99;
+thread_local REAL penalty_weight = 1; //0.0001;
+thread_local REAL penalty_weight_mult = 10;
 
-REAL sor_omega = REAL(0.6);
-REAL ssor_omega = REAL(0.6);
+thread_local REAL sor_omega = REAL(0.6);
+thread_local REAL ssor_omega = REAL(0.6);
 
-REAL undef_value = FLT_MAX;
+thread_local REAL undef_value = FLT_MAX;
 
-data_manager *  surfit_data_manager = NULL;
-std::vector<functional *> * functionals = NULL;
+thread_local data_manager *  surfit_data_manager = NULL;
+thread_local std::vector<functional *> * functionals = NULL;
 
-size_t penalty_iter_counter = 0;
+thread_local size_t penalty_iter_counter = 0;
 
-char * map_name = NULL;
+thread_local char * map_name = NULL;
 
 /*! \struct garbage
     \brief struct for init and deletion of different pointers (\ref user)

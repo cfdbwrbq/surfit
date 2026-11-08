@@ -45,7 +45,7 @@ void sstuff_init_threads(size_t cnt);
 SSTUFF_EXPORT
 size_t sstuff_get_threads();
 
-extern SSTUFF_EXPORT size_t cpu;
+extern SSTUFF_EXPORT thread_local size_t cpu;
 
 #include "ptypes.h"
 #include "pasync.h"

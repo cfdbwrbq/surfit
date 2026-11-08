@@ -48,13 +48,13 @@ const char * warning = "Warning! ";
 const char * debug = "Debug: ";
 
 //! log verbosity; the live value, snapshotted by the installed sstuff state
-int loglevel = LOG_MESSAGE;
+thread_local int loglevel = LOG_MESSAGE;
 
 //! when set, a LOG_ERROR raises; the live value, snapshotted by the state
-int stop_on_error = 1;
+thread_local int stop_on_error = 1;
 
 //! text writers append or rewrite; the live value, snapshotted by the state
-bool fileio_append = false;
+thread_local bool fileio_append = false;
 
 /*! \brief the log resources of the active task
 

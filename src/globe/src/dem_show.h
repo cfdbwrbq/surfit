@@ -29,7 +29,7 @@ class d_dem;
     \var draw_dem
     \brief flag for dems drawing
 */
-extern GLOBE_EXPORT int draw_dem;
+extern GLOBE_EXPORT thread_local int draw_dem;
 
 #ifdef HAVE_GL_WORKS
 

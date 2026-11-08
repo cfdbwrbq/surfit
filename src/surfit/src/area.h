@@ -116,7 +116,7 @@ public:
 };
 
 //! container of \ref d_area objects
-extern SURFIT_EXPORT
+extern SURFIT_EXPORT thread_local
 areas_container * surfit_areas;
 
 //! function for debug drawing

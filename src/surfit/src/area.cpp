@@ -139,7 +139,7 @@ void areas_container::push_back(d_area * elem)
 };
 
 //std::vector<d_area *>     * surfit_areas     = NULL;
-areas_container * surfit_areas = NULL;
+thread_local areas_container * surfit_areas = NULL;
 
 /*! \struct area_garbage
     \brief struct for deletion of \ref area pointers

@@ -266,7 +266,7 @@ struct surf_project_job : public job
 	extvec * coeff;
 };
 
-surf_project_job surf_project_jobs[MAX_CPU];
+thread_local surf_project_job surf_project_jobs[MAX_CPU];
 #endif
 
 d_surf * _surf_project(const d_surf * srf, d_grid * grd) 

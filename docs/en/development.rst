@@ -113,7 +113,7 @@ Testing
    * - ``python3 src/pysurfit/tests/test_strict.py``
      - opt-in strict mode turns an empty area match into a ValueError
    * - ``python3 src/pysurfit/tests/test_serial.py``
-     - serial mode forces the internal pool to one worker and restores it
+     - serial mode forces this task's pool to one worker and restores it
    * - ``python3 ci/selfcheck.py``
      - skills have valid frontmatter and local links, the docs trees are in
        step, and the public Python surface imports
@@ -125,6 +125,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_context.py``
      - each Session owns its data manager; clear_data in one does not touch the
        other, and grid_auto uses the task's own manager
+   * - ``python3 src/pysurfit/tests/test_threadlocal_state.py``
+     - two real solves in two threads give the solo hashes, overlap in time,
+       and keep their DEMs; a task released by one thread is safe in another
    * - ``python3 src/pysurfit/tests/test_weights.py``
      - per-point weights change the cell average; a zero weight drops a point
        and a short vector is rejected
@@ -260,11 +263,19 @@ residual.
 Known issues
 ------------
 
-* **One active state.** A session installs its state before each call, which
-  is what lets two tasks share a process; but the install itself is not
-  protected, so two sessions cannot be driven from two threads at once.
-  Thread-local storage would not fix it either - the solver's own worker
-  threads read the same globals.
+* **Per-thread library state is not freed at thread exit.** The globals and the
+  installed task are thread-local, so every thread that uses a Session gets its
+  own library state (the state module-level commands run on).  A worker thread
+  that exits leaves that small state behind; a thread pool therefore costs one
+  state per thread, not one per task.
+* **Module-level commands belong to their thread.** ``surfit.area(...)`` and the
+  other module functions use the calling thread's library state, so two threads
+  calling them at the same time still share nothing but the process.  Use a
+  Session in each thread for parallel work.
+* **A task released by another thread loses that thread's globals.** Releasing
+  clears the released task out of every thread's active slot, and the next
+  Session call in that thread installs its own state; a module-level command
+  called before that would still see the freed task's globals.
 * **The plugin is linked whole.** ``libsurfit_io`` should be built with hidden
   visibility and export only its public API, instead of relying on the helper
   names not colliding.

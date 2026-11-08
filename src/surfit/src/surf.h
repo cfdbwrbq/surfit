@@ -269,7 +269,7 @@ public:
 };
 
 //! container of \ref d_surf objects
-extern SURFIT_EXPORT surfs_container * surfit_surfs;
+extern SURFIT_EXPORT thread_local surfs_container * surfit_surfs;
 
 
 }; // namespace surfit;

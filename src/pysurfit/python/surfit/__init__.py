@@ -51,12 +51,6 @@ _STRICT_RULES = frozenset((
 ))
 
 
-#: Session calls switch the engine's globals, so only one of them may be in
-#: flight at a time.  The lock is process-wide and re-entrant: a method may
-#: call another Session method without deadlocking.
-_STATE_LOCK = threading.RLock()
-
-
 def defined_mask(values_array):
     """Boolean mask that is True where `values_array` holds a defined number."""
     return ~np.isclose(values_array, UNDEF_VALUE, rtol=_DEFAULT_RTOL)
@@ -64,11 +58,11 @@ def defined_mask(values_array):
 
 @contextlib.contextmanager
 def serial_threads():
-    """Temporarily force the engine's internal pool to one worker.
+    """Temporarily force the current task's worker pool to one worker.
 
-    This is the short-term, process-wide safety mode: it prevents two solves
-    from sharing ``slaves``/``jobs`` while the real per-session sstuff context
-    is still being built.  The previous pool size is restored on exit.
+    The pool belongs to the installed task, so this only limits the task this
+    thread is working on; other tasks in other threads keep their own pool.
+    The previous size is restored on exit.
     """
     previous = get_threads()
     init_threads(1)
@@ -306,11 +300,12 @@ class Session:
     the same name.  The module-level functions keep using the library's own
     container, which is where a DEM loaded outside a Session lives.
 
-    Only one state is active at a time.  Interleaving is fine, and so are two
-    Sessions in two threads: every call holds a process-wide lock across the
-    state switch and the command, so the calls are serialized rather than
-    interleaved.  The solve releases the GIL while it computes, but another
-    Session's call waits for the lock until it finishes.
+    The engine's globals are thread-local, so every call installs this task in
+    the calling thread only.  Two Sessions in two threads therefore run at the
+    same time instead of serializing, and each keeps its own data, settings,
+    DEMs, logs and worker pool.  Calls on the same Session are still serialized
+    by a per-session re-entrant lock, because the task's state is shared while
+    one thread uses it.
     """
 
     def __init__(self, map_name="map", tol=None, metadata=None, strict=False,
@@ -319,13 +314,21 @@ class Session:
         self._metadata = dict(metadata or {})
         self._strict = bool(strict)
         self._serial = bool(serial)
-        with _STATE_LOCK:
+        # One re-entrant lock per task: two calls on the same Session must not
+        # use its state at the same time.  Calls on different Sessions do not
+        # need to exclude each other any more -- the engine's globals are
+        # thread-local.
+        self._lock = threading.RLock()
+        with self._lock:
             self._state = _core.state_create()
             self._globe = _core.globe_state_create()
             self._activate()
             set_map_name(map_name)
             if tol is not None:
                 set_tol(tol)
+            # Store the settings into the task now, so it can be installed in
+            # another thread without losing them.
+            _core.state_store()
 
     @property
     def metadata(self):
@@ -358,9 +361,10 @@ class Session:
             _core.globe_state_install(globe)
 
     def _call(self, target, *args, **kwargs):
-        with _STATE_LOCK:
+        with self._lock:
             self._activate()
             result = target(*args, **kwargs)
+            _core.state_store()
         if (self._strict and getattr(target, "__name__", "") in _STRICT_RULES
                 and not result):
             raise ValueError("%s matched no data" % target.__name__)
@@ -373,24 +377,29 @@ class Session:
         DEM but does not own it, so the two orders do not crash, while freeing
         the DEMs first would leave the rules pointing at freed rasters.
         """
-        state = getattr(self, "_state", 0)
-        if state:
-            _core.state_release(state)
-            self._state = 0
-        globe = getattr(self, "_globe", 0)
-        if globe:
-            _core.globe_state_release(globe)
-            self._globe = 0
+        lock = getattr(self, "_lock", None)
+        if lock is None:
+            return
+        with lock:
+            state = getattr(self, "_state", 0)
+            if state:
+                _core.state_release(state)
+                self._state = 0
+            globe = getattr(self, "_globe", 0)
+            if globe:
+                _core.globe_state_release(globe)
+                self._globe = 0
 
     def __enter__(self):
-        with _STATE_LOCK:
+        with self._lock:
             self._activate()
         return self
 
     def __exit__(self, *exc_info):
-        with _STATE_LOCK:
+        with self._lock:
             self._activate()
             clear_data()
+            _core.state_store()
         return False
 
     def __del__(self):
@@ -465,9 +474,9 @@ class Session:
     def solve(self):
         """Runs the gridding algorithm.
 
-        ``Session(serial=True)`` forces the internal pool to one worker for
-        this solve and restores the previous size afterwards.  This is a
-        temporary safety mode, not per-session sstuff state.
+        ``Session(serial=True)`` forces this task's internal pool to one worker
+        for the solve and restores the previous size afterwards.  The pool is
+        per task, so other Sessions are unaffected.
         """
         if not self._serial:
             surfit()
@@ -568,14 +577,18 @@ def _reexport_commands():
 def _activating(function):
     """Wraps a Session method so it installs the task's state first.
 
-    The whole activate-and-call pair is under the state lock: another thread
-    must not switch the globals between the two steps.
+    The whole activate-and-call pair is under the task's lock: another call on
+    the same Session must not use its state between the two steps.  Other
+    Sessions in other threads are independent, because the engine's globals
+    are thread-local.
     """
     @functools.wraps(function)
     def wrapper(self, *args, **kwargs):
-        with _STATE_LOCK:
+        with self._lock:
             self._activate()
-            return function(self, *args, **kwargs)
+            result = function(self, *args, **kwargs)
+            _core.state_store()
+            return result
     return wrapper
 
 

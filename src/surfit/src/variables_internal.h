@@ -35,7 +35,7 @@ namespace surfit {
 
 	//! contains number of iteration made by penalty algorithm
 	SURFIT_EXPORT
-	extern size_t penalty_iter_counter;
+	extern thread_local size_t penalty_iter_counter;
 
 };
 

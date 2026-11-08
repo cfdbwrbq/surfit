@@ -243,7 +243,7 @@ void masks_container::push_back(d_mask * elem)
 	data->push_back(elem);
 };
 
-masks_container * surfit_masks = NULL;
+thread_local masks_container * surfit_masks = NULL;
 
 /*! \struct mask_garbage
     \brief struct for deletion of \ref mask pointers

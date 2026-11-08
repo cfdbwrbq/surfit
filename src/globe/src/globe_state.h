@@ -38,10 +38,11 @@ class dems_container;
 	with a dangling pointer.  \ref globe_state_origin() owns the library's
 	container instead and is never freed by \ref globe_state_release().
 
-	Because the state is copied through process globals, install and release are
-	as serialized as the engine's own state_install()/state_release(): a host
-	with several threads must hold the same lock around the install-and-call
-	pair that it holds for the engine's state.
+	The container pointer and the display flag are thread_local, together with
+	the installed state, so each thread installs the task it is working on and
+	two tasks can be used from two threads at the same time.  Releasing a state
+	clears it out of every thread that still had it installed, so the next call
+	in that thread starts from the library's own container again.
 */
 struct globe_state;
 

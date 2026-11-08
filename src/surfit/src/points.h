@@ -196,7 +196,7 @@ public:
 };
 
 //! container of \ref d_points objects
-extern SURFIT_EXPORT pnts_container * surfit_pnts;
+extern SURFIT_EXPORT thread_local pnts_container * surfit_pnts;
 
 /*! \class sub_points
     \brief subset of points for some cell

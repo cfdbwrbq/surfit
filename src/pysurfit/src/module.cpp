@@ -320,6 +320,8 @@ PYBIND11_MODULE(_surfit, m) {
 		surfit::state_release(
 			reinterpret_cast<surfit::surfit_state *>(handle));
 	}, py::arg("handle"), "frees a state and everything it holds");
+	m.def("state_store", &surfit::state_store,
+	      "writes this thread's globals back into the installed state");
 
 	// The core reports progress and diagnostics through writelog() and
 	// log_printf(); an observer can turn that into a progress bar.
@@ -1584,4 +1586,10 @@ PYBIND11_MODULE(_surfit, m) {
 	}, py::arg("path"), py::arg("name") = py::none(),
 	   py::arg("minz") = 0, py::arg("maxz") = 0, py::arg("start_x") = 0,
 	   py::arg("start_y") = 0, py::arg("step_x") = 1, py::arg("step_y") = 1);
+
+	// The engine's globals are thread_local.  Capture the library defaults here,
+	// in the thread the library was initialised in and after every manager has
+	// registered itself, so a task created in another thread inherits the same
+	// settings and the same file-format support.
+	surfit::state_init_defaults();
 }

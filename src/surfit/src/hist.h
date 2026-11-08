@@ -126,7 +126,7 @@ public:
 };
 
 //! container of \ref d_hist objects
-extern SURFIT_EXPORT hists_container * surfit_hists;
+extern SURFIT_EXPORT thread_local hists_container * surfit_hists;
 
 }; // namespace surfit;
 

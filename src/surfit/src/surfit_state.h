@@ -39,6 +39,7 @@ class d_grid;
 class bitvec;
 class functional;
 class data_manager;
+struct sstuff_state;
 
 /*! \file
     \brief one task's state
@@ -74,6 +75,9 @@ struct SURFIT_EXPORT surfit_state {
 	//! per-task manager list; borrowed managers are shared
 	data_manager * data;
 	bool owns_data;
+
+	//! per-task sstuff context: worker pool, log, file search, RNG
+	sstuff_state * sstuff;
 
 	//! the target grid
 	d_grid * grid;

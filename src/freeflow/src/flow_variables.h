@@ -26,7 +26,14 @@ namespace surfit {
 
 #define FREEFLOW_VERSION "3.0"
 
-//! inits libfreeflow global variables
+/*! registers libfreeflow with the process-wide data manager, once
+ *
+ *	Freeflow has no per-task plugin state: the flow rules are ordinary
+ *	functionals in the active task's list (surfit_state::functionals), and the
+ *	manager registered here is a stateless dispatcher over that list.  The
+ *	process-wide data_manager owns and frees the manager, so there is no
+ *	global pointer to a plugin singleton.
+ */
 FLOW_EXPORT
 void freeflow_init_variables();
 

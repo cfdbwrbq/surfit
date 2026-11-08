@@ -198,10 +198,16 @@ public:
 	virtual void push_back(d_dem * elem);
 };
 
-//! storage for dems
+/*! storage for dems: the container of the installed globe_state
+ *
+ *	A host that keeps several tasks alive should use globe_state.h instead of
+ *	this pointer: the state carries the container together with the display
+ *	flag and releases both in the right order.
+ */
 extern GLOBE_EXPORT dems_container * globe_dems;
 
-//! creates an empty DEM container for one task; the caller owns it
+//! creates an empty DEM container; the caller owns it
+//! (globe_state_create() in globe_state.h is the per-task version)
 GLOBE_EXPORT dems_container * globe_dems_create();
 
 //! makes a container the one the DEM commands work on

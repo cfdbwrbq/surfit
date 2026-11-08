@@ -122,6 +122,12 @@ run sessions "$PYTHON" "$TESTS/test_sessions.py"
 step "per-session managers"
 run context "$PYTHON" "$TESTS/test_context.py"
 
+step "per-task sstuff context"
+run sstuff-state "$PYTHON" "$TESTS/test_sstuff_state.py"
+
+step "per-task plugin context"
+run plugin-state "$PYTHON" "$TESTS/test_plugin_state.py"
+
 step "serial sstuff pool mode"
 run serial "$PYTHON" "$TESTS/test_serial.py"
 

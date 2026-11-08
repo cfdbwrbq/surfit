@@ -118,6 +118,11 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 ci/selfcheck.py``
      - у skills валидный frontmatter и локальные ссылки, деревья доков
        синхронны, публичный Python API импортируется
+   * - ``python3 src/pysurfit/tests/test_sstuff_state.py``
+     - worker pool, лог, поиск файлов, режим datafile и RNG принадлежат задаче
+   * - ``python3 src/pysurfit/tests/test_plugin_state.py``
+     - состояние globe/freeflow принадлежит задаче; две Session могут держать
+       разные DEM под одним именем без смешивания
    * - ``python3 src/pysurfit/tests/test_context.py``
      - у каждой Session свой data manager; clear_data в одной не трогает
        другую, а grid_auto использует менеджер своей задачи

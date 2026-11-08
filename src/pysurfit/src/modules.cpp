@@ -38,6 +38,7 @@
 
 // globe: the digital elevation model
 #include "dem.h"
+#include "globe_state.h"
 #include "globe.h"
 #include "globe_variables.h"
 #include "dem_tcl.h"
@@ -339,6 +340,17 @@ void bind_freeflow(py::module_ & m) {
 	m.def("globe_dems_create", []() {
 		return reinterpret_cast<std::uintptr_t>(surfit::globe_dems_create());
 	}, "a new empty DEM container, as a handle");
+	m.def("globe_state_create", []() {
+		return reinterpret_cast<std::uintptr_t>(surfit::globe_state_create());
+	}, "a new per-task globe state, as a handle");
+	m.def("globe_state_install", [](std::uintptr_t handle) {
+		surfit::globe_state_install(
+			reinterpret_cast<surfit::globe_state *>(handle));
+	}, py::arg("handle"), "makes that globe state the installed one");
+	m.def("globe_state_release", [](std::uintptr_t handle) {
+		surfit::globe_state_release(
+			reinterpret_cast<surfit::globe_state *>(handle));
+	}, py::arg("handle"), "frees a per-task globe state and its DEMs");
 	m.def("globe_dems_install", [](std::uintptr_t handle) {
 		surfit::globe_dems_install(
 			reinterpret_cast<surfit::dems_container *>(handle));

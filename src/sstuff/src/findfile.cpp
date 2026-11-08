@@ -21,6 +21,7 @@
 #include "findfile.h"
 #include "fileio.h"
 #include "interp.h"
+#include "sstuff_state_impl.h"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <io.h>
@@ -33,164 +34,150 @@
 
 namespace surfit {
 
-char * find_pattern = NULL;
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-char find_res[_MAX_PATH];
-#else
-char find_res[512];
-#endif
-int path_pos = 0;
+/*! \brief the active task's file-search cursor
 
-const char * make_find_res(const char * str) 
+    find_first()/find_next()/find_close() used to keep the pattern, the result
+    buffer, the platform directory handle and the current entry in process
+    globals, so one task's file load could rewind another task's iteration.
+    They live in the installed sstuff_state now; the returned path points into
+    that state's buffer, exactly as it pointed into the old global one.
+*/
+static sstuff_state * find_state() {
+	return sstuff_state_active();
+};
+
+const char * make_find_res(const char * str)
 {
-	strncpy(find_res+path_pos, str, strlen(str));
-	find_res[path_pos + strlen(str)] = '\0';
-	return find_res;
+	sstuff_state * state = find_state();
+	strncpy(state->find_res + state->path_pos, str, strlen(str));
+	state->find_res[state->path_pos + strlen(str)] = '\0';
+	return state->find_res;
 };
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
-static _finddata_t ff;
-long file_handle = -1;
-
 const char * find_first(const char * pattern)
 {
-	file_handle = _findfirst(pattern, &ff);
-	if (file_handle == -1) {
+	sstuff_state * state = find_state();
+
+	state->file_handle = _findfirst(pattern, &state->ff);
+	if (state->file_handle == -1) {
 		writelog(LOG_ERROR,"%s",strerror(errno));
 		return NULL;
 	}
-	find_pattern = strdup(pattern);
+	state->find_pattern = strdup(pattern);
 
 	int path_pos1 = 0;
-	if ( strrchr(find_pattern+path_pos1, '/') != NULL )
-		path_pos1 = strrchr(find_pattern+path_pos1, '/') - find_pattern + 1;
-	
+	if ( strrchr(state->find_pattern+path_pos1, '/') != NULL )
+		path_pos1 = strrchr(state->find_pattern+path_pos1, '/') - state->find_pattern + 1;
+
 	int path_pos2 = 0;
-	if ( strrchr(find_pattern+path_pos2, '\\') != NULL )
-		path_pos2 = strrchr(find_pattern+path_pos2, '\\') - find_pattern + 1;
+	if ( strrchr(state->find_pattern+path_pos2, '\\') != NULL )
+		path_pos2 = strrchr(state->find_pattern+path_pos2, '\\') - state->find_pattern + 1;
 
-	path_pos = MAX(path_pos1, path_pos2);
-	strncpy(find_res, find_pattern, path_pos);
+	state->path_pos = MAX(path_pos1, path_pos2);
+	strncpy(state->find_res, state->find_pattern, state->path_pos);
 
-	if (ff.attrib &= _A_SUBDIR)
+	if (state->ff.attrib &= _A_SUBDIR)
 		return find_next();
-	return make_find_res(ff.name);
+	return make_find_res(state->ff.name);
 };
 
 const char * find_next()
 {
-	int res = _findnext(file_handle, &ff);
+	sstuff_state * state = find_state();
+	if (state->file_handle == -1)
+		return NULL;
+
+	int res = _findnext(state->file_handle, &state->ff);
 	if (res == 0) {
-		if (ff.attrib &= _A_SUBDIR)
+		if (state->ff.attrib &= _A_SUBDIR)
 			return find_next();
-		return make_find_res(ff.name);
+		return make_find_res(state->ff.name);
 	}
 	return NULL;
 };
 
 void find_close()
 {
-	free(find_pattern);
-	_findclose(file_handle);
+	sstuff_state * state = find_state();
+	free(state->find_pattern);
+	state->find_pattern = NULL;
+	if (state->file_handle != -1) {
+		_findclose(state->file_handle);
+		state->file_handle = -1;
+	}
 };
 
 #else
 
 bool wildcmp(const char *wild, const char *string) {
 	return StringMatch( wild, string);
-	/*
-	// Written by Jack Handy - jakkhandy@hotmail.com
-	const char *cp = NULL, *mp = NULL;
-	
-	while ((*string) && (*wild != '*')) {
-		if ((*wild != *string) && (*wild != '?')) {
-			return 0;
-		}
-		wild++;
-		string++;
-	}
-	
-	while (*string) {
-		if (*wild == '*') {
-			if (!*++wild) {
-				return 1;
-			}
-			mp = wild;
-			cp = string+1;
-		} else if ((*wild == *string) || (*wild == '?')) {
-			wild++;
-			string++;
-		} else {
-			wild = mp;
-			string = cp++;
-		}
-	}
-	
-	while (*wild == '*') {
-		wild++;
-	}
-	return !*wild;
-	*/
 };
-
-DIR *dp = NULL;
-struct dirent *entry = NULL;
 
 const char * find_first(const char * pattern)
 {
-	find_pattern = strdup(pattern);
+	sstuff_state * state = find_state();
+
+	state->find_pattern = strdup(pattern);
 
 	int path_pos1 = 0;
-	if ( strrchr(find_pattern+path_pos1, '/') != NULL )
-		path_pos1 = strrchr(find_pattern+path_pos1, '/') - find_pattern + 1;
-	
-	int path_pos2 = 0;
-	if ( strrchr(find_pattern+path_pos2, '\\') != NULL )
-		path_pos2 = strrchr(find_pattern+path_pos2, '\\') - find_pattern + 1;
+	if ( strrchr(state->find_pattern+path_pos1, '/') != NULL )
+		path_pos1 = strrchr(state->find_pattern+path_pos1, '/') - state->find_pattern + 1;
 
-	path_pos = MAX(path_pos1, path_pos2);
-	if (path_pos != 0) {
-		strncpy(find_res, find_pattern, path_pos);
-		find_res[path_pos] = '\0';
+	int path_pos2 = 0;
+	if ( strrchr(state->find_pattern+path_pos2, '\\') != NULL )
+		path_pos2 = strrchr(state->find_pattern+path_pos2, '\\') - state->find_pattern + 1;
+
+	state->path_pos = MAX(path_pos1, path_pos2);
+	if (state->path_pos != 0) {
+		strncpy(state->find_res, state->find_pattern, state->path_pos);
+		state->find_res[state->path_pos] = '\0';
 	} else {
-		find_res[0]='.';
-		find_res[1]='\0';
+		state->find_res[0]='.';
+		state->find_res[1]='\0';
 	}
 
-	if ((dp = opendir(find_res)) == NULL)
+	if ((state->dp = opendir(state->find_res)) == NULL)
 	{
-		free(find_pattern);
-		find_pattern = NULL;
+		free(state->find_pattern);
+		state->find_pattern = NULL;
 		return NULL;
 	}
 
 	return find_next();
 };
 
-const char * find_next() 
+const char * find_next()
 {
-	entry = readdir(dp);
-	if (entry == NULL)
+	sstuff_state * state = find_state();
+	if (state->dp == NULL)
+		return NULL;
+
+	state->entry = readdir(state->dp);
+	if (state->entry == NULL)
 		return NULL;
 	else {
-		const char * name = make_find_res(entry->d_name);
-		if ( wildcmp(find_pattern, name) ) {
+		const char * name = make_find_res(state->entry->d_name);
+		if ( wildcmp(state->find_pattern, name) ) {
 			return name;
 		} else
 			return find_next();
 	}
 };
 
-void find_close() 
+void find_close()
 {
-	closedir(dp);
-	free(find_pattern);
-	find_pattern = NULL;
+	sstuff_state * state = find_state();
+	if (state->dp) {
+		closedir(state->dp);
+		state->dp = NULL;
+	}
+	state->entry = NULL;
+	free(state->find_pattern);
+	state->find_pattern = NULL;
 };
 
 #endif
 
 }; // namespace surfit
-
-

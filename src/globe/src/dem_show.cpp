@@ -45,7 +45,8 @@
 
 namespace surfit {
 
-int draw_dem = 1;
+// draw_dem is defined in globe_state.cpp: it is the installed globe_state's
+// display flag, not a per-display constant.
 
 void _dem_show(d_dem * fnc, int surf_draw, const char * filename) {
 

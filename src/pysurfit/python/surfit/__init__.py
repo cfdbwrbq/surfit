@@ -321,7 +321,7 @@ class Session:
         self._serial = bool(serial)
         with _STATE_LOCK:
             self._state = _core.state_create()
-            self._dems = _core.globe_dems_create()
+            self._globe = _core.globe_state_create()
             self._activate()
             set_map_name(map_name)
             if tol is not None:
@@ -353,9 +353,9 @@ class Session:
         state = getattr(self, "_state", 0)
         if state:
             _core.state_install(state)
-        dems = getattr(self, "_dems", 0)
-        if dems:
-            _core.globe_dems_install(dems)
+        globe = getattr(self, "_globe", 0)
+        if globe:
+            _core.globe_state_install(globe)
 
     def _call(self, target, *args, **kwargs):
         with _STATE_LOCK:
@@ -377,10 +377,10 @@ class Session:
         if state:
             _core.state_release(state)
             self._state = 0
-        dems = getattr(self, "_dems", 0)
-        if dems:
-            _core.globe_dems_release(dems)
-            self._dems = 0
+        globe = getattr(self, "_globe", 0)
+        if globe:
+            _core.globe_state_release(globe)
+            self._globe = 0
 
     def __enter__(self):
         with _STATE_LOCK:

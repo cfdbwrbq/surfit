@@ -29,6 +29,7 @@
 #include <errno.h>
 
 #include "fileio.h"
+#include "sstuff_state_impl.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -46,42 +47,36 @@ const char * error = "Error! ";
 const char * warning = "Warning! ";
 const char * debug = "Debug: ";
 
-FILE * logfile = NULL;
-char * logfilename = NULL;
+//! log verbosity; the live value, snapshotted by the installed sstuff state
 int loglevel = LOG_MESSAGE;
+
+//! when set, a LOG_ERROR raises; the live value, snapshotted by the state
 int stop_on_error = 1;
+
+//! text writers append or rewrite; the live value, snapshotted by the state
 bool fileio_append = false;
 
-/*! \struct fileio_garbage
-    \brief struct for log-file-around pointers deletions
+/*! \brief the log resources of the active task
+
+    logfile, logfilename and the observer used to be process globals, so the
+    last log_open() won and concurrent tasks interleaved into one file.  They
+    are per-task now: the active sstuff_state owns them.  The logfile is not
+    closed when a state is swapped out, so switching back resumes the same file.
+    The origin's resources are closed by sstuff_state's exit cleanup.
 */
-struct fileio_garbage {
-	//! destructor
-	~fileio_garbage() {
-		free(logfilename);
-		if (logfile)
-			fclose(logfile);
-#ifdef _MSC_VER
-#ifdef DEBUG
-		_CrtDumpMemoryLeaks();
-#endif
-#endif
-	};
+static sstuff_state * fileio_state() {
+	return sstuff_state_active();
 };
 
-fileio_garbage garb2;
-
-//! Observer installed by set_log_hook(); NULL when nobody is listening.
-static log_hook_type surfit_log_hook = NULL;
-
 void set_log_hook(log_hook_type hook) {
-	surfit_log_hook = hook;
+	fileio_state()->log_hook = hook;
 };
 
 void log_printf(const char *tmplt, ...) 
 {
 	if (loglevel == LOG_SILENT)
 		return;
+	sstuff_state * state = fileio_state();
 	va_list ap;
 	va_start (ap, tmplt);
 
@@ -99,13 +94,13 @@ void log_printf(const char *tmplt, ...)
 	fputs(buf, stdout);
 	fflush(stdout);
 
-	if (surfit_log_hook != NULL)
-		surfit_log_hook(LOG_MESSAGE, buf);
+	if (state->log_hook != NULL)
+		state->log_hook(LOG_MESSAGE, buf);
 
 	// logfile output
-	if ( (logfile) && (ferror(logfile) == 0) ) {
-		fputs(buf, logfile);
-		fflush(logfile);
+	if ( (state->logfile) && (ferror(state->logfile) == 0) ) {
+		fputs(buf, state->logfile);
+		fflush(state->logfile);
 	}
 
 };
@@ -119,6 +114,8 @@ void writelog (int errlevel, const char *tmplt, ...)
 	// don't print messages with higher loglevel
 	if (errlevel > loglevel) 
 		return;
+
+	sstuff_state * state = fileio_state();
 
 	char enter = '\n';
 
@@ -169,16 +166,16 @@ void writelog (int errlevel, const char *tmplt, ...)
 	fputc(enter, stdout);
 	fflush(stdout);
 
-	if (surfit_log_hook != NULL)
-		surfit_log_hook(errlevel, buf);
+	if (state->log_hook != NULL)
+		state->log_hook(errlevel, buf);
 
 	// logfile output
-	if ( (logfile) && (ferror(logfile) == 0) ) {
-		fwrite(tmpbuf, 1, strlen(tmpbuf), logfile);
-		fputs(prefix, logfile);
-		fputs(buf, logfile);
-		fputc('\n', logfile);
-		fflush(logfile);
+	if ( (state->logfile) && (ferror(state->logfile) == 0) ) {
+		fwrite(tmpbuf, 1, strlen(tmpbuf), state->logfile);
+		fputs(prefix, state->logfile);
+		fputs(buf, state->logfile);
+		fputc('\n', state->logfile);
+		fflush(state->logfile);
 	}
 
 	if (stop_on_error == 1) {
@@ -196,6 +193,8 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	// don't print messages with higher loglevel
 	if (errlevel > loglevel) 
 		return;
+
+	sstuff_state * state = fileio_state();
 
 	struct tm * newtime;
 	time_t aclock;
@@ -243,15 +242,15 @@ void writelog2 (int errlevel, const char *tmplt, ...)
 	fputs(buf, stdout);
 	fflush(stdout);
 
-	if (surfit_log_hook != NULL)
-		surfit_log_hook(errlevel, buf);
+	if (state->log_hook != NULL)
+		state->log_hook(errlevel, buf);
 
 	// logfile output
-	if ( (logfile) && (ferror(logfile) == 0) ) {
-		fwrite(tmpbuf, 1, strlen(tmpbuf), logfile);
-		fputs(prefix, logfile);
-		fputs(buf, logfile);
-		fflush(logfile);
+	if ( (state->logfile) && (ferror(state->logfile) == 0) ) {
+		fwrite(tmpbuf, 1, strlen(tmpbuf), state->logfile);
+		fputs(prefix, state->logfile);
+		fputs(buf, state->logfile);
+		fflush(state->logfile);
 	}
 
 	if (stop_on_error == 1) {
@@ -282,24 +281,28 @@ int log_open(int level, const char * logname)
 {	
 	loglevel = level;
 
-	// close log if it already opened
-	if (logfile) {
-		fclose(logfile);
+	sstuff_state * state = fileio_state();
+
+	// close the task's previous log first; its name is owned by the state
+	if (state->logfile) {
+		fclose(state->logfile);
+		state->logfile = NULL;
 	};
+	free(state->logfilename);
 	
 	if (logname) {
-		logfilename = strdup(logname);
+		state->logfilename = strdup(logname);
 	} else {
-		logfilename = strdup("surfit.log");
+		state->logfilename = strdup("surfit.log");
 	}
 	
-	logfile = fopen(logfilename, "a");
+	state->logfile = fopen(state->logfilename, "a");
 	
-	if (!logfile) {
+	if (!state->logfile) {
 		perror("Log file open error!");
 		return 0;
 	}
-	int err = ferror(logfile);
+	int err = ferror(state->logfile);
 	if (err != 0) {
 		perror("Log file open error!");
 		return 0;
@@ -309,15 +312,16 @@ int log_open(int level, const char * logname)
 
 int log_clear() 
 {
-	if (!logfile) {
+	sstuff_state * state = fileio_state();
+	if (!state->logfile) {
 		perror("Log file not opened!");
 		return 0;
 	}
-	if (logfile) {
-		fclose(logfile);
-		logfile = fopen(logfilename, "w+");
+	if (state->logfile) {
+		fclose(state->logfile);
+		state->logfile = fopen(state->logfilename, "w+");
 	}
-	return (logfile != NULL);
+	return (state->logfile != NULL);
 };
 
 void putlog(const char * str) 

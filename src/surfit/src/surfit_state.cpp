@@ -40,6 +40,7 @@
 #include "variables_internal.h"
 
 #include "data_manager.h"
+#include "sstuff_state.h"
 
 #include <float.h>
 #include <stdlib.h>
@@ -108,6 +109,7 @@ surfit_state * state_origin() {
 		origin = new surfit_state();
 		globals_to_state(origin);
 		origin->owns_data = false;
+		origin->sstuff = sstuff_state_origin();
 		if (active_state == NULL)
 			active_state = origin;
 	}
@@ -159,6 +161,7 @@ surfit_state * state_create() {
 	// its own manager list but borrows the manager objects.
 	state->data = new data_manager(false);
 	state->owns_data = true;
+	state->sstuff = sstuff_state_create();
 	if (origin->data) {
 		for (size_t i = 0; i < origin->data->get_managers_count(); i++)
 			state->data->add_manager(const_cast<manager *>(origin->data->get_manager(i)));
@@ -195,6 +198,7 @@ void state_install(surfit_state * state) {
 	// be read back out before it is replaced.
 	globals_to_state(active_state);
 	state_to_globals(state);
+	sstuff_state_install(state->sstuff);
 
 	active_state = state;
 }
@@ -242,6 +246,11 @@ void state_release(surfit_state * state) {
 	if (state->data && state->owns_data)
 		delete state->data;
 	state->data = NULL;
+
+	if (state->sstuff) {
+		sstuff_state_release(state->sstuff);
+		state->sstuff = NULL;
+	}
 
 	if (state->functionals) {
 		size_t i;

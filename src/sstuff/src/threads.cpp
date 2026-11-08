@@ -19,6 +19,7 @@
 
 #include "sstuff_ie.h"
 #include "threads.h"
+#include "sstuff_state_impl.h"
 
 #include <vector>
 
@@ -28,73 +29,97 @@ void job::release() {
 	delete this; 
 };
 
+//! live pool size; the installed state carries the matching snapshot
 size_t cpu = 1;
 
-std::vector<slavethread *> slaves;
-std::vector<job *> jobs;
+namespace surfit {
 
-struct garbage_slaves
-{
-	garbage_slaves() {};
-	~garbage_slaves() {
-		size_t i;
-		//
-		// Slaves are constructed as thread(false), so the pool owns them: a
-		// ptypes thread must be joined and deleted by its owner.  Autofree
-		// (thread(true)) cannot be used here -- a self-deleting thread trips
-		// ~thread()'s "Attempt to free a working thread" fatal, because
-		// nothing has cleared its handle yet, and joining it afterwards is a
-		// use-after-free.
-		//
-		for (i = 0; i < slaves.size(); i++) {
-			slavethread * s = slaves[i];
-			slaves[i] = NULL;
-			if (s != NULL) {
-				s->postquit();
-				s->waitfor();
-			}
-			delete s;
+/*! \brief resizes the worker pool of \a state to \a cnt slots
+
+    One slot belongs to the calling thread (slot 0); the other cnt-1 are idle
+    slaves.  The arithmetic of the historical sstuff_init_threads() is kept,
+    including leaving a couple of idle slaves behind when shrinking, because
+    that is what the engine has always done and the slots are harmless.
+*/
+static void pool_resize(sstuff_state * state, size_t cnt) {
+	size_t ssize = state->slaves.size();
+	if (ssize == cnt) {
+		state->jobs.resize(cnt);
+		return;
+	}
+	size_t i;
+	if (ssize > cnt) {
+		for (i = 0; i < ssize - cnt - 1; i++) {
+			slavethread * slave = *(state->slaves.end()-1);
+			slave->postquit();
+			slave->waitfor();
+			state->slaves.erase(state->slaves.end()-1);
+			delete slave;
 		}
-		slaves.clear();
-		for (i = 0; i < jobs.size(); i++)
-			delete jobs[i];
-	};
-};
-garbage_slaves garb_slaves;
+	} else {
+		for (i = 0; i < cnt - ssize - 1; i++) {
+			slavethread * slave = new slavethread();
+			state->slaves.push_back(slave);
+			slave->start();
+		}
+	}
+	state->jobs.resize(cnt);
+	for (i = 0; i < cnt; i++)
+		state->jobs[i] = NULL;
+}
 
-#endif
+void sstuff_pool_ensure(sstuff_state * state) {
+	if (state == NULL)
+		return;
+	pool_resize(state, state->cpu);
+}
+
+void sstuff_pool_release(sstuff_state * state) {
+	if (state == NULL)
+		return;
+
+	// Slaves are constructed as thread(false), so the pool owns them: a ptypes
+	// thread must be joined and deleted by its owner.  Autofree (thread(true))
+	// cannot be used here -- a self-deleting thread trips ~thread()'s "Attempt
+	// to free a working thread" fatal, because nothing has cleared its handle
+	// yet, and joining it afterwards is a use-after-free.
+	size_t i;
+	for (i = 0; i < state->slaves.size(); i++) {
+		slavethread * s = state->slaves[i];
+		state->slaves[i] = NULL;
+		if (s != NULL) {
+			s->postquit();
+			s->waitfor();
+		}
+		delete s;
+	}
+	state->slaves.clear();
+
+	// The job objects belong to their callers (most are static arrays); the
+	// slots only ever hold a pointer until do_jobs() consumes it.
+	state->jobs.clear();
+}
+
+}; // namespace surfit
+
+#endif // HAVE_THREADS
 
 void sstuff_init_threads(size_t cnt) {
 #ifdef HAVE_THREADS
 
-	cpu = MIN(cnt, MAX_CPU);
+	surfit::sstuff_state * state = surfit::sstuff_state_active();
+
+	size_t value = MIN(cnt, MAX_CPU);
 
 #ifdef XXL
-	cpu = 1;
+	value = 1;
 #endif
 
-	size_t ssize = slaves.size();
-	if (ssize == cpu)
-		return;
-	size_t i;
-	if ((int)ssize > cpu-1) {
-		for (i = 0; i < ssize-cpu-1; i++) {
-			slavethread * slave = *(slaves.end()-1);
-			slave->postquit();
-			slave->waitfor();
-			slaves.erase(slaves.end()-1);
-			delete slave;
-		}
-	} else {
-		for (i = 0; i < cpu-ssize-1; i++) {
-			slavethread * slave = new slavethread();
-			slaves.push_back(slave);
-			slave->start();
-		}
-	}
-	jobs.resize(cpu);
-	for (i = 0; i < (size_t)cpu; i++)
-		jobs[i] = NULL;
+	// The global is the live value the engine reads through sstuff_get_threads();
+	// the state keeps the snapshot that install/release move in and out.
+	cpu = value;
+	state->cpu = value;
+	surfit::sstuff_pool_ensure(state);
 #endif //threads
 };
 
@@ -106,24 +131,23 @@ size_t sstuff_get_threads() {
 #endif
 };
 
-/*
-void finish_threads() {
-	if (master) {
-		master->postquit();
-		master->waitfor();
-	}
-	delete master; 
-	master = NULL;
-};
-*/
-
 #ifdef HAVE_THREADS
 void set_job(job * j, size_t pos) {
-	jobs[pos] = j;
+
+	surfit::sstuff_state * state = surfit::sstuff_state_active();
+	if (state == NULL || pos >= state->jobs.size())
+		return;
+	state->jobs[pos] = j;
 };
 
 void do_jobs() {
-	
+
+	surfit::sstuff_state * state = surfit::sstuff_state_active();
+	if (state == NULL || state->jobs.empty())
+		return;
+
+	std::vector<job *> & jobs = state->jobs;
+
 	size_t i;
 	unsigned added_slaves = 0;
 	for (i = 1; i < jobs.size(); i++) {
@@ -131,7 +155,7 @@ void do_jobs() {
 		if (j == NULL)
 			break;
 
-		slavethread * slave = slaves[i-1];
+		slavethread * slave = state->slaves[i-1];
 		slave->j = j;
 		jobs[i] = NULL;
 		slave->post_do_job();
@@ -144,7 +168,7 @@ void do_jobs() {
 		j->do_job();
 
 	for (i = 0; i < added_slaves; i++) {
-		slavethread * slave = slaves[i];
+		slavethread * slave = state->slaves[i];
 		slave->sem.wait();
 	}
 
@@ -187,5 +211,3 @@ inline void slavethread::post_do_job()
 	msgqueue::post(new jobmessage());
 }
 #endif // HAVE_THREADS
-
-

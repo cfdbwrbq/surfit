@@ -26,7 +26,14 @@ namespace surfit {
 
 #define GLOBE_VERSION "3.0"
 
-//! inits libglobe global variables
+/*! registers libglobe with the process-wide data manager, once
+ *
+ *	The DEM data itself is per task: a host creates a globe_state per task
+ *	(globe_state.h) and installs it before the task's calls.  The manager
+ *	registered here is a stateless dispatcher over the installed state, so its
+ *	registration is process-wide and the process-wide data_manager owns and
+ *	frees it; there is no global pointer to a plugin singleton.
+ */
 GLOBE_EXPORT
 void globe_init_variables();
 

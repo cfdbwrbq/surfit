@@ -117,6 +117,11 @@ Testing
    * - ``python3 ci/selfcheck.py``
      - skills have valid frontmatter and local links, the docs trees are in
        step, and the public Python surface imports
+   * - ``python3 src/pysurfit/tests/test_sstuff_state.py``
+     - worker pool, log, file search, datafile mode and RNG are per task
+   * - ``python3 src/pysurfit/tests/test_plugin_state.py``
+     - globe/freeflow state is per task; two Sessions may use different DEMs
+       under one name without mixing
    * - ``python3 src/pysurfit/tests/test_context.py``
      - each Session owns its data manager; clear_data in one does not touch the
        other, and grid_auto uses the task's own manager

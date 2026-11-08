@@ -19,56 +19,56 @@
 
 #include "flow_ie.h"
 
+#include <string.h>
+
 #include "fileio.h"
 
 #include "flow_variables.h"
 #include "flow_data_manager.h"
+#include "data_manager.h"
 #include "variables.h"
-#include "sort_alg.h"
-#include "surfit.h"
-#include "surfit_data.h"
-#include "functional.h"
-
-#include "free_elements.h"
 
 
 namespace surfit {
 
-freeflow_manager * flow_manager = NULL;
+/*! Whether the process already has the freeflow data manager.
+ *
+ *	The manager is a stateless dispatcher over the engine's globals: the flow
+ *	rules themselves are ordinary functionals in the active task's list, so
+ *	the plugin has no per-task data of its own and needs no per-task context.
+ *	Its registration is process-wide, and the process-wide data_manager owns
+ *	and frees the manager, just as it owns the core's own manager.  The old
+ *	flow_manager pointer was a second owner that could release it twice.
+ */
+static bool freeflow_manager_registered() {
+	if (surfit_data_manager == NULL)
+		return false;
 
-/*! \struct flow_garbage
-    \brief struct for deletion of pointers
-*/
-struct flow_garbage : public binman {
-	//! garbage sweeper
-	~flow_garbage();
-};
-
-flow_garbage::~flow_garbage() {
-
-	if (release_manager(flow_manager))
-		flow_manager = NULL;
-};
-
-flow_garbage flow_garb;
+	size_t i;
+	for (i = 0; i < surfit_data_manager->get_managers_count(); i++) {
+		const manager * man = surfit_data_manager->get_manager(i);
+		if (man != NULL && strcmp(man->getName(), "freeflow") == 0)
+			return true;
+	}
+	return false;
+}
 
 void freeflow_init_variables() {
 
-	if (flow_manager == NULL) {
-		
-		flow_manager = new freeflow_manager;
-		add_manager(flow_manager);
+	// Idempotent: the Tcl plugin, the Python module and an embedding may each
+	// call it, and only one freeflow manager may exist.
+	if (freeflow_manager_registered())
+		return;
+
+	add_manager(new freeflow_manager);
 
 #ifdef XXL
-		log_printf("loading module freeflow v%s (XXL build)\n", FREEFLOW_VERSION);
+	log_printf("loading module freeflow v%s (XXL build)\n", FREEFLOW_VERSION);
 #else
-		log_printf("loading module freeflow v%s\n", FREEFLOW_VERSION);
+	log_printf("loading module freeflow v%s\n", FREEFLOW_VERSION);
 #endif
-
-	}
 
 };
 
 
 }; // namespace surfit;
-

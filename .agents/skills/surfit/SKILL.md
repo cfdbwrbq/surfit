@@ -196,5 +196,17 @@ functional after them.
 5. For area rules, check the returned flags; an empty list means the name did
    not match and the rule is not in the engine.
 
+## Self-check
+
+Before calling a change done, run the project selfcheck.  It validates the
+skill frontmatter and local links, both documentation trees, and the public
+Python surface:
+
+```bash
+python3 ci/selfcheck.py
+```
+
+It is fast; `ci/check.sh --full` remains the final gate.
+
 This skill covers using the engine only; source build and release steps are
 outside its scope.

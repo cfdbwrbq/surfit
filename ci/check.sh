@@ -63,6 +63,9 @@ cmake --build "$BUILD" -j "$(nproc 2>/dev/null || echo 2)" > /dev/null
 SURFIT_BIN="$BUILD/bin"
 export SURFIT_BIN
 
+step "project selfcheck"
+run selfcheck "$PYTHON" "$HERE/ci/selfcheck.py"
+
 step "the 35 test scripts, Tcl and Python side by side"
 run tests "$PYTHON" "$TESTS/run_tcl_suite.py"
 

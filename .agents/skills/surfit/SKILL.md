@@ -44,6 +44,26 @@ the rules, but all data and rules must be created on that session.
   several surfaces.
 - `surf_extent(name)` returns the matching `min_x/max_x/min_y/max_y/step_x/step_y`.
 
+## Edge effects and halos
+
+The grid edge is not an ordinary part of the map:
+
+- cells near `min_x`/`max_x`/`min_y`/`max_y` have points on one side only; the
+  completer extrapolates from the interior, so edge values are less constrained
+  and can be biased;
+- do not compare a global RMSE dominated by edge cells with the error of the
+  interior; report the edge band separately or exclude it from a data-quality
+  claim;
+- in a tiled/out-of-core solve, overlap tiles by a **halo** and write only the
+  inner part.  Without a halo, the pieces are separate boundary-value problems
+  and the seams show as jumps or undefined nodes;
+- area and mask boundaries are also boundaries: the rule applies inside, the
+  outside is unconstrained/undefined unless `inside=0` or a complement mask is
+  used;
+- `save_geotiff` places nodes at cell centres; the raster edge is half a step
+  beyond the first/last node.  Do not shift the grid twice when comparing with
+  a GIS raster.
+
 ## Rules that are easy to get wrong
 
 ### Min/max and equality rules

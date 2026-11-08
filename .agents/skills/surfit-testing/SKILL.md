@@ -48,6 +48,9 @@ Before writing code, list:
 - every branch, early return and error;
 - boundary values: empty, single point, all undefined, zero weight, wrong length,
   duplicate cell, name that matches nothing;
+- edge effects: a grid whose data sits only in the middle, a tile with too small
+  a halo, and a seam between two tiles.  Assert that inner nodes are defined and
+  that the seam is not a step;
 - external effects: files, temp dirs, threads, global state, clock, network.
 
 ### 3. Write the smallest test that fails

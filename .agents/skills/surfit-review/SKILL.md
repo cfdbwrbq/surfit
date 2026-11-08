@@ -53,6 +53,9 @@ For every changed file, in this order:
 - Weights are positive; zero drops a point; all-zero means undefined.
 - `tol` is a solver step criterion, not an error bound.
 - A grid index must not be rounded in one place and floored in another.
+- Edge cells are extrapolation, not measurement.  Tiled output must copy only
+  the inner part of a haloed tile; a report or test that treats the edge band
+  as interior is misleading.
 
 ### 3. C++ ownership and pybind11 lifetime
 

@@ -34,8 +34,8 @@ root_doc = "index"
 
 # One of the two trees is built per invocation: sphinx-build -D language=ru ...
 
-version = "3.1"
-release = "3.1.1"
+version = "3.2"
+release = "3.2.0"
 
 try:
     import sphinx_nefertiti  # noqa: F401

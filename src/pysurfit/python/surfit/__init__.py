@@ -697,3 +697,5 @@ from surfit.crs import (  # noqa: E402
 from surfit.padding import crop_surface, pad_extent  # noqa: E402
 from surfit.resolution import resolution_report  # noqa: E402
 from surfit.smoothing import select_parameter  # noqa: E402
+from surfit.tiled import (  # noqa: E402
+    select_geometries, solve_tiled, tile_boxes)

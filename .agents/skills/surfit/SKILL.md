@@ -3,7 +3,8 @@ name: surfit
 description: >
   Use when writing or running a surfit gridding task: loading points, curves,
   contours, areas, surfaces or masks; defining rules; solving; reading the
-  resulting grid; or debugging an empty/no-op result. This is the usage skill,
+  resulting grid; validating it with spatial CV, variograms, support or
+  diagnostics; or debugging an empty/no-op result. This is the usage skill,
   not a build or release checklist.
 ---
 
@@ -29,9 +30,12 @@ task.solve()
 grid = task.values()                                  # (count_y, count_x)
 ```
 
-**Order matters:** `Session` resets the engine's process-wide state. Anything
-loaded before the constructor is gone. `grid()` may be called before or after
-the rules, but all data and rules must be created on that session.
+**Order matters:** a `Session` creates a task on the calling thread. Data
+loaded into the module-level state before the constructor is not part of that
+task. `grid()` may be called before or after the rules, but all data and rules
+must be created on that session.  Engine globals are thread-local, so Sessions
+in different threads can solve in parallel; calls on one Session are serialized
+by its own lock.
 
 ## Grid and result conventions
 
@@ -156,25 +160,93 @@ from surfit.diagnostics import robust_solve
 
 task.set_metadata(crs="EPSG:32637", x_units="m", y_units="m")
 task.save_metadata("result.meta.json")
-task.save_report("result.report.json", x, y, z, weights=sigma_inv)
-task.save_geotiff("result.tif", crs="EPSG:32637")  # GDAL optional
+task.save_report("result.report.json", x, y, z, weights=sigma_inv,
+                 sources=["wells.txt"])
+task.save_geotiff("result.tif")       # uses metadata crs; GDAL optional
 # strict=True turns an empty rule match into ValueError
-# Session(serial=True) is a temporary one-worker sstuff safety mode
+# Session(serial=True) forces one worker for this task's solve
 
-from surfit.tiled import solve_point_tiles
+from surfit.tiled import solve_point_tiles, solve_tiled
+# point-only out-of-core mosaic:
 # result = solve_point_tiles(x, y, z, extent, step,
 #     inner=256, halo=32, memmap_path="map.f64")
-# point-only out-of-core mosaic
+# generic tiled rules (curves, contours, areas):
+# result = solve_tiled(build_tile, extent, step,
+#     inner=64, halo=16, memmap_path="map.f64")
 ```
 
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a
 headless check, inspect `task.values()` and `defined_mask`, not the HTML.
 
+## Quality, validation and support
+
+These are diagnostics, not a covariance model.  They answer different
+questions; do not turn one number into "the uncertainty".
+
+```python
+# Spatial CV: callback gets only training indices and training weights.
+cv = surfit.cross_validate(
+    build, x, y, z, folds=5, mode="block", block=10.0)
+# cv["rmse"], cv["bias"], cv["fold_details"]
+
+# Block bootstrap: whole blocks, not i.i.d. points.
+labels = surfit.block_labels(x, y, block=10.0)
+stats = surfit.bootstrap_uncertainty(
+    build, len(x), replicates=100, seed=7, blocks=labels)
+# stats["sampling"] == "block"; stats is ensemble spread
+
+# Variogram: diagnostic and anisotropy hint, not kriging.
+exp = surfit.experimental_variogram(x, y, z, bins=16, direction=0)
+fit = surfit.fit_variogram(exp["lag"], exp["gamma"], model="spherical")
+direction = surfit.anisotropy(x, y, z, angles=(0, 45, 90, 135))
+
+# Per-node support: count, sum/negative weights, distances.
+attrs = task.quality_attributes(x, y, weights=sigma_inv)
+# attrs["count"], attrs["min_distance"], attrs["negative_weights"]
+
+# Typed point diagnostics and GeoJSON/CSV hand-off.
+doc = task.diagnostic_points(x, y, z, weights=sigma_inv)
+# codes: 0 used, 1 outlier, 2 undefined cell, 3 outside grid, 4 zero weight
+task.save_diagnostics("qc.geojson", x, y, z, weights=sigma_inv)
+
+# Provenance and source hashes in the report/sidecar.
+report = task.report(x, y, z, weights=sigma_inv, sources=["wells.txt"])
+# report["provenance"]["engine_version"], report["provenance"]["sources"]
+
+# Decluster dense clusters before rebuilding the task.
+reduced = surfit.decluster_points(
+    x, y, z, weights=sigma_inv, method="mean", block=10.0)
+# methods: mean, nearest, idw, min, max; raw points stay for residuals
+
+# Collar (solve larger, crop back) and support-based resolution.
+padded = surfit.pad_extent(extent, margin=20.0)
+values, extent = surfit.crop_surface(values, padded, original_extent)
+quality = surfit.resolution_report(extent, x=x, y=y, values=values)
+
+# Measure an impulse response you already have (not an automatic solve).
+psf = surfit.psf_report(values, extent, center=(x0, y0))
+# psf["half_width"], psf["sigma"]
+```
+
+`surfit.select_parameter(build, x, y, z, parameters, ...)` runs the same
+spatial CV for each candidate; the callback receives the candidate as its first
+argument.  It is an outer search, not a new solver.
+
+CRS helpers are optional and require `pyproj`:
+
+```python
+lon, lat = surfit.to_crs(x, y, "EPSG:4326", "EPSG:32637")
+bounds = surfit.transform_extent(extent, "EPSG:4326", "EPSG:32637")
+# transform_extent returns bounds only; rebuild the grid, do not assume
+# an affine grid survives reprojection
+```
+
 ## Files and examples
 
 - Example data: `examples/surfit/tests/data`.
 - Python examples: `examples/python`; each has a Tcl original in
-  `examples/surfit/tests` (except `trend_from_numpy`, `progress`, `viewer`).
+  `examples/surfit/tests` (except `trend_from_numpy`, `progress`, `viewer`,
+  `quality_workflow`, which is Python-only quality tooling).
 - The regression runner keeps the two front ends byte-identical:
   `src/pysurfit/tests/run_tcl_suite.py`.
 

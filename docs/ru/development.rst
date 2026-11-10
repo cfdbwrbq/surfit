@@ -105,8 +105,6 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_cross_validation_api.py``
      - фолды пространственной CV не пересекаются; блочные фолды сохраняют
        блоки; метрики готовы к JSON
-     - четыре вращающихся held-out фолда предсказывают каждую точку
-       поверхностью, которая её не видела; средний RMSE сверяется с размахом
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``

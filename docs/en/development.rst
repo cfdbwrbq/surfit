@@ -104,8 +104,6 @@ Testing
    * - ``python3 src/pysurfit/tests/test_cross_validation_api.py``
      - spatial CV folds do not overlap; block folds stay together; metrics are
        JSON-ready
-     - four rotating held-out folds predict every point from a surface that
-       did not see it; the mean RMSE is checked against the field span
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/units/source survive on the task and in the JSON sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``

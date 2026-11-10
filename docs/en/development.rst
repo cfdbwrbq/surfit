@@ -106,6 +106,10 @@ Testing
        JSON-ready
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/units/source survive on the task and in the JSON sidecar
+   * - ``python3 src/pysurfit/tests/test_diagnostic_geometry.py``
+     - typed point codes, GeoJSON/CSV output and Session wrappers
+   * - ``python3 src/pysurfit/tests/test_crs.py``
+     - optional pyproj point/extent helpers (SKIP without pyproj)
    * - ``python3 src/pysurfit/tests/test_variogram.py``
      - spherical fit, experimental/directional variogram and the anisotropy
        suggestion

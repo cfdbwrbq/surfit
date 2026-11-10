@@ -163,6 +163,23 @@ reduces rectangular blocks to one representative::
 points stay available for residuals; blocks with zero total weight are
 dropped.
 
+Typed point diagnostics
+-----------------------
+
+``task.diagnostic_points(x, y, z, weights=None)`` returns one record per
+sample with a code: 0 used, 1 outlier, 2 undefined cell, 3 outside the grid,
+4 zero weight.  It also reports ``residual``, ``predicted``, ``scale`` (local
+cell spacing divided by the sample count) and ``scaled_residual``::
+
+    document = task.diagnostic_points(x, y, z, weights=sigma_inv)
+    document["code_name"]
+    task.save_diagnostics("qc.geojson", x, y, z)
+    task.save_diagnostics("qc.csv", x, y, z)
+
+GeoJSON and CSV are the intended hand-off to a GIS or a review spreadsheet.
+Contour-label and fault-direction codes are not invented here; this layer
+classifies the point support it can actually see.
+
 Provenance metadata
 -------------------
 
@@ -278,6 +295,21 @@ nodes are cell centres, undefined nodes use the surfit nodata value, and the
 CRS is passed to ``osr.SpatialReference.SetFromUserInput``.  When ``crs`` is
 omitted, ``task.metadata["crs"]`` is used; the dataset also stores the engine
 version and metadata fields.
+
+CRS helpers
+-----------
+
+Reprojection is optional and uses ``pyproj``; the engine itself stays
+Cartesian.  ``to_crs`` transforms points, and ``transform_extent`` samples the
+edges and returns only new bounds — rebuild the grid at the target resolution
+rather than pretending an affine grid survived::
+
+    lon, lat = surfit.to_crs(x, y, "EPSG:4326", "EPSG:32637")
+    bounds = surfit.transform_extent(extent, "EPSG:4326", "EPSG:32637")
+
+``is_geographic_crs`` and ``require_projected`` catch degree units where
+anisotropy or distances would be meaningless.  These helpers raise a clear
+ImportError when pyproj is not installed.
 
 Strict rules
 ------------

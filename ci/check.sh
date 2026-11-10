@@ -96,6 +96,12 @@ run variogram "$PYTHON" "$TESTS/test_variogram.py"
 step "block bootstrap"
 run block-bootstrap "$PYTHON" "$TESTS/test_block_bootstrap.py"
 
+step "typed point diagnostics"
+run diagnostic-geometry "$PYTHON" "$TESTS/test_diagnostic_geometry.py"
+
+step "optional CRS helpers"
+run crs "$PYTHON" "$TESTS/test_crs.py"
+
 step "four-fold cross-validation"
 run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 

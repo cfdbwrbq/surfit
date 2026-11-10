@@ -157,6 +157,105 @@ def cell_attributes(values, extent, x, y, weights=None):
     }
 
 
+#: Diagnostic point classes used by :func:`diagnostic_points`.
+DIAGNOSTIC_CODES = {
+    0: "used",
+    1: "outlier",
+    2: "undefined_cell",
+    3: "outside_grid",
+    4: "zero_weight",
+}
+
+
+def diagnostic_points(values, extent, x, y, z, weights=None, threshold=3.5):
+    """Return point records with a typed diagnostic code.
+
+    Every input point gets ``code``: 0 used, 1 outlier, 2 undefined cell,
+    3 outside the grid, 4 zero weight.  ``residual`` and ``predicted`` are NaN
+    when the point cannot be evaluated.  ``scale`` is the local cell size
+    (grid diagonal divided by the square root of the sample count), so
+    ``scaled_residual`` compares a residual with the support in that cell.
+    """
+    values = np.asarray(values, dtype=float)
+    extent = _extent(extent)
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    z = np.asarray(z, dtype=float).ravel()
+    if not (x.size == y.size == z.size):
+        raise ValueError("x, y and z must have the same length")
+    if weights is None:
+        weights = np.ones(x.size, dtype=float)
+    else:
+        weights = np.asarray(weights, dtype=float).ravel()
+        if weights.size != x.size:
+            raise ValueError("weights must have one value per point")
+    columns = np.rint((x - extent["min_x"]) / extent["step_x"]).astype(int)
+    rows = np.rint((y - extent["min_y"]) / extent["step_y"]).astype(int)
+    inside = ((columns >= 0) & (columns < extent["count_x"]) &
+              (rows >= 0) & (rows < extent["count_y"]))
+    predicted = np.full(x.shape, np.nan)
+    predicted[inside] = values[rows[inside], columns[inside]]
+    defined = inside & _defined(predicted)
+    usable = defined & np.isfinite(z) & np.isfinite(weights) & (weights > 0)
+    residual = np.full(x.shape, np.nan)
+    residual[usable] = z[usable] - predicted[usable]
+    flags, _ = outlier_mask(values, extent, x, y, z, weights, threshold)
+    codes = np.zeros(x.size, dtype=int)
+    codes[~inside] = 3
+    codes[inside & ~defined] = 2
+    codes[defined & (weights <= 0)] = 4
+    codes[usable & flags] = 1
+    support = cell_attributes(values, extent, x, y)
+    safe_columns = np.clip(columns, 0, extent["count_x"] - 1)
+    safe_rows = np.clip(rows, 0, extent["count_y"] - 1)
+    count = support["count"][safe_rows, safe_columns].astype(float)
+    diagonal = np.hypot(extent["step_x"], extent["step_y"])
+    scale = np.full(x.shape, np.nan)
+    scale[inside & (count > 0)] = diagonal / np.sqrt(count[inside & (count > 0)])
+    scaled = np.abs(residual) / scale
+    return {
+        "x": x,
+        "y": y,
+        "z": z,
+        "weights": weights,
+        "predicted": predicted,
+        "residual": residual,
+        "scale": scale,
+        "scaled_residual": scaled,
+        "code": codes,
+        "code_name": np.array([DIAGNOSTIC_CODES[int(code)] for code in codes]),
+    }
+
+
+def _json_number(value):
+    return None if not np.isfinite(value) else float(value)
+
+
+def diagnostics_to_geojson(document):
+    """Convert :func:`diagnostic_points` output to a GeoJSON FeatureCollection."""
+    features = []
+    for index in range(document["x"].size):
+        code = int(document["code"][index])
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point",
+                         "coordinates": [_json_number(document["x"][index]),
+                                         _json_number(document["y"][index])]},
+            "properties": {
+                "z": _json_number(document["z"][index]),
+                "predicted": _json_number(document["predicted"][index]),
+                "residual": _json_number(document["residual"][index]),
+                "weight": _json_number(document["weights"][index]),
+                "scale": _json_number(document["scale"][index]),
+                "scaled_residual": _json_number(
+                    document["scaled_residual"][index]),
+                "code": code,
+                "code_name": DIAGNOSTIC_CODES[code],
+            },
+        })
+    return {"type": "FeatureCollection", "features": features}
+
+
 def outlier_mask(values, extent, x, y, z, weights=None, threshold=3.5):
     """Flags points whose residual is far from the residual median.
 

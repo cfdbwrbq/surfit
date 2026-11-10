@@ -541,6 +541,48 @@ class Session:
         attributes["extent"] = _core.surf_extent(position)
         return attributes
 
+    def diagnostic_points(self, x, y, z, weights=None, surface=None,
+                          threshold=3.5):
+        """Typed point diagnostics (used/outlier/undefined/outside/zero)."""
+        position = (_core.surf_count() - 1 if surface is None
+                    else self.surf_index(surface))
+        if position < 0:
+            raise KeyError("no surface matches %r" % (surface,))
+        return diagnostic_points(self.values(surface),
+                                 _core.surf_extent(position),
+                                 x, y, z, weights, threshold)
+
+    def save_diagnostics(self, path, x, y, z, weights=None, surface=None,
+                         threshold=3.5):
+        """Write typed point diagnostics as GeoJSON or CSV."""
+        import csv
+        import json
+
+        document = self.diagnostic_points(x, y, z, weights, surface,
+                                          threshold)
+        if str(path).lower().endswith((".geojson", ".json")):
+            with open(path, "w", encoding="utf-8") as stream:
+                json.dump(diagnostics_to_geojson(document), stream, indent=2)
+                stream.write("\n")
+            return path
+        if str(path).lower().endswith(".csv"):
+            names = ("x", "y", "z", "residual", "predicted", "weight",
+                     "scale", "scaled_residual", "code")
+            with open(path, "w", encoding="utf-8", newline="") as stream:
+                writer = csv.writer(stream)
+                writer.writerow(names)
+                for index in range(document["x"].size):
+                    writer.writerow([
+                        document["x"][index], document["y"][index],
+                        document["z"][index], document["residual"][index],
+                        document["predicted"][index],
+                        document["weights"][index], document["scale"][index],
+                        document["scaled_residual"][index],
+                        document["code"][index],
+                    ])
+            return path
+        raise ValueError("diagnostics path must end in .geojson/.json or .csv")
+
     def report(self, x, y, z, weights=None, surface=None, threshold=3.5,
                sources=None):
         """Returns a JSON-ready quality summary for the latest surface.
@@ -641,7 +683,8 @@ _reexport_commands()
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
 from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty,
-    cell_attributes, ensemble, outlier_mask, point_residuals, quality_report)
+    cell_attributes, diagnostic_points, diagnostics_to_geojson, ensemble,
+    outlier_mask, point_residuals, quality_report)
 from surfit.geotiff import save_geotiff  # noqa: E402
 from surfit.cross_validation import (  # noqa: E402
     block_labels, cross_validate, fold_assignment)
@@ -649,3 +692,5 @@ from surfit.variogram import (  # noqa: E402
     anisotropy, experimental_variogram, fit_variogram)
 from surfit.provenance import file_sha256, source_hashes  # noqa: E402
 from surfit.sampling import decluster, decluster_points  # noqa: E402
+from surfit.crs import (  # noqa: E402
+    is_geographic_crs, require_projected, to_crs, transform_extent)

@@ -160,6 +160,23 @@ IRLS-веса остатков: Huber оставляет точку с умен�
 ``method`` — ``mean``, ``nearest``, ``idw``, ``min`` или ``max``. Исходные
 точки остаются для остатков; блоки с нулевым суммарным весом отбрасываются.
 
+Типизированные диагностические точки
+------------------------------------
+
+``task.diagnostic_points(x, y, z, weights=None)`` возвращает запись на каждую
+точку с кодом: 0 used, 1 outlier, 2 undefined cell, 3 outside grid,
+4 zero weight. Также есть ``residual``, ``predicted``, ``scale`` (локальный
+шаг сетки, делённый на число точек) и ``scaled_residual``::
+
+    document = task.diagnostic_points(x, y, z, weights=sigma_inv)
+    document["code_name"]
+    task.save_diagnostics("qc.geojson", x, y, z)
+    task.save_diagnostics("qc.csv", x, y, z)
+
+GeoJSON и CSV — формат передачи в GIS или таблицу для проверки. Коды
+подписей контуров и направления разломов здесь не выдумываются: слой
+классифицирует только то, что реально видит по точкам.
+
 Метаданные происхождения
 ------------------------
 
@@ -278,6 +295,21 @@ ImportError, если системных привязок нет. Растр nor
 ``osr.SpatialReference.SetFromUserInput``. Без ``crs`` берётся
 ``task.metadata["crs"]``; в dataset также пишется версия движка и поля
 метаданных.
+
+Помощники CRS
+--------------
+
+Перепроекция необязательна и использует ``pyproj``; сам движок остаётся
+декартовым. ``to_crs`` преобразует точки, ``transform_extent`` сэмплирует
+края и возвращает только новые границы — сетку нужно пересобрать в целевом
+разрешении, а не считать, что аффинная сетка сохранилась::
+
+    lon, lat = surfit.to_crs(x, y, "EPSG:4326", "EPSG:32637")
+    bounds = surfit.transform_extent(extent, "EPSG:4326", "EPSG:32637")
+
+``is_geographic_crs`` и ``require_projected`` ловят градусные единицы там,
+где анизотропия или расстояния теряют смысл. Без pyproj помощники дают
+понятный ImportError.
 
 Strict-режим
 ------------

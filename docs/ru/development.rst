@@ -107,6 +107,10 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
        блоки; метрики готовы к JSON
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
+   * - ``python3 src/pysurfit/tests/test_diagnostic_geometry.py``
+     - типизированные коды точек, GeoJSON/CSV и обёртки Session
+   * - ``python3 src/pysurfit/tests/test_crs.py``
+     - необязательные помощники pyproj для точек/extent (SKIP без pyproj)
    * - ``python3 src/pysurfit/tests/test_variogram.py``
      - сферическая подгонка, экспериментальная/направленная вариограмма и
        подсказка анизотропии

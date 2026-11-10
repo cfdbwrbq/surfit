@@ -92,6 +92,7 @@ def check_api():
         "read_postgis", "diagnostics", "tiled", "cross_validate",
         "file_sha256", "source_hashes", "decluster_points", "block_labels",
         "experimental_variogram", "fit_variogram", "anisotropy",
+        "diagnostic_points", "to_crs", "transform_extent",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

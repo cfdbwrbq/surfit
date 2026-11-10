@@ -139,6 +139,30 @@ it.  The result is point error under the chosen design, not a map of
 uncertainty.  The callback may also return ``(values, extent)`` or an array
 when ``extent=`` is supplied.
 
+Per-node support and declustering
+---------------------------------
+
+``task.quality_attributes(x, y, weights=None)`` returns arrays on the grid:
+``count`` (samples in the cell), ``sum_weights``, ``negative_weights``,
+``min_distance`` and ``mean_distance`` to the cell centre.  The quality report
+also sets ``grid.covered``, ``grid.uncovered`` and
+``grid.negative_weight_cells``.  These are support diagnostics, not an error
+map.
+
+Dense lines and clusters can dominate a global fit.  ``decluster_points``
+reduces rectangular blocks to one representative::
+
+    from surfit import decluster_points
+
+    reduced = decluster_points(
+        x, y, z, weights=sigma_inv, method="mean", block=10.0
+    )
+    reduced["x"], reduced["y"], reduced["z"], reduced["weights"]
+
+``method`` is ``mean``, ``nearest``, ``idw``, ``min`` or ``max``.  The original
+points stay available for residuals; blocks with zero total weight are
+dropped.
+
 Provenance metadata
 -------------------
 

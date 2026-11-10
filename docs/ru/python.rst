@@ -138,6 +138,28 @@ IRLS-веса остатков: Huber оставляет точку с умен�
 точек при выбранной схеме, а не карта неопределённости. Callback может также
 вернуть ``(values, extent)`` или массив при заданном ``extent=``.
 
+Поддержка узлов и декластеризация
+---------------------------------
+
+``task.quality_attributes(x, y, weights=None)`` возвращает массивы на сетке:
+``count`` (число точек в ячейке), ``sum_weights``, ``negative_weights``,
+``min_distance`` и ``mean_distance`` до центра ячейки. В quality report также
+появляются ``grid.covered``, ``grid.uncovered`` и
+``grid.negative_weight_cells``. Это диагностика поддержки, а не карта ошибок.
+
+Плотные линии и кластеры могут доминировать в глобальном фите.
+``decluster_points`` сводит прямоугольные блоки к одной точке::
+
+    from surfit import decluster_points
+
+    reduced = decluster_points(
+        x, y, z, weights=sigma_inv, method="mean", block=10.0
+    )
+    reduced["x"], reduced["y"], reduced["z"], reduced["weights"]
+
+``method`` — ``mean``, ``nearest``, ``idw``, ``min`` или ``max``. Исходные
+точки остаются для остатков; блоки с нулевым суммарным весом отбрасываются.
+
 Метаданные происхождения
 ------------------------
 

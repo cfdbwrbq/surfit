@@ -98,6 +98,65 @@ def point_residuals(values, extent, x, y, z, weights=None):
     }
 
 
+def cell_attributes(values, extent, x, y, weights=None):
+    """Per-node data support for a solved grid.
+
+    Returns arrays on the grid shape: ``count`` (samples in the cell),
+    ``sum_weights``, ``negative_weights`` (sum of weights below zero),
+    ``min_distance`` and ``mean_distance`` to the cell centre.  Distances are in
+    the grid's coordinate units.  These are support diagnostics, not an error
+    model; ``min_distance`` is NaN where a cell has no sample.
+    """
+    values = np.asarray(values, dtype=float)
+    extent = _extent(extent)
+    shape = (int(extent["count_y"]), int(extent["count_x"]))
+    if values.shape != shape:
+        raise ValueError("values shape does not match extent")
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    if x.size != y.size:
+        raise ValueError("x and y must have the same length")
+    if weights is None:
+        weights = np.ones(x.size, dtype=float)
+    else:
+        weights = np.asarray(weights, dtype=float).ravel()
+        if weights.size != x.size:
+            raise ValueError("weights must have one value per point")
+    finite = np.isfinite(x) & np.isfinite(y) & np.isfinite(weights)
+    col = np.floor((x[finite] - extent["min_x"]) / extent["step_x"]).astype(int)
+    row = np.floor((y[finite] - extent["min_y"]) / extent["step_y"]).astype(int)
+    inside = ((col >= 0) & (col < shape[1]) &
+              (row >= 0) & (row < shape[0]))
+    col = col[inside]
+    row = row[inside]
+    used_weights = weights[finite][inside]
+    index = row * shape[1] + col
+    size = shape[0] * shape[1]
+    count = np.bincount(index, minlength=size).astype(int)
+    sum_weights = np.bincount(index, weights=used_weights, minlength=size)
+    negative = np.bincount(index, weights=np.minimum(used_weights, 0.0),
+                           minlength=size)
+    centre_x = extent["min_x"] + col * extent["step_x"]
+    centre_y = extent["min_y"] + row * extent["step_y"]
+    distance = np.hypot(x[finite][inside] - centre_x,
+                        y[finite][inside] - centre_y)
+    minimum = np.full(size, np.inf)
+    np.minimum.at(minimum, index, distance)
+    sum_distance = np.bincount(index, weights=distance, minlength=size)
+    mean_distance = np.full(size, np.nan)
+    covered = count > 0
+    mean_distance[covered] = sum_distance[covered] / count[covered]
+    minimum[~covered] = np.nan
+    reshape = shape
+    return {
+        "count": count.reshape(reshape),
+        "sum_weights": sum_weights.reshape(reshape),
+        "negative_weights": negative.reshape(reshape),
+        "min_distance": minimum.reshape(reshape),
+        "mean_distance": mean_distance.reshape(reshape),
+    }
+
+
 def outlier_mask(values, extent, x, y, z, weights=None, threshold=3.5):
     """Flags points whose residual is far from the residual median.
 
@@ -288,6 +347,8 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5,
     stats = point_residuals(values, extent, x, y, z, weights)
     flags, _ = outlier_mask(values, extent, x, y, z, weights, threshold)
     defined = _defined(values)
+    attributes = cell_attributes(values, extent, x, y, weights)
+    covered = attributes["count"] > 0
     metadata = task.metadata
     return {
         "map_name": getattr(task, "_map_name", None),
@@ -306,6 +367,10 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5,
             "nodata": float(_UNDEF),
             "crs": metadata.get("crs"),
             "units": metadata.get("z_units") or metadata.get("units"),
+            "covered": int(covered.sum()),
+            "uncovered": int((~covered).sum()),
+            "negative_weight_cells": int(
+                (attributes["negative_weights"] < 0).sum()),
         },
         "points": {
             "n": int(np.asarray(x).size),

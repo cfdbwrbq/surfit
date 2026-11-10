@@ -106,6 +106,9 @@ Testing
        JSON-ready
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/units/source survive on the task and in the JSON sidecar
+   * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
+     - per-cell support arrays and the report coverage; declustering methods
+       reduce blocks while preserving the total weight
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - residuals, MAD outlier, Huber/Tukey and the JSON quality report
    * - ``python3 src/pysurfit/tests/test_tiled.py``

@@ -529,6 +529,18 @@ class Session:
         """Flags residuals farther than ``threshold`` MADs from the median."""
         return _session_outliers(self, x, y, z, weights, surface, threshold)
 
+    def quality_attributes(self, x, y, weights=None, surface=None):
+        """Per-node support: sample count, weights and distances to data."""
+        position = (_core.surf_count() - 1 if surface is None
+                    else self.surf_index(surface))
+        if position < 0:
+            raise KeyError("no surface matches %r" % (surface,))
+        attributes = cell_attributes(self.values(surface),
+                                     _core.surf_extent(position),
+                                     x, y, weights)
+        attributes["extent"] = _core.surf_extent(position)
+        return attributes
+
     def report(self, x, y, z, weights=None, surface=None, threshold=3.5,
                sources=None):
         """Returns a JSON-ready quality summary for the latest surface.
@@ -628,8 +640,9 @@ _reexport_commands()
 
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
 from surfit.diagnostics import (  # noqa: E402
-    _session_outliers, _session_residuals, bootstrap_uncertainty, ensemble,
-    outlier_mask, point_residuals, quality_report)
+    _session_outliers, _session_residuals, bootstrap_uncertainty,
+    cell_attributes, ensemble, outlier_mask, point_residuals, quality_report)
 from surfit.geotiff import save_geotiff  # noqa: E402
 from surfit.cross_validation import cross_validate, fold_assignment  # noqa: E402
 from surfit.provenance import file_sha256, source_hashes  # noqa: E402
+from surfit.sampling import decluster, decluster_points  # noqa: E402

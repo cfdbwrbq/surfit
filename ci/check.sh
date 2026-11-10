@@ -87,6 +87,9 @@ run diagnostics "$PYTHON" "$TESTS/test_diagnostics.py"
 step "provenance metadata"
 run metadata "$PYTHON" "$TESTS/test_metadata.py"
 
+step "per-node support and declustering"
+run quality-attributes "$PYTHON" "$TESTS/test_quality_attributes.py"
+
 step "four-fold cross-validation"
 run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 

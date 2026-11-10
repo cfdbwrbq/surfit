@@ -111,6 +111,9 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - типизированные коды точек, GeoJSON/CSV и обёртки Session
    * - ``python3 src/pysurfit/tests/test_padding.py``
      - коллар и обрезка сохраняют шаг сетки
+   * - ``python3 examples/python/quality_workflow.py``
+     - запускаемый end-to-end quality-пример: остатки, spatial CV,
+       вариограмма, поддержка, диагностика и provenance
    * - ``python3 src/pysurfit/tests/test_psf.py``
      - полуширина импульсного отклика и гауссова sigma восстанавливают
        известный PSF

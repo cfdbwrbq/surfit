@@ -17,6 +17,10 @@ Features
 * Fault lines, trend surfaces, anisotropy, inequalities, average and weighted
   average conditions, histogram matching, masks.
 * Fast multithreaded solver with several iterative methods.
+* Parallel Python Sessions: the engine state and the installed task are
+  thread-local, so independent tasks can solve at the same time.
+* Quality workflow: spatial cross-validation, block bootstrap, variograms,
+  per-node support, PSF measurement, typed point diagnostics and provenance.
 * Many data formats: the native surfit data file, Surfer grids, GMT, Grass,
   ArcGIS, xyz, shapefile, BLN, JPEG and BMP.
 * Two front ends over the same engine: the original Tcl commands and a Python

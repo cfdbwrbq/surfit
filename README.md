@@ -65,6 +65,23 @@ print(grid.shape, surfit.defined_mask(grid).sum())
 Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); `surfit.defined_mask()`
 selects the defined ones.
 
+### Quality, not just a grid
+
+The result is one surface, but the workflow around it is explicit: residuals,
+spatial cross-validation, experimental variograms and anisotropy hints,
+per-node support, typed point diagnostics, a PSF measurement, declustering and
+a provenance report with input hashes.  Sessions are thread-local, so
+independent tasks can solve in parallel.
+
+```python
+report = task.report(x, y, z, sources=["wells.txt"])
+cv = surfit.cross_validate(build, x, y, z, mode="block", block=10.0)
+fit = surfit.experimental_variogram(x, y, z)
+```
+
+The runnable end-to-end example is
+[`examples/python/quality_workflow.py`](examples/python/quality_workflow.py).
+
 ### numpy in, numpy out
 
 ```python

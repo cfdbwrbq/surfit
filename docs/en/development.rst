@@ -110,6 +110,9 @@ Testing
      - typed point codes, GeoJSON/CSV output and Session wrappers
    * - ``python3 src/pysurfit/tests/test_padding.py``
      - collar extent and crop preserve the node spacing
+   * - ``python3 examples/python/quality_workflow.py``
+     - the runnable end-to-end quality example: residuals, spatial CV,
+       variogram, support, diagnostics and provenance
    * - ``python3 src/pysurfit/tests/test_psf.py``
      - impulse-response half-width and Gaussian sigma recover a known PSF
    * - ``python3 src/pysurfit/tests/test_resolution.py``

@@ -109,6 +109,9 @@ run resolution "$PYTHON" "$TESTS/test_resolution.py"
 step "point-spread width"
 run psf "$PYTHON" "$TESTS/test_psf.py"
 
+step "quality workflow example"
+run quality-example "$PYTHON" "$HERE/examples/python/quality_workflow.py"
+
 step "automatic parameter selection"
 run smoothing "$PYTHON" "$TESTS/test_smoothing.py"
 

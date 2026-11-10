@@ -171,6 +171,31 @@ Geostatistics
   Press.
   `doi:10.1201/9781420072884 <https://doi.org/10.1201/9781420072884>`_
 
+Validation, uncertainty and resolution
+--------------------------------------
+
+* D. R. Roberts et al. (2017). Cross-validation strategies for data with
+  temporal, spatial, hierarchical, or phylogenetic structure. *Ecography* 40,
+  913–929. `doi:10.1111/ecog.02881 <https://doi.org/10.1111/ecog.02881>`_
+* J. Pohjankukka et al. (2017). Estimating the prediction performance of
+  spatial interpolation methods using spatial cross-validation.
+  *International Journal of Geographical Information Science* 31, 2215–2237.
+  `doi:10.1080/13658816.2017.1346255 <https://doi.org/10.1080/13658816.2017.1346255>`_
+* A. M.-C. Wadoux et al. (2021). Spatial sampling and resampling for
+  environmental monitoring and mapping. *Ecological Modelling* 458, 109692.
+  `doi:10.1016/j.ecolmodel.2021.109692 <https://doi.org/10.1016/j.ecolmodel.2021.109692>`_
+* T.-C. Chiao et al. (2014). Resolution and scale in spatial interpolation.
+  *Journal of Geophysical Research: Solid Earth* 119, 2170–2185.
+  `doi:10.1002/2013JB010364 <https://doi.org/10.1002/2013JB010364>`_
+* L. Genton (1998). Highly robust variogram estimation. *Mathematical Geology*
+  30, 1–15. `doi:10.1023/A:1021728614555 <https://doi.org/10.1023/A:1021728614555>`_
+* E. Pardo-Igúzquiza, P. A. Dowd (2013). Comparison of inference methods for
+  estimating semivariogram model parameters and their uncertainty.
+  *Computers & Geosciences* 51, 34–48.
+  `doi:10.1016/j.cageo.2012.06.002 <https://doi.org/10.1016/j.cageo.2012.06.002>`_
+* CF Conventions 1.13. `cfconventions.org <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html>`_
+* OGC GeoTIFF 1.1. `docs.ogc.org <https://docs.ogc.org/is/19-008r4/19-008r4.html>`_
+
 Rules and applications
 ----------------------
 

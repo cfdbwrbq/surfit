@@ -49,6 +49,40 @@ same name, so ``task.points("wells")`` means the same as ``points("wells")``.
 The one exception is ``grid``: the method of that name builds an explicit grid
 (Tcl's ``grid_get``), and ``grid_auto`` is Tcl's ``grid``.
 
+Terms
+-----
+
+**Spatial cross-validation (CV).** Hold out points by a spatial rule, build the
+model without them, and report the error on those points.  Random CV is
+optimistic for clustered samples; block CV is the honest default.
+
+**Block bootstrap.** Resample whole spatial blocks, not individual points, so
+the dependence between neighbours survives.  It reports ensemble spread, not a
+posterior.
+
+**Variogram.** The semivariance of the field as a function of separation.  The
+range is the distance where it flattens, the sill is its plateau and the nugget
+is the discontinuity at zero.  surfit uses it as a diagnostic and to seed the
+anisotropy arguments; it is not a kriging solver.
+
+**Support.** The data that constrain a grid node: sample count, distance to
+the nearest sample and summed weights.  Low support means the value is mostly
+interpolation, however small the residual looks.
+
+**PSF.** Point-spread width of an impulse response: how far one observation
+smears over the grid.  ``psf_report`` measures a field you supply; it is not a
+covariance model.
+
+**Collar.** A grid larger than the area of interest, solved and then cropped,
+so the natural boundary is farther from the data.
+
+**Declustering.** Replacing a dense block of samples by one representative so a
+cluster does not dominate the fit.  The original points remain available for
+residuals.
+
+**Provenance.** The engine/solver/version, input hashes, CRS and units recorded
+next to the result.  It makes a run auditable; it does not validate the CRS.
+
 Point weights
 -------------
 
@@ -344,6 +378,17 @@ weights, ``completer`` arguments or a tolerance::
     )
     result["parameter"], result["scores"]
 
+Quality workflow
+----------------
+
+The full workflow is a runnable example.  It solves a synthetic task, then
+prints residuals, spatial CV, a variogram fit, an anisotropy hint, support,
+declustering, diagnostics and provenance.  The numbers are a checklist, not a
+single uncertainty claim.
+
+.. literalinclude:: ../../examples/python/quality_workflow.py
+   :language: python
+
 Strict rules
 ------------
 
@@ -433,6 +478,10 @@ Sources
 * leq, geq — `doi:10.1029/2007WR006645 <https://doi.org/10.1029/2007WR006645>`_
 * mean, wmean — `doi:10.1007/s11004-005-9022-8 <https://doi.org/10.1007/s11004-005-9022-8>`_
 * hist — `doi:10.1002/joc.2168 <https://doi.org/10.1002/joc.2168>`_
+* spatial CV, block bootstrap — `doi:10.1111/ecog.02881 <https://doi.org/10.1111/ecog.02881>`_
+* variogram — `doi:10.1023/A:1021728614555 <https://doi.org/10.1023/A:1021728614555>`_
+* support, PSF — `doi:10.1002/2013JB010364 <https://doi.org/10.1002/2013JB010364>`_
+* provenance — `CF Conventions 1.13 <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html>`_
 
 Arrays in and out
 -----------------

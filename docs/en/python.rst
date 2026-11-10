@@ -311,6 +311,33 @@ rather than pretending an affine grid survived::
 anisotropy or distances would be meaningless.  These helpers raise a clear
 ImportError when pyproj is not installed.
 
+Grid collars, resolution and parameter search
+---------------------------------------------
+
+A collar is a larger grid solved around the area of interest and cropped back;
+it moves the natural boundary away from the data.  The helpers preserve the
+node spacing::
+
+    padded = surfit.pad_extent(extent, margin=20.0)
+    # build the task on padded, solve, then:
+    values, extent = surfit.crop_surface(values, padded, original_extent)
+
+``surfit.resolution_report(extent, x=x, y=y, values=values)`` reports the
+Nyquist limit (``2 * step``), samples per cell, covered fraction and a coarse
+data spacing.  It warns when the grid is much finer than the sample support;
+this is a support diagnostic, not a point-spread-function inversion.
+
+``surfit.select_parameter`` runs spatial CV for each candidate and returns the
+best one.  The callback receives the candidate, so it can rebuild point
+weights, ``completer`` arguments or a tolerance::
+
+    result = surfit.select_parameter(
+        build, x, y, z,
+        parameters=[0.5, 1.0, 2.0],
+        folds=5, mode="block", block=10.0,
+    )
+    result["parameter"], result["scores"]
+
 Strict rules
 ------------
 

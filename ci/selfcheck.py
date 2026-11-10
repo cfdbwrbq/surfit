@@ -93,6 +93,7 @@ def check_api():
         "file_sha256", "source_hashes", "decluster_points", "block_labels",
         "experimental_variogram", "fit_variogram", "anisotropy",
         "diagnostic_points", "to_crs", "transform_extent",
+        "pad_extent", "crop_surface", "resolution_report", "select_parameter",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

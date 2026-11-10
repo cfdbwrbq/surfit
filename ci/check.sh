@@ -102,6 +102,13 @@ run diagnostic-geometry "$PYTHON" "$TESTS/test_diagnostic_geometry.py"
 step "optional CRS helpers"
 run crs "$PYTHON" "$TESTS/test_crs.py"
 
+step "grid collar and resolution"
+run padding "$PYTHON" "$TESTS/test_padding.py"
+run resolution "$PYTHON" "$TESTS/test_resolution.py"
+
+step "automatic parameter selection"
+run smoothing "$PYTHON" "$TESTS/test_smoothing.py"
+
 step "four-fold cross-validation"
 run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 

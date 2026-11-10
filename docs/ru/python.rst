@@ -311,6 +311,33 @@ ImportError, если системных привязок нет. Растр nor
 где анизотропия или расстояния теряют смысл. Без pyproj помощники дают
 понятный ImportError.
 
+Коллар, разрешение и поиск параметра
+------------------------------------
+
+Коллар — это увеличенная сетка вокруг интересующей области, которую после
+решения обрезают; она отодвигает естественную границу от данных. Помощники
+сохраняют шаг сетки::
+
+    padded = surfit.pad_extent(extent, margin=20.0)
+    # решаем на padded, затем:
+    values, extent = surfit.crop_surface(values, padded, original_extent)
+
+``surfit.resolution_report(extent, x=x, y=y, values=values)`` показывает
+предел Найквиста (``2 * step``), число точек на ячейку, покрытие и грубую
+оценку шага данных. Он предупреждает, если сетка заметно мельче поддержки
+данных; это диагностика поддержки, а не инверсия PSF.
+
+``surfit.select_parameter`` прогоняет spatial CV для каждого кандидата и
+возвращает лучший. Callback получает кандидата, поэтому может пересобрать
+веса точек, аргументы ``completer`` или tolerance::
+
+    result = surfit.select_parameter(
+        build, x, y, z,
+        parameters=[0.5, 1.0, 2.0],
+        folds=5, mode="block", block=10.0,
+    )
+    result["parameter"], result["scores"]
+
 Strict-режим
 ------------
 

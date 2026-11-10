@@ -109,6 +109,12 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
    * - ``python3 src/pysurfit/tests/test_diagnostic_geometry.py``
      - типизированные коды точек, GeoJSON/CSV и обёртки Session
+   * - ``python3 src/pysurfit/tests/test_padding.py``
+     - коллар и обрезка сохраняют шаг сетки
+   * - ``python3 src/pysurfit/tests/test_resolution.py``
+     - отчёт Nyquist/поддержки и предупреждение о слишком мелкой сетке
+   * - ``python3 src/pysurfit/tests/test_smoothing.py``
+     - spatial CV выбирает кандидат сглаживающего параметра
    * - ``python3 src/pysurfit/tests/test_crs.py``
      - необязательные помощники pyproj для точек/extent (SKIP без pyproj)
    * - ``python3 src/pysurfit/tests/test_variogram.py``

@@ -327,6 +327,12 @@ Nyquist limit (``2 * step``), samples per cell, covered fraction and a coarse
 data spacing.  It warns when the grid is much finer than the sample support;
 this is a support diagnostic, not a point-spread-function inversion.
 
+``surfit.psf_report(values, extent, center=(x, y))`` measures an impulse
+response you already have: it returns ``half_width``, a Gaussian ``sigma`` and
+``resolved_features = 2 * half_width``.  ``surfit.estimate_psf(build, x0, y0,
+extent)`` calls ``build(x0, y0)`` once and applies the same measurement.  The
+callback constructs the impulse; this is not a covariance model.
+
 ``surfit.select_parameter`` runs spatial CV for each candidate and returns the
 best one.  The callback receives the candidate, so it can rebuild point
 weights, ``completer`` arguments or a tolerance::

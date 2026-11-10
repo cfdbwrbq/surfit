@@ -695,7 +695,8 @@ from surfit.sampling import decluster, decluster_points  # noqa: E402
 from surfit.crs import (  # noqa: E402
     is_geographic_crs, require_projected, to_crs, transform_extent)
 from surfit.padding import crop_surface, pad_extent  # noqa: E402
-from surfit.resolution import resolution_report  # noqa: E402
+from surfit.resolution import (  # noqa: E402
+    estimate_psf, psf_report, resolution_report)
 from surfit.smoothing import select_parameter  # noqa: E402
 from surfit.tiled import (  # noqa: E402
     select_geometries, solve_tiled, tile_boxes)

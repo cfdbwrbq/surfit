@@ -24,7 +24,7 @@ per-file-ignores =
     src/pysurfit/python/surfit/variogram.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS236,WPS358,WPS432,WPS441,WPS459,WPS518
     src/pysurfit/python/surfit/crs.py: WPS111,WPS210
     src/pysurfit/python/surfit/padding.py: WPS110,WPS111,WPS210,WPS221,WPS226,WPS358
-    src/pysurfit/python/surfit/resolution.py: WPS110,WPS111,WPS210,WPS221,WPS358,WPS432
+    src/pysurfit/python/surfit/resolution.py: WPS110,WPS111,WPS210,WPS221,WPS226,WPS231,WPS358,WPS432,WPS504
     src/pysurfit/python/surfit/smoothing.py: WPS110,WPS111,WPS211,WPS226,WPS430
     src/pysurfit/python/surfit/tiled.py: WPS110,WPS111,WPS210,WPS211,WPS213,WPS221,WPS226,WPS231,WPS232,WPS238,WPS358,WPS362,WPS432,WPS478
     docs/check_docs.py: WPS202,WPS210,WPS231

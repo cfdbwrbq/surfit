@@ -106,6 +106,9 @@ step "grid collar and resolution"
 run padding "$PYTHON" "$TESTS/test_padding.py"
 run resolution "$PYTHON" "$TESTS/test_resolution.py"
 
+step "point-spread width"
+run psf "$PYTHON" "$TESTS/test_psf.py"
+
 step "automatic parameter selection"
 run smoothing "$PYTHON" "$TESTS/test_smoothing.py"
 

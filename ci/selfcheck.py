@@ -94,6 +94,7 @@ def check_api():
         "experimental_variogram", "fit_variogram", "anisotropy",
         "diagnostic_points", "to_crs", "transform_extent",
         "pad_extent", "crop_surface", "resolution_report", "select_parameter",
+        "psf_report", "estimate_psf",
         "solve_tiled", "select_geometries", "tile_boxes",
     )
     missing = [name for name in required if not hasattr(module, name)]

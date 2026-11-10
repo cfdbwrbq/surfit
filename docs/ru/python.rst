@@ -365,8 +365,25 @@ Out-of-core тайлы
     result["tiles"]
 
 Копируется только внутренняя часть перекрывающихся тайлов, поэтому швы видят
-те же данные, что и середина. Драйвер только для точек: контурам, площадям и
-поверхностям нужно собственное обрезание.
+те же данные, что и середина. Для кривых, контуров и площадей используйте
+общий ``solve_tiled``; callback получает тайл и может выбрать геометрию через
+``select_geometries``::
+
+    from surfit.tiled import select_geometries, solve_tiled
+
+    def build(tile):
+        task = surfit.Session(tol=1e-7)
+        task.read_curves("iso.xy", "g")
+        task.grid(*tile_grid_args)     # tile["extent"] и tile["step"]
+        task.curve(5, "g")
+        task.solve()
+        return task
+
+    result = solve_tiled(build, (-10, 10, -10, 10), 0.5,
+                         inner=64, halo=16, memmap_path="map.f64")
+
+Callback отвечает за выбор/обрезку данных; у тайла должно быть не меньше
+восьми узлов на сторону, потому что первая фаза движка — 8x8.
 
 
 Serial-режим pool

@@ -128,6 +128,9 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
        сводят блоки, сохраняя суммарный вес
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - остатки, MAD-выброс, Huber/Tukey и JSON quality report
+   * - ``python3 src/pysurfit/tests/test_tiled_geometry.py``
+     - общий tiled-драйвер решает curve/contour/area и сверяется с полным
+       solve; проверяются геометрия тайлов и halo
    * - ``python3 src/pysurfit/tests/test_tiled.py``
      - синтетическое поле 41x41 решается девятью перекрывающимися тайлами и
        пишется в memmap; во внутренних узлах мозаики нет undefined

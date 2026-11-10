@@ -365,8 +365,25 @@ the mosaic into a ``numpy.memmap``::
     result["tiles"]
 
 Only the inner part of each overlapping tile is copied, so seams see the same
-data as the middle.  This driver is point-only: contours, areas and surfaces
-would need their own clipping rules.
+data as the middle.  For curves, contours and areas use the generic
+``solve_tiled``; its callback receives each tile and can select geometry with
+``select_geometries``::
+
+    from surfit.tiled import select_geometries, solve_tiled
+
+    def build(tile):
+        task = surfit.Session(tol=1e-7)
+        task.read_curves("iso.xy", "g")
+        task.grid(*tile_grid_args)     # tile["extent"] and tile["step"]
+        task.curve(5, "g")
+        task.solve()
+        return task
+
+    result = solve_tiled(build, (-10, 10, -10, 10), 0.5,
+                         inner=64, halo=16, memmap_path="map.f64")
+
+The callback is responsible for clipping/selecting data; a tile must have at
+least eight nodes per side because the engine's first phase is 8x8.
 
 
 Serial pool mode

@@ -1,5 +1,12 @@
 # Plans
 
+## Competitive review
+
+The 2026 review of Surfer, Topo to Raster/ANUDEM, RockWorks, Leapfrog, the
+open-source GIS/geostatistics stack and the interpolation literature, with a
+prioritised feature plan, is in
+[COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md).
+
 ## Deferred
 
 ### Agent-first (AI-first) repository

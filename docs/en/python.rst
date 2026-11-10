@@ -112,6 +112,33 @@ The lower-level ``surfit.diagnostics.point_residuals(values, extent, x, y, z)``
 takes the array and the ``surf_extent`` dict directly.
 
 
+Spatial cross-validation
+------------------------
+
+Random k-fold is optimistic for clustered samples: neighbouring points leak
+between training and validation.  ``surfit.cross_validate`` makes the fold
+design explicit and evaluates held-out points::
+
+    from surfit import cross_validate
+
+    def build(train, train_weights):
+        task = make_task(x[train], y[train], z[train], weights=train_weights)
+        task.solve()
+        return task
+
+    result = cross_validate(
+        build, x, y, z, folds=5, mode="block", block=2.0
+    )
+    result["rmse"], result["bias"], result["fold_details"]
+
+``mode="random"`` is the cheap check; ``mode="block"`` assigns whole
+rectangular blocks to folds, and ``mode="kfold"`` preserves the input order.
+Choose the block size from the variogram range when one is available.  The
+callback receives only training indices; the test points are never passed to
+it.  The result is point error under the chosen design, not a map of
+uncertainty.  The callback may also return ``(values, extent)`` or an array
+when ``extent=`` is supplied.
+
 Provenance metadata
 -------------------
 
@@ -128,7 +155,10 @@ on the task and write a JSON sidecar::
 
 ``task.metadata`` returns a copy; ``set_metadata`` adds fields; the sidecar
 contains those fields plus ``map_name``.  It records provenance, it does not
-reproject the grid or validate the CRS.
+reproject the grid or validate the CRS.  The sidecar also carries
+``provenance``: engine/Python/NumPy versions, UTC creation time, platform, CRS,
+units and optional source hashes.  ``report(..., sources=["wells.txt"])`` puts
+the same SHA-256 map into the quality report.
 
 
 Uncertainty by ensemble
@@ -175,17 +205,23 @@ outer IRLS loop, not a robust inner solver.
 Quality report and GeoTIFF
 --------------------------
 
-``task.report(x, y, z, weights=None)`` returns a JSON-ready summary: grid
-extent, point counts, residuals, outlier flags and metadata.  Write it next to
-the map::
+``task.report(x, y, z, weights=None, sources=None)`` returns a JSON-ready
+summary: grid extent, point counts, residuals, outlier flags, metadata and
+provenance.  ``grid.crs``, ``grid.units`` and ``grid.nodata`` make the file
+self-describing; ``provenance.sources`` is empty unless you pass ``sources``.
+Write it next to the map::
 
-    task.save_report("result.report.json", x, y, z, weights=sigma_inv)
+    task.save_report("result.report.json", x, y, z, weights=sigma_inv,
+                     sources=["wells.txt"])
+    task.save_geotiff("result.tif")       # uses metadata crs
     task.save_geotiff("result.tif", crs="EPSG:32637")
 
 ``save_geotiff`` is optional: it imports GDAL lazily and raises a clear
 ImportError when the system GDAL bindings are absent.  The raster is north-up,
 nodes are cell centres, undefined nodes use the surfit nodata value, and the
-CRS string is passed to ``osr.SpatialReference.SetFromUserInput``.
+CRS is passed to ``osr.SpatialReference.SetFromUserInput``.  When ``crs`` is
+omitted, ``task.metadata["crs"]`` is used; the dataset also stores the engine
+version and metadata fields.
 
 Strict rules
 ------------

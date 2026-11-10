@@ -36,6 +36,9 @@ def main():
         assert document["map_name"] == "meta"
         assert document["crs"] == "EPSG:32637"
         assert document["z_units"] == "m"
+        assert document["provenance"]["engine"] == "surfit"
+        assert document["provenance"]["engine_version"]
+        assert document["provenance"]["sources"] == {}
         print("PASS: metadata survives the task and the JSON sidecar")
 
 

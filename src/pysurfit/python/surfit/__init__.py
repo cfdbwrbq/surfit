@@ -344,8 +344,11 @@ class Session:
         """Writes the metadata as JSON next to the saved surface."""
         import json
 
+        from surfit.provenance import build_provenance
+
         document = dict(self._metadata)
         document["map_name"] = self._map_name
+        document["provenance"] = build_provenance(self)
         with open(path, "w", encoding="utf-8") as stream:
             json.dump(document, stream, indent=2, sort_keys=True)
             stream.write("\n")
@@ -526,27 +529,44 @@ class Session:
         """Flags residuals farther than ``threshold`` MADs from the median."""
         return _session_outliers(self, x, y, z, weights, surface, threshold)
 
-    def report(self, x, y, z, weights=None, surface=None, threshold=3.5):
-        """Returns a JSON-ready quality summary for the latest surface."""
-        return quality_report(self, x, y, z, weights, surface, threshold)
+    def report(self, x, y, z, weights=None, surface=None, threshold=3.5,
+               sources=None):
+        """Returns a JSON-ready quality summary for the latest surface.
 
-    def save_geotiff(self, path, crs=None, surface=None):
-        """Writes the latest surface as a GeoTIFF (GDAL optional)."""
+        ``sources`` is an optional path or path -> SHA-256 mapping.  It is
+        recorded under ``provenance.sources``; pass relative names if the
+        report will be published.
+        """
+        return quality_report(self, x, y, z, weights, surface, threshold,
+                              sources)
+
+    def save_geotiff(self, path, crs=None, surface=None, metadata=None):
+        """Writes the latest surface as a GeoTIFF (GDAL optional).
+
+        Without an explicit ``crs`` the task's metadata ``crs`` is used.  The
+        optional ``metadata`` mapping is written as GDAL dataset metadata.
+        """
         if surface is None:
             position = _core.surf_count() - 1
         else:
             position = self.surf_index(surface)
         if position < 0:
             raise KeyError("no surface matches %r" % (surface,))
+        if crs is None:
+            crs = self._metadata.get("crs")
+        if metadata is None:
+            metadata = self._metadata
         return save_geotiff(path, self.values(surface),
-                            _core.surf_extent(position), crs)
+                            _core.surf_extent(position), crs,
+                            metadata=metadata)
 
     def save_report(self, path, x, y, z, weights=None, surface=None,
-                    threshold=3.5):
+                    threshold=3.5, sources=None):
         """Writes the quality summary as JSON next to the map."""
         import json
 
-        document = quality_report(self, x, y, z, weights, surface, threshold)
+        document = quality_report(self, x, y, z, weights, surface, threshold,
+                                  sources)
         with open(path, "w", encoding="utf-8") as stream:
             json.dump(document, stream, indent=2, sort_keys=True)
             stream.write("\n")
@@ -611,3 +631,5 @@ from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty, ensemble,
     outlier_mask, point_residuals, quality_report)
 from surfit.geotiff import save_geotiff  # noqa: E402
+from surfit.cross_validation import cross_validate, fold_assignment  # noqa: E402
+from surfit.provenance import file_sha256, source_hashes  # noqa: E402

@@ -112,6 +112,32 @@ IRLS-веса остатков: Huber оставляет точку с умен�
 принимает массив и dict из ``surf_extent`` напрямую.
 
 
+Пространственная кросс-валидация
+--------------------------------
+
+Случайная k-fold завышает точность на кластеризованных данных: соседние точки
+протекают между обучением и проверкой. ``surfit.cross_validate`` делает схему
+фолдов явной и считает ошибку только на отложенных точках::
+
+    from surfit import cross_validate
+
+    def build(train, train_weights):
+        task = make_task(x[train], y[train], z[train], weights=train_weights)
+        task.solve()
+        return task
+
+    result = cross_validate(
+        build, x, y, z, folds=5, mode="block", block=2.0
+    )
+    result["rmse"], result["bias"], result["fold_details"]
+
+``mode="random"`` — дешёвая проверка; ``mode="block"`` отдаёт в фолд целые
+прямоугольные блоки, ``mode="kfold"`` сохраняет порядок входа. Размер блока
+лучше брать из range вариограммы, если она есть. Callback получает только
+индексы обучения; проверочные точки в него не попадают. Результат — ошибка
+точек при выбранной схеме, а не карта неопределённости. Callback может также
+вернуть ``(values, extent)`` или массив при заданном ``extent=``.
+
 Метаданные происхождения
 ------------------------
 
@@ -128,7 +154,10 @@ CRS, единицы и источник не помещаются в ``.dat`` и
 
 ``task.metadata`` возвращает копию; ``set_metadata`` добавляет поля; в sidecar
 попадают они и ``map_name``. Это фиксация происхождения, а не перепроекция
-сетки и не проверка CRS.
+сетки и не проверка CRS. В sidecar также есть ``provenance``: версии движка,
+Python и NumPy, время создания UTC, платформа, CRS, единицы и необязательные
+хеши входных файлов. ``report(..., sources=["wells.txt"])`` кладёт ту же карту
+SHA-256 в quality report.
 
 
 Неопределённость ансамблем
@@ -175,17 +204,23 @@ posterior. Стоит один полный solve на реплику.
 Quality report и GeoTIFF
 ------------------------
 
-``task.report(x, y, z, weights=None)`` возвращает готовую к JSON сводку:
-extent, число точек, остатки, флаги выбросов и метаданные. Пишите её рядом с
+``task.report(x, y, z, weights=None, sources=None)`` возвращает готовую к JSON
+сводку: extent, число точек, остатки, флаги выбросов, метаданные и provenance.
+``grid.crs``, ``grid.units`` и ``grid.nodata`` делают файл самодокументированным;
+``provenance.sources`` пуст, если не передать ``sources``. Пишите её рядом с
 картой::
 
-    task.save_report("result.report.json", x, y, z, weights=sigma_inv)
+    task.save_report("result.report.json", x, y, z, weights=sigma_inv,
+                     sources=["wells.txt"])
+    task.save_geotiff("result.tif")       # CRS из metadata
     task.save_geotiff("result.tif", crs="EPSG:32637")
 
 ``save_geotiff`` необязателен: GDAL импортируется лениво и даёт понятный
 ImportError, если системных привязок нет. Растр north-up, узлы — центры
-ячеек, undefined-узлы используют nodata surfit, а CRS передаётся в
-``osr.SpatialReference.SetFromUserInput``.
+ячеек, undefined-узлы используют nodata surfit, CRS передаётся в
+``osr.SpatialReference.SetFromUserInput``. Без ``crs`` берётся
+``task.metadata["crs"]``; в dataset также пишется версия движка и поля
+метаданных.
 
 Strict-режим
 ------------

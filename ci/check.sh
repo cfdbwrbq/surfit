@@ -90,6 +90,9 @@ run metadata "$PYTHON" "$TESTS/test_metadata.py"
 step "four-fold cross-validation"
 run cross-validation "$PYTHON" "$TESTS/test_cross_validation.py"
 
+step "spatial cross-validation API"
+run cross-validation-api "$PYTHON" "$TESTS/test_cross_validation_api.py"
+
 step "bootstrap uncertainty"
 run uncertainty "$PYTHON" "$TESTS/test_uncertainty.py"
 

@@ -89,7 +89,8 @@ def check_api():
         return ["cannot import surfit from %s: %s" % (binary, error)]
     required = (
         "Session", "serial_threads", "area_read", "get_threads", "init_threads",
-        "read_postgis", "diagnostics", "tiled",
+        "read_postgis", "diagnostics", "tiled", "cross_validate",
+        "file_sha256", "source_hashes",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

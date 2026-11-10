@@ -15,6 +15,7 @@ interpolation.
 import numpy as np
 
 from surfit import _surfit as _core
+from surfit.provenance import build_provenance
 
 _UNDEF = float(np.finfo(np.float32).max)
 
@@ -270,11 +271,14 @@ def _session_residuals(task, x, y, z, weights, surface):
     extent = _core.surf_extent(position)
     return point_residuals(values, extent, x, y, z, weights)
 
-def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5):
+def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5,
+                   sources=None):
     """Build a JSON-ready quality report for a solved surface.
 
     The report is deliberately a summary, not the full covariance: grid
     extent, residuals, outlier flags, point counts and provenance metadata.
+    ``sources`` is an optional path or path -> SHA-256 mapping; the paths are
+    recorded as given, so pass relative names if the report will be published.
     """
     position = _position(task, surface)
     if position < 0:
@@ -284,6 +288,7 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5):
     stats = point_residuals(values, extent, x, y, z, weights)
     flags, _ = outlier_mask(values, extent, x, y, z, weights, threshold)
     defined = _defined(values)
+    metadata = task.metadata
     return {
         "map_name": getattr(task, "_map_name", None),
         "surface": task.surf_names()[position],
@@ -298,6 +303,9 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5):
             "step_y": float(extent["step_y"]),
             "defined": int(defined.sum()),
             "total": int(defined.size),
+            "nodata": float(_UNDEF),
+            "crs": metadata.get("crs"),
+            "units": metadata.get("z_units") or metadata.get("units"),
         },
         "points": {
             "n": int(np.asarray(x).size),
@@ -313,5 +321,6 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5):
             "values": stats["residuals"].tolist(),
         },
         "outlier_flags": flags.tolist(),
-        "metadata": task.metadata,
+        "metadata": metadata,
+        "provenance": build_provenance(task, sources),
     }

@@ -8,9 +8,10 @@ rest of the package keeps working without it.
 import numpy as np
 
 from surfit import UNDEF_VALUE
+from surfit.provenance import engine_version
 
 
-def save_geotiff(path, values, extent, crs=None, nodata=None):
+def save_geotiff(path, values, extent, crs=None, nodata=None, metadata=None):
     """Write a (count_y, count_x) grid as a north-up GeoTIFF.
 
     ``extent`` is the ``surf_extent`` dict; nodes are cell centres, so the
@@ -45,6 +46,15 @@ def save_geotiff(path, values, extent, crs=None, nodata=None):
         spatial = osr.SpatialReference()
         spatial.SetFromUserInput(str(crs))
         dataset.SetProjection(spatial.ExportToWkt())
+    dataset.SetMetadata({
+        "SURFIT_VERSION": engine_version(),
+        "SURFIT_NODATA": str(float(UNDEF_VALUE if nodata is None else nodata)),
+    })
+    if metadata:
+        for key, value in metadata.items():
+            if value is not None:
+                dataset.SetMetadataItem(
+                    "SURFIT_" + str(key).upper(), str(value))
     band = dataset.GetRasterBand(1)
     band.WriteArray(np.flipud(values))
     band.SetNoDataValue(

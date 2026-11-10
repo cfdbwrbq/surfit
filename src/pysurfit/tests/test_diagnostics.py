@@ -24,6 +24,7 @@ sys.path.insert(0, BIN)
 import surfit  # noqa: E402
 from surfit.diagnostics import (  # noqa: E402
     outlier_mask, point_residuals, robust_weights)
+from surfit.provenance import file_sha256  # noqa: E402
 
 EXTENT = {"min_x": 0.0, "min_y": 0.0, "step_x": 1.0, "step_y": 1.0,
           "count_x": 2, "count_y": 2}
@@ -81,17 +82,24 @@ def session_check():
         task.points("p")
         task.solve()
         stats = task.residuals([0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
-        report = task.report([0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
+        report = task.report([0.01, 0.02], [0.01, 0.02], [0.0, 10.0],
+                             sources=[path])
         report_path = os.path.join(directory, "report.json")
-        task.save_report(report_path, [0.01, 0.02], [0.01, 0.02], [0.0, 10.0])
+        task.save_report(report_path, [0.01, 0.02], [0.01, 0.02], [0.0, 10.0],
+                         sources=[path])
         with open(report_path, encoding="utf-8") as stream:
             saved = json.load(stream)
+        digest = file_sha256(path)
     assert stats["n"] == 2, stats
     assert np.isclose(stats["rmse"], 5.0)
     assert np.isclose(stats["bias"], 0.0)
     assert report["points"]["n"] == 2
     assert report["grid"]["count_x"] == 8
+    assert report["grid"]["nodata"] == surfit.UNDEF_VALUE
+    assert report["provenance"]["engine"] == "surfit"
+    assert report["provenance"]["sources"][path] == digest
     assert saved["map_name"] == "diag"
+    assert saved["provenance"]["sources"][path] == digest
     assert saved["residuals"]["rmse"] == report["residuals"]["rmse"]
     print("PASS: Session.residuals sees the solved cell")
     print("PASS: quality report is JSON-serialisable")

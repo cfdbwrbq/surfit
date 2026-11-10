@@ -16,10 +16,11 @@ per-file-ignores =
     src/pysurfit/python/surfit/__init__.py: WPS110,WPS111,WPS202,WPS211,WPS214,WPS338,WPS412,WPS421,WPS201,WPS501,WPS603,WPS615
     src/pysurfit/python/surfit/_viewer.py: WPS110,WPS211
     src/pysurfit/python/surfit/postgis.py: WPS202
-    src/pysurfit/python/surfit/diagnostics.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS238,WPS358,WPS432
+    src/pysurfit/python/surfit/diagnostics.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS238,WPS358,WPS432,WPS504
     src/pysurfit/python/surfit/geotiff.py: WPS110,WPS210,WPS211,WPS221,WPS231,WPS336,WPS358,WPS432
     src/pysurfit/python/surfit/cross_validation.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS232,WPS238,WPS358,WPS432,WPS504
     src/pysurfit/python/surfit/provenance.py: WPS110,WPS202,WPS426,WPS504
     src/pysurfit/python/surfit/sampling.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221
+    src/pysurfit/python/surfit/variogram.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS236,WPS358,WPS432,WPS441,WPS459,WPS518
     src/pysurfit/python/surfit/tiled.py: WPS110,WPS111,WPS210,WPS211,WPS213,WPS221,WPS231,WPS232,WPS238,WPS362,WPS432,WPS478
     docs/check_docs.py: WPS202,WPS210,WPS231

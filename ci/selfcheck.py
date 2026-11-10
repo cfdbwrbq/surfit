@@ -90,7 +90,8 @@ def check_api():
     required = (
         "Session", "serial_threads", "area_read", "get_threads", "init_threads",
         "read_postgis", "diagnostics", "tiled", "cross_validate",
-        "file_sha256", "source_hashes", "decluster_points",
+        "file_sha256", "source_hashes", "decluster_points", "block_labels",
+        "experimental_variogram", "fit_variogram", "anisotropy",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

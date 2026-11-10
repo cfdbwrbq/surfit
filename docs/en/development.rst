@@ -106,6 +106,12 @@ Testing
        JSON-ready
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/units/source survive on the task and in the JSON sidecar
+   * - ``python3 src/pysurfit/tests/test_variogram.py``
+     - spherical fit, experimental/directional variogram and the anisotropy
+       suggestion
+   * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
+     - block bootstrap samples complete blocks; block labels and auto labels
+       agree
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - per-cell support arrays and the report coverage; declustering methods
        reduce blocks while preserving the total weight

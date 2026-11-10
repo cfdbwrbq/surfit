@@ -249,27 +249,56 @@ def ensemble(fields):
     }
 
 
-def bootstrap_uncertainty(build, count, replicates=100, seed=0):
-    """Resample ``count`` point indices and collect the resulting surfaces.
+def bootstrap_uncertainty(build, count, replicates=100, seed=0, blocks=None,
+                          block_size=None, x=None, y=None):
+    """Resample point indices and collect the resulting surfaces.
 
-    ``build(sample)`` must return a solved task or a surface array.  The helper
-    draws ``count`` indices with replacement for each replicate, so the caller
-    can rebuild the points from ``sample``.  The model is fixed; only the
-    sampled data vary.
+    ``build(sample)`` must return a solved task or a surface array.  By default
+    indices are drawn independently (i.i.d.); pass ``blocks`` labels, or
+    ``x``/``y`` plus ``block_size``, to resample whole spatial blocks.  Block
+    bootstrap preserves the dependence that i.i.d. resampling breaks.
+
+    The model is fixed; only the sampled data vary.  The result is ensemble
+    spread, not a posterior.
     """
     if count <= 0:
         raise ValueError("count must be positive")
     if replicates < 2:
         raise ValueError("replicates must be at least 2")
+    if blocks is not None and block_size is not None:
+        raise ValueError("pass blocks or block_size, not both")
+    if blocks is None and block_size is not None:
+        if x is None or y is None:
+            raise ValueError("block_size needs x and y")
+        from surfit.cross_validation import block_labels
+        blocks = block_labels(x, y, block_size)
+    if blocks is not None:
+        blocks = np.asarray(blocks).ravel()
+        if blocks.size != count:
+            raise ValueError("blocks must have one value per point")
+        groups = [np.flatnonzero(blocks == value)
+                  for value in np.unique(blocks)]
+        groups = [group for group in groups if group.size]
+        if not groups:
+            raise ValueError("blocks must contain at least one point")
+    else:
+        groups = None
     rng = np.random.default_rng(seed)
     fields = []
     for iteration in range(replicates):
-        sample = rng.integers(0, count, count)
+        if groups is None:
+            sample = rng.integers(0, count, count)
+        else:
+            selected = rng.integers(0, len(groups), len(groups))
+            sample = np.concatenate([groups[index] for index in selected])
         result = build(sample)
         if hasattr(result, "values"):
             result = result.values()
         fields.append(np.asarray(result, dtype=float))
-    return ensemble(fields)
+    result = ensemble(fields)
+    result["sampling"] = "block" if groups is not None else "iid"
+    result["blocks"] = len(groups) if groups is not None else None
+    return result
 
 
 def robust_solve(build, x, y, z, weights=None, loss="huber", iterations=4,

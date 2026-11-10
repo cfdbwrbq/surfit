@@ -107,6 +107,12 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
        блоки; метрики готовы к JSON
    * - ``python3 src/pysurfit/tests/test_metadata.py``
      - CRS/единицы/источник сохраняются в задаче и в JSON-sidecar
+   * - ``python3 src/pysurfit/tests/test_variogram.py``
+     - сферическая подгонка, экспериментальная/направленная вариограмма и
+       подсказка анизотропии
+   * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
+     - блочный bootstrap выбирает целые блоки; метки блоков и авто-метки
+       согласованы
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - массивы поддержки ячеек и покрытие в report; методы декластеризации
        сводят блоки, сохраняя суммарный вес

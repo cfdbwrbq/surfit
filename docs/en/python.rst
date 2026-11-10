@@ -185,6 +185,30 @@ units and optional source hashes.  ``report(..., sources=["wells.txt"])`` puts
 the same SHA-256 map into the quality report.
 
 
+Variogram diagnostics
+---------------------
+
+``surfit.experimental_variogram(x, y, z, bins=20, direction=None)`` returns
+lag centres, semivariance and pair counts.  ``direction`` selects pairs within
+``tolerance`` degrees; ``estimator="robust"`` uses Cressie-Hawkins instead of
+the classical mean.  ``surfit.fit_variogram`` fits a spherical, exponential or
+Gaussian model and returns range, nugget and partial sill::
+
+    experimental = surfit.experimental_variogram(x, y, z, bins=16)
+    fit = surfit.fit_variogram(
+        experimental["lag"], experimental["gamma"], model="spherical"
+    )
+    fit["range"], fit["nugget"], fit["sill"]
+
+``surfit.anisotropy`` fits directional variograms and returns a coarse angle
+and long/short range ratio for the existing rule::
+
+    direction = surfit.anisotropy(x, y, z, angles=(0, 45, 90, 135))
+    task.completer(1, 2, alpha=direction["angle"], w=direction["ratio"])
+
+These are diagnostics and starting values, not kriging and not a covariance
+model.  The engine still solves one surface.
+
 Uncertainty by ensemble
 -----------------------
 
@@ -205,7 +229,15 @@ callback must return a solved task or an array::
     stats["std"], stats["p05"], stats["p95"]
 
 This is ensemble spread under resampling, not a covariance matrix or a
-posterior.  It costs one full solve per replicate.
+posterior.  It costs one full solve per replicate.  For clustered samples use
+block resampling, which keeps whole spatial blocks together::
+
+    labels = surfit.block_labels(x, y, block=10.0)
+    stats = bootstrap_uncertainty(
+        build, len(x), replicates=100, seed=7, blocks=labels
+    )
+
+or pass ``x=x, y=y, block_size=10.0`` and the labels are derived for you.
 
 
 The outer IRLS driver

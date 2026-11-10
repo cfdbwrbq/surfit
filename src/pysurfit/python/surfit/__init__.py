@@ -643,6 +643,9 @@ from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty,
     cell_attributes, ensemble, outlier_mask, point_residuals, quality_report)
 from surfit.geotiff import save_geotiff  # noqa: E402
-from surfit.cross_validation import cross_validate, fold_assignment  # noqa: E402
+from surfit.cross_validation import (  # noqa: E402
+    block_labels, cross_validate, fold_assignment)
+from surfit.variogram import (  # noqa: E402
+    anisotropy, experimental_variogram, fit_variogram)
 from surfit.provenance import file_sha256, source_hashes  # noqa: E402
 from surfit.sampling import decluster, decluster_points  # noqa: E402

@@ -182,6 +182,31 @@ Python и NumPy, время создания UTC, платформа, CRS, ед�
 SHA-256 в quality report.
 
 
+Диагностика вариограммы
+-----------------------
+
+``surfit.experimental_variogram(x, y, z, bins=20, direction=None)`` возвращает
+центры лагов, полувариацию и число пар. ``direction`` выбирает пары в пределах
+``tolerance`` градусов; ``estimator="robust"`` использует Cressie-Hawkins
+вместо классического среднего. ``surfit.fit_variogram`` подгоняет
+сферическую, экспоненциальную или гауссову модель и возвращает range, nugget
+и partial sill::
+
+    experimental = surfit.experimental_variogram(x, y, z, bins=16)
+    fit = surfit.fit_variogram(
+        experimental["lag"], experimental["gamma"], model="spherical"
+    )
+    fit["range"], fit["nugget"], fit["sill"]
+
+``surfit.anisotropy`` подгоняет направленные вариограммы и возвращает грубый
+угол и отношение длинного/короткого range для существующего правила::
+
+    direction = surfit.anisotropy(x, y, z, angles=(0, 45, 90, 135))
+    task.completer(1, 2, alpha=direction["angle"], w=direction["ratio"])
+
+Это диагностика и стартовые значения, а не кригинг и не ковариационная
+модель. Движок по-прежнему решает одну поверхность.
+
 Неопределённость ансамблем
 ---------------------------
 
@@ -202,7 +227,17 @@ callback должен вернуть решённую задачу или мас
     stats["std"], stats["p05"], stats["p95"]
 
 Это разброс ансамбля при пересемплировании, а не ковариационная матрица и не
-posterior. Стоит один полный solve на реплику.
+posterior. Стоит один полный solve на реплику. Для кластеризованных данных
+используйте блочное пересемплирование, сохраняющее целые пространственные
+блоки::
+
+    labels = surfit.block_labels(x, y, block=10.0)
+    stats = bootstrap_uncertainty(
+        build, len(x), replicates=100, seed=7, blocks=labels
+    )
+
+или передайте ``x=x, y=y, block_size=10.0`` — метки будут построены
+автоматически.
 
 
 Внешний IRLS-драйвер

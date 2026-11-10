@@ -43,6 +43,17 @@ def _block_size(x, y, folds, block):
     return block
 
 
+def block_labels(x, y, block):
+    """Return one integer block id per point, numbered from zero."""
+    x, y = _points(x, y)
+    block_x, block_y = _block_size(x, y, 1, block)
+    ix = np.floor((x - float(np.min(x))) / block_x).astype(int)
+    iy = np.floor((y - float(np.min(y))) / block_y).astype(int)
+    raw = ix + iy * (int(ix.max()) + 1)
+    _, labels = np.unique(raw, return_inverse=True)
+    return labels
+
+
 def fold_assignment(x, y, folds=4, mode="random", block=None, seed=0):
     """Return one fold label per point.
 
@@ -67,21 +78,16 @@ def fold_assignment(x, y, folds=4, mode="random", block=None, seed=0):
     if mode != "block":
         raise ValueError("mode must be 'random', 'kfold' or 'block', not %r"
                          % (mode,))
-    block_x, block_y = _block_size(x, y, folds, block)
-    ix = np.floor((x - float(np.min(x))) / block_x).astype(int)
-    iy = np.floor((y - float(np.min(y))) / block_y).astype(int)
-    # A block id is unique in this extent; the fold assignment is per block,
-    # so every point of a block is held out together.
-    block_id = ix + iy * (int(ix.max()) + 1)
-    ids = np.unique(block_id)
+    labels = block_labels(x, y, block)
+    ids = np.unique(labels)
     if ids.size < folds:
         raise ValueError(
             "block size gives %d blocks for %d folds; use a smaller block"
             % (ids.size, folds))
     order = rng.permutation(ids.size)
-    block_fold = {int(block_id_value): int(order[pos] % folds)
-                  for pos, block_id_value in enumerate(ids)}
-    return np.array([block_fold[int(value)] for value in block_id], dtype=int)
+    block_fold = {int(value): int(order[pos] % folds)
+                  for pos, value in enumerate(ids)}
+    return np.array([block_fold[int(value)] for value in labels], dtype=int)
 
 
 def _values_and_extent(result, extent):

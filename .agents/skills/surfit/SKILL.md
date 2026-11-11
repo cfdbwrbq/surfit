@@ -281,10 +281,11 @@ stack.report()["crossings"]
 solver and does not turn surfit into a 3D modeller.  ``solve(parallel=True)``
 fans independent layers out to a thread pool; ``thickness(name)`` and
 ``pinchout_mask(name)`` expose the relation between adjacent layers.
-A solver-level relation is opt-in: the upper builder receives a
-``SurfaceRelation`` and must call ``relation.apply(task)`` before the next
-functional (for example before the points rule); the stack then solves
-bottom-up and enforces ``top >= lower + min_thickness``.
+Relations form a DAG: ``add_relation(upper, lower, min_thickness=...)`` or
+``add_layer(..., above=..., below=...)``.  The stack topologically sorts it,
+rejects cycles, and passes all conditions for a layer as ``SurfaceRelations``;
+the builder must call ``relations.apply(task)`` before its next functional.
+``above`` is ``this >= target + min_thickness``; ``below`` is the reverse.
   ``apply_pinchout(name, mode="merge"|"undef")`` is an explicit post-solve
 projection; ``report()["seconds"]`` records wall time.
   ``stack.save(dir)`` / ``SurfaceStack.load(dir)`` persist layers as

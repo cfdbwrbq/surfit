@@ -26,6 +26,7 @@ reproducible exchange format.
 | grouped cross-validation and per-group metrics | done |
 | ordered `SurfaceStack`, crossings, thickness, pinch-outs | done |
 | solver-level `SurfaceRelation` with minimum thickness | done |
+| constraint DAG, `add_relation`, cycle detection | done |
 | pinch-out projection (`merge`/`undef`) | done |
 | parallel stack solve and timings | done |
 | split-conformal quantile and calibrated interval | done |
@@ -35,19 +36,7 @@ reproducible exchange format.
 
 ## Next
 
-### 1. Constraint graph
-
-The current relation is linear (`above` the next lower layer).  Generalise to a
-small DAG:
-
-- a layer may be above one surface and below another;
-- non-adjacent relations;
-- cycle detection and topological solve;
-- soft relations with weights.
-
-Why: real stacks contain lenses, wedges and non-neighbour constraints.
-
-### 2. Memory-mapped stack
+### 1. Memory-mapped stack
 
 Keep layer values on disk:
 
@@ -58,19 +47,19 @@ Keep layer values on disk:
 
 Why: the current stack holds every layer in RAM.
 
-### 3. Native array constructors
+### 2. Native array constructors
 
 `add_points`/`add_curves` currently use a temporary columned file.  A native
 C++/pybind path would remove the I/O and preserve names/weights without a round
 trip.
 
-### 4. Raster polish
+### 3. Raster polish
 
 - `tifffile` fallback when GDAL is absent;
 - multi-band stack without the per-layer manifest workaround;
 - COG/overviews.
 
-### 5. Release
+### 4. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

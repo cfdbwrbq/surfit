@@ -64,6 +64,39 @@ def main():
     assert parallel.pinchout_mask("top").sum() == 0
     parallel.close()
 
+    chain = surfit.SurfaceStack("chain")
+    chain.add_layer("top", lambda relations: layer(7.0, relations),
+                    above="middle", min_thickness=1.0)
+    chain.add_layer("middle", lambda relations: layer(4.0, relations),
+                    above="bottom", min_thickness=1.0)
+    chain.add_layer("bottom", lambda: layer(1.0))
+    chain.solve()
+    assert chain.report()["crossings"] == 0
+    assert np.min(chain.thickness("top")) >= 0.9
+    assert np.min(chain.thickness("middle")) >= 0.9
+    chain.close()
+
+    skip = surfit.SurfaceStack("skip")
+    skip.add_layer("top", lambda relations: layer(7.0, relations),
+                   above="bottom", min_thickness=1.0)
+    skip.add_layer("middle", lambda: layer(4.0))
+    skip.add_layer("bottom", lambda: layer(1.0))
+    skip.solve()
+    assert skip.report()["crossings"] == 0
+    skip.close()
+
+    cyclic = surfit.SurfaceStack("cyclic")
+    cyclic.add_layer("a", lambda relations: layer(1.0, relations))
+    cyclic.add_layer("b", lambda relations: layer(2.0, relations))
+    cyclic.add_relation("a", "b")
+    cyclic.add_relation("b", "a")
+    try:
+        cyclic.solve()
+    except ValueError as error:
+        assert "cycle" in str(error)
+    else:
+        raise AssertionError("cycle did not raise")
+
     constrained = surfit.SurfaceStack("constrained")
     constrained.add_layer("top", lambda relation: layer(5.0, relation),
                           above="bottom", min_thickness=1.0)

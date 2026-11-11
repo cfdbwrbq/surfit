@@ -544,6 +544,16 @@ pinch-out — неположительная толщина. Стек также
 extent/step. Используйте его, когда несколько поверхностей нужно решить и
 проверить вместе; для одной поверхности остаётся обычный ``Session``.
 
+Отношения — небольшой DAG, а не фиксированный список соседей::
+
+    stack.add_relation("top", "bottom", min_thickness=1.0)
+    stack.add_layer("lens", build_lens, above="bottom", below="top")
+
+Стек топологически сортирует граф, отвергает циклы и передаёт все условия
+слоя одним объектом ``SurfaceRelations``. ``above`` означает
+``this >= target + min_thickness``; ``below`` —
+``this <= target - min_thickness``.
+
 Для отношения верхний builder получает ``SurfaceRelation`` и должен применить
 его до следующего functional::
 

@@ -547,6 +547,16 @@ one, and a pinch-out is a non-positive thickness.  The stack also rejects
 layers that do not share the same extent/step.  Use it when several surfaces
 must be solved and checked together; keep ordinary ``Session`` for one surface.
 
+Relations are a small DAG, not a fixed neighbour list::
+
+    stack.add_relation("top", "bottom", min_thickness=1.0)
+    stack.add_layer("lens", build_lens, above="bottom", below="top")
+
+The stack topologically sorts the graph, rejects cycles, and passes all
+conditions for a layer as one ``SurfaceRelations`` object.  ``above`` means
+``this >= target + min_thickness``; ``below`` means
+``this <= target - min_thickness``.
+
 For a relation, the upper builder receives a ``SurfaceRelation`` and must
 apply it before its next functional::
 

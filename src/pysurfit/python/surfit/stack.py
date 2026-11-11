@@ -42,14 +42,24 @@ class SurfaceRelation:
         self.min_thickness = float(min_thickness)
         self.penalty = float(penalty)
 
-    def apply(self, task):
+    def apply(self, task, name="__stack_relation"):
         """Add the relation to an *unsolved* task before its next functional."""
         shifted = self.values + self.min_thickness
         shifted[~_defined(self.values)] = _UNDEF
         task.add_surface(shifted, self.extent["min_x"], self.extent["step_x"],
-                         self.extent["min_y"], self.extent["step_y"],
-                         "__stack_relation")
-        task.surface_geq("__stack_relation", self.penalty)
+                         self.extent["min_y"], self.extent["step_y"], name)
+        task.surface_geq(name, self.penalty)
+
+
+class SurfaceRelations:
+    """All inter-surface conditions that apply to one layer."""
+
+    def __init__(self, relations):
+        self.relations = list(relations)
+
+    def apply(self, task):
+        for index, relation in enumerate(self.relations):
+            relation.apply(task, "__stack_relation_%d" % index)
 
 
 class SurfaceStack:
@@ -59,37 +69,73 @@ class SurfaceStack:
         self._name = name
         self._map_name = name
         self._layers = []
-        self._relations = {}
+        self._relations = []
         self._tasks = []
         self._values = []
         self._timings = {}
         self._extent = None
 
-    def add_layer(self, name, build, above=None, min_thickness=0.0,
-                  penalty=0.0):
+    def add_layer(self, name, build, above=None, below=None,
+                  min_thickness=0.0, penalty=0.0):
         """Add a layer; ``build()`` returns a Session.
 
-        ``above`` names a layer lower in the stack.  The stack solves
-        bottom-up and calls ``build(relation)`` for the constrained layer; the
-        callback must call ``relation.apply(task)`` before its next functional
-        (for example before the points rule).  ``this >= lower + min_thickness``.
-        A builder that does not accept the relation argument raises a clear
-        error rather than silently ignoring the condition.
+        ``above`` means ``this >= named + min_thickness``; ``below`` means
+        ``this <= named - min_thickness``.  A constrained builder receives a
+        ``SurfaceRelations`` object and must call ``relations.apply(task)``
+        before its next functional (for example before the points rule).  A
+        builder that does not accept the relation argument raises a clear
+        error, not a silently ignored condition.
         """
         if not callable(build):
             raise TypeError("build must be callable")
         if any(str(name) == existing for existing, _ in self._layers):
             raise ValueError("duplicate layer %r" % (name,))
         if above is not None:
-            if str(above) in [str(item) for item, _ in self._layers]:
-                raise ValueError("relation target %r must be added later" % (above,))
-            self._relations[str(name)] = {
-                "target": str(above),
-                "min_thickness": float(min_thickness),
-                "penalty": float(penalty),
-            }
+            self.add_relation(str(name), str(above), min_thickness, penalty)
+        if below is not None:
+            self.add_relation(str(below), str(name), min_thickness, penalty)
         self._layers.append((str(name), build))
         return self
+
+    def add_relation(self, upper, lower, min_thickness=0.0, penalty=0.0):
+        """Constrain ``upper >= lower + min_thickness``.
+
+        The relation may refer to layers added later; it is resolved by the
+        topological solve, not by add order.
+        """
+        self._relations.append({
+            "upper": str(upper),
+            "lower": str(lower),
+            "min_thickness": float(min_thickness),
+            "penalty": float(penalty),
+        })
+        return self
+
+    def _topological_order(self):
+        names = self.layer_names()
+        incoming = {name: 0 for name in names}
+        outgoing = {name: [] for name in names}
+        for relation in self._relations:
+            upper = relation["upper"]
+            lower = relation["lower"]
+            if upper not in incoming or lower not in incoming:
+                raise ValueError(
+                    "relation %r -> %r names an unknown layer"
+                    % (upper, lower))
+            outgoing[lower].append(upper)
+            incoming[upper] += 1
+        ready = [name for name in names if incoming[name] == 0]
+        ordered = []
+        while ready:
+            name = ready.pop(0)
+            ordered.append(name)
+            for upper in outgoing[name]:
+                incoming[upper] -= 1
+                if incoming[upper] == 0:
+                    ready.append(upper)
+        if len(ordered) != len(names):
+            raise ValueError("relation graph contains a cycle")
+        return ordered
 
     def layer_names(self):
         return [name for name, _ in self._layers]
@@ -183,27 +229,25 @@ class SurfaceStack:
         try:
             if self._relations:
                 solved = {}
-                ordered = list(reversed(self._layers))
                 result = {}
-                for name, build in ordered:
-                    relation_spec = self._relations.get(name)
-                    if relation_spec is not None:
-                        target = relation_spec["target"]
-                        if target not in solved:
-                            raise ValueError(
-                                "relation target %r is not solved" % (target,))
-                        relation = SurfaceRelation(
-                            solved[target][0], solved[target][1],
-                            relation_spec["min_thickness"],
-                            relation_spec["penalty"])
+                builders = dict(self._layers)
+                for name in self._topological_order():
+                    relations = [
+                        SurfaceRelation(
+                            solved[item["lower"]][0],
+                            solved[item["lower"]][1],
+                            item["min_thickness"], item["penalty"])
+                        for item in self._relations if item["upper"] == name
+                    ]
+                    if relations:
                         try:
-                            task = build(relation)
+                            task = builders[name](SurfaceRelations(relations))
                         except TypeError as error:
                             raise TypeError(
                                 "layer %r with a relation must accept "
-                                "relation in build(relation)" % (name,)) from error
+                                "relations in build(relations)" % (name,)) from error
                     else:
-                        task = build()
+                        task = builders[name]()
                     if not hasattr(task, "values"):
                         raise TypeError(
                             "layer %r build() must return a Session" % (name,))
@@ -216,7 +260,8 @@ class SurfaceStack:
                 values = [result[name][1] for name, _ in self._layers]
                 extent = result[self._layers[-1][0]][2]
                 for (name, _), value, layer_extent in zip(
-                        self._layers, values, [result[n][2] for n, _ in self._layers]):
+                        self._layers, values,
+                        [result[n][2] for n, _ in self._layers]):
                     if not _same_extent(extent, layer_extent):
                         raise ValueError("layer %r does not share the stack grid"
                                          % (name,))

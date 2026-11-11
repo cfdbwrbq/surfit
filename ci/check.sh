@@ -84,6 +84,9 @@ run weights "$PYTHON" "$TESTS/test_weights.py"
 step "residual diagnostics"
 run diagnostics "$PYTHON" "$TESTS/test_diagnostics.py"
 
+step "failed file autoload diagnostics"
+run file-errors "$PYTHON" "$TESTS/test_file_errors.py"
+
 step "provenance metadata"
 run metadata "$PYTHON" "$TESTS/test_metadata.py"
 

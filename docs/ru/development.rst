@@ -135,6 +135,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - массивы поддержки ячеек и покрытие в report; методы декластеризации
        сводят блоки, сохраняя суммарный вес
+   * - ``python3 src/pysurfit/tests/test_file_errors.py``
+     - отсутствующий или битый файл даёт warning, а не пустую задачу
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - остатки, MAD-выброс, Huber/Tukey и JSON quality report
    * - ``python3 src/pysurfit/tests/test_tiled_geometry.py``

@@ -8,6 +8,16 @@ Method: searched every `try/except`, `contextlib.suppress`, `catch` and
 `throw` in the tracked sources, then read each production handler in context.
 A handler is **silent** when it neither re-raises nor reports the failure.
 
+## Status after the first pass (2026-11-11)
+
+- **P1 fixed:** the seven `catch (...)` blocks now log a warning with the
+  filename and the exception; `file_load()` checks `auto_load()` and reports
+  "no loader recognized".  Covered by `test_file_errors.py`.
+- **P2 fixed:** `anisotropy()` returns a `skipped` list and accepts
+  `strict=True`; a failed direction is no longer invisible.
+- **Guard:** `ci/selfcheck.py` rejects a new bare `except` or
+  `except Exception: pass` in the package (tests excluded).
+
 ## Summary
 
 - No bare `except:` in production Python.

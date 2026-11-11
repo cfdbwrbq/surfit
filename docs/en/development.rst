@@ -133,6 +133,8 @@ Testing
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - per-cell support arrays and the report coverage; declustering methods
        reduce blocks while preserving the total weight
+   * - ``python3 src/pysurfit/tests/test_file_errors.py``
+     - a missing or malformed file reports a warning instead of an empty task
    * - ``python3 src/pysurfit/tests/test_diagnostics.py``
      - residuals, MAD outlier, Huber/Tukey and the JSON quality report
    * - ``python3 src/pysurfit/tests/test_tiled_geometry.py``

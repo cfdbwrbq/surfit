@@ -53,6 +53,24 @@ def data_check():
     assert result["angle"] in (0.0, 90.0)
     assert result["ratio"] >= 1.0
     assert len(result["ranges"]) == 2
+    assert result["skipped"] == []
+
+    line_x = np.linspace(0.0, 10.0, 50)
+    line_y = np.zeros_like(line_x)
+    line_z = np.sin(line_x)
+    partial = surfit.anisotropy(
+        line_x, line_y, line_z, angles=(0.0, 90.0, 180.0),
+        bins=8, max_lag=8.0)
+    assert partial["skipped"], partial
+    assert partial["skipped"][0]["direction"] == 90.0
+    try:
+        surfit.anisotropy(
+            line_x, line_y, line_z, angles=(0.0, 90.0, 180.0),
+            bins=8, max_lag=8.0, strict=True)
+    except ValueError as error:
+        assert "skipped" in str(error)
+    else:
+        raise AssertionError("strict anisotropy did not raise")
     print("PASS: experimental, directional and anisotropy diagnostics")
 
 

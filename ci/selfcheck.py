@@ -9,6 +9,7 @@ It does not replace ci/check.sh --full; it catches broken skill links, bad
 frontmatter, a missing docs tree and a wheel/API that is not importable.
 """
 
+import ast
 import importlib
 import os
 import re
@@ -76,6 +77,28 @@ def check_docs():
     return []
 
 
+def check_silent_exceptions():
+    package = ROOT / "src" / "pysurfit" / "python" / "surfit"
+    errors = []
+    for path in sorted(package.glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ExceptHandler):
+                continue
+            if node.type is None:
+                errors.append("%s:%d: bare except" % (path, node.lineno))
+                continue
+            if (isinstance(node.type, ast.Name) and node.type.id == "Exception"
+                    and len(node.body) == 1
+                    and isinstance(node.body[0], ast.Pass)):
+                errors.append(
+                    "%s:%d: except Exception: pass" % (path, node.lineno))
+    if errors:
+        return errors
+    print("silent exceptions: none in the package")
+    return []
+
+
 def check_api():
     binary = os.environ.get("SURFIT_BIN")
     if not binary or not Path(binary).is_dir():
@@ -109,6 +132,7 @@ def main():
     errors = []
     errors.extend(check_skills())
     errors.extend(check_docs())
+    errors.extend(check_silent_exceptions())
     errors.extend(check_api())
     if errors:
         for error in errors:

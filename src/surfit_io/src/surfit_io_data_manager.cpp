@@ -36,6 +36,7 @@
 #include "free_elements.h"
 
 #include <string.h>
+#include <exception>
 
 namespace surfit {
 
@@ -160,7 +161,13 @@ bool surfit_io_manager::auto_load(const char * filename, const char * first1024,
 					res = (*vecres)(0);
 				vecres->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -174,7 +181,13 @@ bool surfit_io_manager::auto_load(const char * filename, const char * first1024,
 					res = (*vecres)(0);
 				vecres->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -193,7 +206,13 @@ bool surfit_io_manager::auto_load(const char * filename, const char * first1024,
 					res = (*vecres)(0);
 				vecres->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -207,7 +226,13 @@ bool surfit_io_manager::auto_load(const char * filename, const char * first1024,
 					res = (*vecres)(0);
 				vecres->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -220,7 +245,13 @@ bool surfit_io_manager::auto_load(const char * filename, const char * first1024,
 					res = (*vecres)(0);
 				vecres->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;

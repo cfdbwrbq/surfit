@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <float.h>
+#include <exception>
 
 #include "grid_internal.h"
 #include "grid.h"
@@ -698,7 +699,13 @@ bool surfit_manager::auto_load(const char * filename, const char * first1024, in
 					res = (*vec_res)(0);
 				vec_res->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -712,7 +719,13 @@ bool surfit_manager::auto_load(const char * filename, const char * first1024, in
 					res = (*vec_res)(0);
 				vec_res->release();
 			}
+		} catch (const std::exception & error) {
+			writelog(LOG_WARNING, "auto_load: %s: %s",
+			         filename, error.what());
+			goto exit;
 		} catch (...) {
+			writelog(LOG_WARNING, "auto_load: %s: unknown exception",
+			         filename);
 			goto exit;
 		}
 		goto exit;
@@ -875,14 +888,17 @@ void file_load(const char * filename) {
 	int readed;
 	char * first1024 = read_first1024(filename, readed);
 
-	if (first1024 == NULL)
+	if (first1024 == NULL) {
+		writelog(LOG_WARNING, "file_load: cannot read %s", filename);
 		return;
+	}
 
 	if ( strncmp(first1024,"roff",4) ==  0) {
 
 		datafile *df = new datafile(filename, DF_MODE_READ); // read
 		
 		if (!df->condition()) {
+			writelog(LOG_WARNING, "file_load: cannot open %s", filename);
 			delete df;
 			free(first1024);
 			return;
@@ -897,8 +913,11 @@ void file_load(const char * filename) {
 		return;
 	}
 	
+	bool loaded = false;
 	if (surfit_data_manager)
-		surfit_data_manager->auto_load(filename, first1024, readed);
+		loaded = surfit_data_manager->auto_load(filename, first1024, readed);
+	if (!loaded)
+		writelog(LOG_WARNING, "file_load: no loader recognized %s", filename);
 	
 	sstuff_free_char(first1024);
 	

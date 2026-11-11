@@ -160,7 +160,7 @@ def fit_variogram(lag, gamma, model="spherical", range_=None):
 
 
 def anisotropy(x, y, z, angles=(0.0, 45.0, 90.0, 135.0), bins=12,
-               max_lag=None, tolerance=22.5, model="spherical"):
+               max_lag=None, tolerance=22.5, model="spherical", strict=False):
     """Suggest an anisotropy angle and ratio from directional variograms.
 
     Returns ``angle`` (degrees), ``ratio`` (long range / short range) and a
@@ -171,20 +171,26 @@ def anisotropy(x, y, z, angles=(0.0, 45.0, 90.0, 135.0), bins=12,
     if len(angles) < 2:
         raise ValueError("anisotropy needs at least two directions")
     fits = []
+    skipped = []
     for direction in angles:
-        experimental = experimental_variogram(
-            x, y, z, bins=bins, max_lag=max_lag, direction=direction,
-            tolerance=tolerance)
         try:
+            experimental = experimental_variogram(
+                x, y, z, bins=bins, max_lag=max_lag, direction=direction,
+                tolerance=tolerance)
             fit = fit_variogram(experimental["lag"], experimental["gamma"],
                                 model=model)
-        except ValueError:
+        except ValueError as error:
+            skipped.append({"direction": direction, "reason": str(error)})
             continue
         fits.append({"direction": direction, "range": fit["range"],
                      "sill": fit["total_sill"], "rmse": fit["rmse"],
                      "bins": int(np.sum(experimental["count"] > 0))})
+    if skipped and strict:
+        raise ValueError(
+            "anisotropy skipped directions: %s" % skipped)
     if len(fits) < 2:
-        raise ValueError("not enough directions have usable variograms")
+        raise ValueError(
+            "not enough directions have usable variograms: %s" % skipped)
     longest = max(fits, key=lambda item: item["range"])
     shortest = min(fits, key=lambda item: item["range"])
     ratio = longest["range"] / max(shortest["range"], 1e-12)
@@ -192,5 +198,6 @@ def anisotropy(x, y, z, angles=(0.0, 45.0, 90.0, 135.0), bins=12,
         "angle": longest["direction"],
         "ratio": float(ratio),
         "ranges": fits,
+        "skipped": skipped,
         "model": model,
     }

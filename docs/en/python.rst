@@ -99,6 +99,22 @@ weights.  Weights are not a statistical error map: the solver still returns a
 single surface and no covariance.
 
 
+Arrays and tables
+-----------------
+
+Data does not have to arrive through a file.  A Session can register arrays
+directly::
+
+    task.add_points(x, y, z, weights=sigma_inv, name="wells")
+    task.add_curves(x, y, name="line")
+    task.add_areas(x, y, name="zone")
+    task.add_contours(x, y, z, name="iso")
+
+The methods use a temporary columned file internally, then remove it; the data
+lives in the task as usual.  This is the shortest path from pandas, Arrow or a
+database cursor, and it keeps the caller's provenance mapping.  The existing
+``add_surface`` remains the array path for a raster/trend.
+
 Residual diagnostics
 --------------------
 
@@ -164,6 +180,16 @@ design explicit and evaluates held-out points::
         build, x, y, z, folds=5, mode="block", block=2.0
     )
     result["rmse"], result["bias"], result["fold_details"]
+
+For grouped data (a well, site, campaign or instrument) use
+``mode="group"`` and pass one group id per point.  ``folds=None`` means
+leave-one-group-out; no group can appear in both training and validation::
+
+    result = surfit.cross_validate(
+        build, x, y, z, mode="group", groups=well_id)
+
+``result["group_details"]`` contains per-group RMSE, bias, MAE and counts.
+``select_parameter`` accepts the same ``groups`` argument.
 
 ``mode="random"`` is the cheap check; ``mode="block"`` assigns whole
 rectangular blocks to folds, and ``mode="kfold"`` preserves the input order.
@@ -411,6 +437,18 @@ single uncertainty claim.
 .. literalinclude:: ../../examples/python/quality_workflow.py
    :language: python
 
+Raster exchange
+---------------
+
+``surfit.read_geotiff(path, band=1)`` reads a north-up GeoTIFF and returns
+``values``, ``extent``, ``crs`` and ``nodata``.  Cells are cell centres, row 0
+is ``min_y``, and rotated/west-up rasters are rejected instead of silently
+misaligned.
+
+``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`` writes
+one GeoTIFF per layer plus ``manifest.json`` with names, order, extent, CRS and
+nodata.  It is an exchange format, not a private container.
+
 Strict rules
 ------------
 
@@ -458,6 +496,25 @@ data as the middle.  For curves, contours and areas use the generic
 The callback is responsible for clipping/selecting data; a tile must have at
 least eight nodes per side because the engine's first phase is 8x8.
 
+
+Layered surfaces
+----------------
+
+A ``SurfaceStack`` is an ordered set of independent Sessions on one grid.  It
+adds orchestration and a report, not a second solver::
+
+    stack = surfit.SurfaceStack("site")
+    stack.add_layer("top", lambda: build_top())
+    stack.add_layer("bottom", lambda: build_bottom())
+    stack.solve()
+    report = stack.report()
+    report["crossings"]
+    report["layers"][0]["thickness"]["pinchouts"]
+
+Layers are ordered; a crossing is where a higher layer falls below the next
+one, and a pinch-out is a non-positive thickness.  The stack also rejects
+layers that do not share the same extent/step.  Use it when several surfaces
+must be solved and checked together; keep ordinary ``Session`` for one surface.
 
 Serial pool mode
 ----------------

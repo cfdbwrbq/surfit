@@ -119,7 +119,8 @@ def check_api():
         "diagnostic_points", "to_crs", "transform_extent",
         "pad_extent", "crop_surface", "resolution_report", "select_parameter",
         "psf_report", "estimate_psf",
-        "solve_tiled", "select_geometries", "tile_boxes",
+        "solve_tiled", "select_geometries", "tile_boxes", "SurfaceStack",
+        "read_geotiff", "save_geotiff_stack",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

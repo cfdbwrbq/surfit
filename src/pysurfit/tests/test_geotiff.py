@@ -53,7 +53,23 @@ def main():
         assert band.GetNoDataValue() is not None
         dataset = None
 
-    print("PASS: GeoTIFF values, projection and nodata")
+        loaded = surfit.read_geotiff(path)
+        assert loaded["values"].shape == task.values().shape
+        assert loaded["crs"]
+        assert np.allclose(loaded["values"], task.values())
+        assert loaded["extent"]["count_x"] == task.values().shape[1]
+
+        stack = os.path.join(directory, "stack")
+        manifest = surfit.save_geotiff_stack(
+            stack, {"one": task.values(), "two": task.values()},
+            loaded["extent"], crs="EPSG:32637")
+        assert len(manifest["layers"]) == 2
+        assert os.path.exists(os.path.join(stack, "manifest.json"))
+        second = surfit.read_geotiff(
+            os.path.join(stack, manifest["layers"][1]["file"]))
+        assert np.allclose(second["values"], task.values())
+
+    print("PASS: GeoTIFF values, projection, nodata, reader and stack")
 
 
 if __name__ == "__main__":

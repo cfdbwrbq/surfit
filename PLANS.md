@@ -1,5 +1,12 @@
 # Plans
 
+## Layered surface systems
+
+The generalisation plan from one surface to an ordered surface stack is in
+[SURFACE_STACK_PLAN.md](SURFACE_STACK_PLAN.md).  It covers array/raster
+ingestion, group-aware validation, stack orchestration and calibrated
+uncertainty without adding a second solver.
+
 ## Competitive review
 
 The 2026 review of Surfer, Topo to Raster/ANUDEM, RockWorks, Leapfrog, the

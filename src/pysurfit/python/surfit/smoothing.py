@@ -11,7 +11,8 @@ from surfit.cross_validation import cross_validate
 
 
 def select_parameter(build, x, y, z, parameters, weights=None, folds=4,
-                     mode="block", block=None, seed=0, metric="rmse"):
+                     mode="block", block=None, seed=0, metric="rmse",
+                     groups=None):
     """Run spatial CV for each candidate and return the best parameter.
 
     ``build(parameter, train_indices, train_weights)`` must return a solved
@@ -30,7 +31,7 @@ def select_parameter(build, x, y, z, parameters, weights=None, folds=4,
 
         result = cross_validate(
             builder, x, y, z, weights=weights, folds=folds, mode=mode,
-            block=block, seed=seed)
+            block=block, seed=seed, groups=groups)
         scores.append({
             "parameter": parameter,
             "rmse": result["rmse"],

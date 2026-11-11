@@ -145,6 +145,11 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_tiled.py``
      - синтетическое поле 41x41 решается девятью перекрывающимися тайлами и
        пишется в memmap; во внутренних узлах мозаики нет undefined
+   * - ``python3 src/pysurfit/tests/test_array_ingest.py``
+     - точки, кривые, площади и контуры регистрируются из numpy-массивов
+   * - ``python3 src/pysurfit/tests/test_stack.py``
+     - упорядоченные слои делят сетку; crossings, толщина и pinch-outs
+       попадают в отчёт
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``

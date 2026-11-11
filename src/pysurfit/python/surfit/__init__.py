@@ -411,6 +411,62 @@ class Session:
         except Exception:  # noqa: BLE001 - never raise from a destructor
             return
 
+    def _array_file(self, columns):
+        import os
+        import tempfile
+
+        handle, path = tempfile.mkstemp(prefix="surfit-array-", suffix=".txt")
+        with os.fdopen(handle, "w", encoding="ascii") as stream:
+            for row in zip(*columns):
+                stream.write("\t".join("%.17g" % value for value in row))
+                stream.write("\n")
+        return path
+
+    def add_points(self, x, y, z, weights=None, name="points"):
+        """Register points from arrays without an intermediate user file."""
+        import os
+
+        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel(),
+                                 np.asarray(z).ravel()))
+        try:
+            result = pnts_read(path, name)
+            if weights is not None:
+                pnts_set_weights(name, list(weights))
+        finally:
+            os.unlink(path)
+        return result
+
+    def add_curves(self, x, y, name="curves"):
+        """Register a 2D polyline from arrays."""
+        import os
+
+        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel()))
+        try:
+            return curv_read(path, name)
+        finally:
+            os.unlink(path)
+
+    def add_areas(self, x, y, name="areas"):
+        """Register one polygon from arrays."""
+        import os
+
+        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel()))
+        try:
+            return area_read(path, name)
+        finally:
+            os.unlink(path)
+
+    def add_contours(self, x, y, z, name="contours"):
+        """Register a 3D contour polyline from arrays."""
+        import os
+
+        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel(),
+                                 np.asarray(z).ravel()))
+        try:
+            return cntr_read(path, name)
+        finally:
+            os.unlink(path)
+
     def read_areas(self, path, name):
         """Loads polygon areas from a text file under the given name."""
         return area_read(path, name)
@@ -685,7 +741,8 @@ from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty,
     cell_attributes, diagnostic_points, diagnostics_to_geojson, ensemble,
     outlier_mask, point_residuals, quality_report)
-from surfit.geotiff import save_geotiff  # noqa: E402
+from surfit.geotiff import (  # noqa: E402
+    read_geotiff, save_geotiff, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402
     block_labels, cross_validate, fold_assignment)
 from surfit.variogram import (  # noqa: E402
@@ -701,3 +758,4 @@ from surfit.resolution import (  # noqa: E402
 from surfit.smoothing import select_parameter  # noqa: E402
 from surfit.tiled import (  # noqa: E402
     select_geometries, solve_tiled, tile_boxes)
+from surfit.stack import SurfaceStack  # noqa: E402

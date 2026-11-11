@@ -92,6 +92,21 @@ def main():
 
     interleaved = surfit.fold_assignment(x, y, folds=4, mode="kfold")
     assert set(np.unique(interleaved)) == {0, 1, 2, 3}
+
+    groups = np.repeat(np.arange(10), 8)
+    group_labels = surfit.fold_assignment(
+        x, y, folds=5, mode="group", groups=groups, seed=7)
+    for group in np.unique(groups):
+        assert np.unique(group_labels[groups == group]).size == 1
+    grouped = surfit.cross_validate(
+        build, x, y, z, folds=5, mode="group", groups=groups, seed=7)
+    assert grouped["folds"] == 5
+    assert len(grouped["group_details"]) == 10
+    assert all("group" in detail for detail in grouped["group_details"])
+    leave_one_out = surfit.cross_validate(
+        build, x, y, z, folds=None, mode="group", groups=groups, seed=7)
+    assert leave_one_out["folds"] == 10
+    assert len(leave_one_out["fold_details"]) == 10
     print("PASS: spatial CV folds, block folds and JSON-ready metrics")
     return 0
 

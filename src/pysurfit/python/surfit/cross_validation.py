@@ -54,7 +54,8 @@ def block_labels(x, y, block):
     return labels
 
 
-def fold_assignment(x, y, folds=4, mode="random", block=None, seed=0):
+def fold_assignment(x, y, folds=4, mode="random", block=None, seed=0,
+                    groups=None):
     """Return one fold label per point.
 
     ``mode="random"`` shuffles the point indices; ``mode="kfold"`` keeps the
@@ -63,6 +64,27 @@ def fold_assignment(x, y, folds=4, mode="random", block=None, seed=0):
     blocks to folds.  The returned labels are integers ``0 .. folds - 1``.
     """
     x, y = _points(x, y)
+    if mode == "group":
+        if groups is None:
+            raise ValueError("mode='group' needs groups")
+        groups = np.asarray(groups).ravel()
+        if groups.size != x.size:
+            raise ValueError("groups must have one value per point")
+        unique, inverse = np.unique(groups, return_inverse=True)
+        if folds is None:
+            folds = unique.size
+        if folds < 2 or folds > unique.size:
+            raise ValueError(
+                "group folds must be between 2 and %d" % unique.size)
+        rng = np.random.default_rng(seed)
+        order = rng.permutation(unique.size)
+        group_fold = {int(value): int(order[pos] % folds)
+                      for pos, value in enumerate(np.arange(unique.size))}
+        return np.array([group_fold[int(value)] for value in inverse],
+                        dtype=int)
+
+    if folds is None:
+        raise ValueError("folds is required for random/kfold/block")
     if folds < 2:
         raise ValueError("folds must be at least 2")
     if folds > x.size:
@@ -126,7 +148,7 @@ def _metrics(residuals, weights):
 
 
 def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
-                   block=None, seed=0, extent=None):
+                   block=None, seed=0, extent=None, groups=None):
     """Run spatial cross-validation and return held-out summary metrics.
 
     ``build(train_indices, train_weights)`` must return a solved task,
@@ -152,10 +174,15 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
             raise ValueError("weights must have one value per point")
 
     labels = fold_assignment(x, y, folds=folds, mode=mode, block=block,
-                             seed=seed)
+                             seed=seed, groups=groups)
+    if folds is None:
+        folds = int(labels.max()) + 1
     fold_details = []
     all_residuals = []
     all_weights = []
+    all_groups = []
+    if groups is not None:
+        groups = np.asarray(groups).ravel()
     for number in range(folds):
         train = np.flatnonzero(labels != number)
         test = np.flatnonzero(labels == number)
@@ -171,6 +198,8 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
         used_weights = weights[test][stats["used"]]
         all_residuals.append(stats["residuals"])
         all_weights.append(used_weights)
+        if groups is not None:
+            all_groups.append(groups[test][stats["used"]])
         details = _metrics(stats["residuals"], used_weights)
         details.update({"fold": number, "n_train": int(train.size),
                         "n_test": int(test.size)})
@@ -182,4 +211,13 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
     overall.update({"folds": folds, "mode": mode,
                     "block": list(block) if isinstance(block, tuple) else block,
                     "fold_details": fold_details})
+    if groups is not None:
+        group_values = np.concatenate(all_groups) if all_groups else np.array([])
+        group_details = []
+        for value in np.unique(group_values):
+            selected = group_values == value
+            metrics = _metrics(residuals[selected], used_weights[selected])
+            metrics["group"] = value.item() if hasattr(value, "item") else value
+            group_details.append(metrics)
+        overall["group_details"] = group_details
     return overall

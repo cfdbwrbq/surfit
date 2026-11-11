@@ -143,6 +143,11 @@ Testing
    * - ``python3 src/pysurfit/tests/test_tiled.py``
      - a 41x41 synthetic field is solved in nine overlapping tiles and written
        to a memmap; the mosaic has no undefined inner nodes
+   * - ``python3 src/pysurfit/tests/test_array_ingest.py``
+     - points, curves, areas and contours can be registered from numpy arrays
+   * - ``python3 src/pysurfit/tests/test_stack.py``
+     - ordered layers share a grid; crossings, thickness and pinch-outs are
+       reported
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - GeoTIFF values, geotransform, CRS and nodata (skips without GDAL)
    * - ``python3 src/pysurfit/tests/test_strict.py``

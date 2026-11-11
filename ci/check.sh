@@ -142,6 +142,12 @@ run geotiff "$PYTHON" "$TESTS/test_geotiff.py"
 step "out-of-core tiled mosaic"
 run tiled "$PYTHON" "$TESTS/test_tiled.py"
 
+step "array ingestion"
+run array-ingest "$PYTHON" "$TESTS/test_array_ingest.py"
+
+step "ordered surface stack"
+run stack "$PYTHON" "$TESTS/test_stack.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

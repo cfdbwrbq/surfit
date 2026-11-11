@@ -98,6 +98,22 @@ Python
 поверхность без ковариации.
 
 
+Массивы и таблицы
+-----------------
+
+Данные не обязаны приходить через файл. Session может зарегистрировать массивы
+напрямую::
+
+    task.add_points(x, y, z, weights=sigma_inv, name="wells")
+    task.add_curves(x, y, name="line")
+    task.add_areas(x, y, name="zone")
+    task.add_contours(x, y, z, name="iso")
+
+Методы внутри пишут временный columned-файл и удаляют его; данные остаются в
+задаче как обычно. Это короткий путь из pandas, Arrow или курсора БД, и
+provenance остаётся у вызывающего кода. ``add_surface`` по-прежнему остаётся
+массивным путём для растра/тренда.
+
 Остатки и chi-square
 --------------------
 
@@ -162,6 +178,16 @@ IRLS-веса остатков: Huber оставляет точку с умен�
         build, x, y, z, folds=5, mode="block", block=2.0
     )
     result["rmse"], result["bias"], result["fold_details"]
+
+Для сгруппированных данных (скважина, участок, кампания, прибор) используйте
+``mode="group"`` и один group id на точку. ``folds=None`` означает
+leave-one-group-out; группа не может попасть одновременно в train и validation::
+
+    result = surfit.cross_validate(
+        build, x, y, z, mode="group", groups=well_id)
+
+``result["group_details"]`` содержит RMSE, bias, MAE и counts по каждой
+группе. ``select_parameter`` принимает тот же аргумент ``groups``.
 
 ``mode="random"`` — дешёвая проверка; ``mode="block"`` отдаёт в фолд целые
 прямоугольные блоки, ``mode="kfold"`` сохраняет порядок входа. Размер блока
@@ -409,6 +435,17 @@ Quality workflow
 .. literalinclude:: ../../examples/python/quality_workflow.py
    :language: python
 
+Обмен растрами
+----------------
+
+``surfit.read_geotiff(path, band=1)`` читает north-up GeoTIFF и возвращает
+``values``, ``extent``, ``crs`` и ``nodata``. Узлы — центры ячеек, row 0 —
+``min_y``, а повёрнутые/west-up растры отвергаются, а не смещаются молча.
+
+``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)``
+пишет по GeoTIFF на слой плюс ``manifest.json`` с именами, порядком, extent,
+CRS и nodata. Это формат обмена, а не приватный контейнер.
+
 Strict-режим
 ------------
 
@@ -456,6 +493,25 @@ Out-of-core тайлы
 Callback отвечает за выбор/обрезку данных; у тайла должно быть не меньше
 восьми узлов на сторону, потому что первая фаза движка — 8x8.
 
+
+Слоистые поверхности
+--------------------
+
+``SurfaceStack`` — упорядоченный набор независимых Session на одной сетке. Он
+добавляет оркестрацию и отчёт, а не второй solver::
+
+    stack = surfit.SurfaceStack("site")
+    stack.add_layer("top", lambda: build_top())
+    stack.add_layer("bottom", lambda: build_bottom())
+    stack.solve()
+    report = stack.report()
+    report["crossings"]
+    report["layers"][0]["thickness"]["pinchouts"]
+
+Слои упорядочены; crossing — где верхний слой опускается ниже следующего,
+pinch-out — неположительная толщина. Стек также отвергает слои с разными
+extent/step. Используйте его, когда несколько поверхностей нужно решить и
+проверить вместе; для одной поверхности остаётся обычный ``Session``.
 
 Serial-режим pool
 -----------------

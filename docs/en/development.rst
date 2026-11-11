@@ -148,6 +148,8 @@ Testing
    * - ``python3 src/pysurfit/tests/test_stack.py``
      - ordered layers share a grid; crossings, thickness and pinch-outs are
        reported
+   * - ``python3 src/pysurfit/tests/test_calibration.py``
+     - split-conformal quantile and calibrated interval
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - GeoTIFF values, geotransform, CRS and nodata (skips without GDAL)
    * - ``python3 src/pysurfit/tests/test_strict.py``

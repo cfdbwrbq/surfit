@@ -51,6 +51,16 @@ def main():
     assert crossed.report()["crossings"] > 0
     crossed.close()
 
+    parallel = surfit.SurfaceStack("parallel")
+    parallel.add_layer("top", lambda: layer(10.0))
+    parallel.add_layer("bottom", lambda: layer(4.0))
+    parallel.solve(parallel=True, workers=2)
+    assert parallel.report()["crossings"] == 0
+    thickness = parallel.thickness("top")
+    assert np.allclose(thickness[np.isfinite(thickness)], 6.0)
+    assert parallel.pinchout_mask("top").sum() == 0
+    parallel.close()
+
     duplicate = surfit.SurfaceStack("duplicate")
     duplicate.add_layer("a", lambda: layer(1.0))
     try:

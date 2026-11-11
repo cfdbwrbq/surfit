@@ -517,3 +517,39 @@ def quality_report(task, x, y, z, weights=None, surface=None, threshold=3.5,
         "metadata": metadata,
         "provenance": build_provenance(task, sources),
     }
+
+
+def conformal_quantile(residuals, level=0.9):
+    """Finite-sample quantile of absolute residuals for split conformal use.
+
+    ``level`` is the desired coverage (0.9 -> the 90th percentile).  The
+    quantile uses the finite-sample correction ``ceil((n + 1) * level) / n``
+    and is capped at 1.  It is a calibration quantity, not a posterior.
+    """
+    residuals = np.asarray(residuals, dtype=float).ravel()
+    residuals = residuals[np.isfinite(residuals)]
+    if residuals.size == 0:
+        raise ValueError("conformal_quantile needs at least one finite residual")
+    if not 0.0 < level < 1.0:
+        raise ValueError("level must be between 0 and 1")
+    count = residuals.size
+    rank = int(np.ceil((count + 1) * level))
+    rank = min(max(rank, 1), count)
+    return float(np.partition(np.abs(residuals), rank - 1)[rank - 1])
+
+
+def calibrated_interval(center, residuals, level=0.9):
+    """Symmetric split-conformal interval around ``center``.
+
+    ``center`` is a scalar or an array; ``residuals`` are held-out residuals
+    used to calibrate the width.  The result is a symmetric interval, not a
+    posterior and not a kriging variance.
+    """
+    quantile = conformal_quantile(residuals, level)
+    center = np.asarray(center, dtype=float)
+    return {
+        "lower": center - quantile,
+        "upper": center + quantile,
+        "quantile": quantile,
+        "level": float(level),
+    }

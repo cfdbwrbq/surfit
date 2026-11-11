@@ -339,6 +339,20 @@ block resampling, which keeps whole spatial blocks together::
 or pass ``x=x, y=y, block_size=10.0`` and the labels are derived for you.
 
 
+Split-conformal calibration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``surfit.conformal_quantile(residuals, level=0.9)`` returns the finite-sample
+absolute-residual quantile.  ``surfit.calibrated_interval(center, residuals,
+level=0.9)`` broadcasts a symmetric calibrated interval around a scalar or an
+array::
+
+    interval = surfit.calibrated_interval(mean, held_out_residuals, 0.9)
+    interval["lower"], interval["upper"], interval["quantile"]
+
+Calibrate on held-out residuals, not on training residuals.  This is a
+calibrated ensemble interval, not a posterior and not kriging variance.
+
 The outer IRLS driver
 ---------------------
 
@@ -515,6 +529,10 @@ Layers are ordered; a crossing is where a higher layer falls below the next
 one, and a pinch-out is a non-positive thickness.  The stack also rejects
 layers that do not share the same extent/step.  Use it when several surfaces
 must be solved and checked together; keep ordinary ``Session`` for one surface.
+
+``solve(parallel=True)`` builds independent layers in a thread pool.
+``thickness(name)`` returns the array to the next layer and
+``pinchout_mask(name)`` selects cells at or below zero thickness.
 
 Serial pool mode
 ----------------

@@ -54,21 +54,35 @@ class SurfaceStack:
     def layer_names(self):
         return [name for name, _ in self._layers]
 
-    def solve(self):
-        """Build and solve every layer, checking the shared grid."""
+    def _build_layer(self, item):
+        name, build = item
+        task = build()
+        if not hasattr(task, "values"):
+            raise TypeError("layer %r build() must return a Session" % (name,))
+        if hasattr(task, "solve"):
+            task.solve()
+        return task
+
+    def solve(self, parallel=False, workers=None):
+        """Build and solve every layer, checking the shared grid.
+
+        ``parallel=True`` builds/solves independent layers in a thread pool.
+        The engine's globals are thread-local, so separate Sessions are safe;
+        a callback that shares one Session between layers is not.
+        """
         if not self._layers:
             raise ValueError("a stack needs at least one layer")
         tasks = []
-        values = []
-        extent = None
         try:
-            for name, build in self._layers:
-                task = build()
-                if not hasattr(task, "values"):
-                    raise TypeError(
-                        "layer %r build() must return a Session" % (name,))
-                if hasattr(task, "solve"):
-                    task.solve()
+            if parallel:
+                from concurrent.futures import ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=workers) as pool:
+                    tasks = list(pool.map(self._build_layer, self._layers))
+            else:
+                tasks = [self._build_layer(item) for item in self._layers]
+            values = []
+            extent = None
+            for (name, _), task in zip(self._layers, tasks):
                 layer_values = np.asarray(task.values(), dtype=float)
                 layer_extent = _extent_of(task)
                 if extent is None:
@@ -76,7 +90,6 @@ class SurfaceStack:
                 elif not _same_extent(extent, layer_extent):
                     raise ValueError("layer %r does not share the stack grid"
                                      % (name,))
-                tasks.append(task)
                 values.append(layer_values)
         except Exception:
             for task in tasks:
@@ -88,6 +101,28 @@ class SurfaceStack:
         self._values = values
         self._extent = extent
         return self
+
+    def thickness(self, name):
+        """Thickness to the next layer; NaN where either side is undefined."""
+        if not self._values:
+            raise RuntimeError("solve() the stack first")
+        names = self.layer_names()
+        if name not in names:
+            raise KeyError("unknown layer %r" % (name,))
+        index = names.index(name)
+        if index == len(names) - 1:
+            raise ValueError("the last layer has no next layer")
+        upper = self._values[index]
+        lower = self._values[index + 1]
+        both = _defined(upper) & _defined(lower)
+        result = np.full(upper.shape, np.nan)
+        result[both] = upper[both] - lower[both]
+        return result
+
+    def pinchout_mask(self, name, threshold=0.0):
+        """Boolean cells where the layer is absent/non-positive thickness."""
+        thickness = self.thickness(name)
+        return np.isfinite(thickness) & (thickness <= float(threshold))
 
     def values(self, name=None):
         """Return one layer array, or a name -> array mapping."""

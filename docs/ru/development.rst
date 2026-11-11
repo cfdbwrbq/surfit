@@ -150,6 +150,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_stack.py``
      - упорядоченные слои делят сетку; crossings, толщина и pinch-outs
        попадают в отчёт
+   * - ``python3 src/pysurfit/tests/test_calibration.py``
+     - split-conformal квантиль и калиброванный интервал
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``

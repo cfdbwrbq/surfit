@@ -148,6 +148,9 @@ run array-ingest "$PYTHON" "$TESTS/test_array_ingest.py"
 step "ordered surface stack"
 run stack "$PYTHON" "$TESTS/test_stack.py"
 
+step "calibrated interval"
+run calibration "$PYTHON" "$TESTS/test_calibration.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

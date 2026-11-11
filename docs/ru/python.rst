@@ -337,6 +337,20 @@ posterior. Стоит один полный solve на реплику. Для к
 автоматически.
 
 
+Split-conformal калибровка
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``surfit.conformal_quantile(residuals, level=0.9)`` возвращает finite-sample
+квантиль абсолютных остатков. ``surfit.calibrated_interval(center, residuals,
+level=0.9)`` строит симметричный калиброванный интервал вокруг скаляра или
+массива::
+
+    interval = surfit.calibrated_interval(mean, held_out_residuals, 0.9)
+    interval["lower"], interval["upper"], interval["quantile"]
+
+Калибруйте на held-out остатках, не на train. Это калиброванный интервал
+ансамбля, а не posterior и не kriging variance.
+
 Внешний IRLS-драйвер
 --------------------
 
@@ -512,6 +526,10 @@ Callback отвечает за выбор/обрезку данных; у тай
 pinch-out — неположительная толщина. Стек также отвергает слои с разными
 extent/step. Используйте его, когда несколько поверхностей нужно решить и
 проверить вместе; для одной поверхности остаётся обычный ``Session``.
+
+``solve(parallel=True)`` строит независимые слои в thread pool.
+``thickness(name)`` возвращает массив до следующего слоя, а
+``pinchout_mask(name)`` выбирает ячейки с нулевой или отрицательной толщиной.
 
 Serial-режим pool
 -----------------

@@ -739,8 +739,9 @@ _reexport_commands()
 from surfit.postgis import read_postgis  # noqa: E402  (after the core re-exports)
 from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty,
-    cell_attributes, diagnostic_points, diagnostics_to_geojson, ensemble,
-    outlier_mask, point_residuals, quality_report)
+    calibrated_interval, cell_attributes, conformal_quantile,
+    diagnostic_points, diagnostics_to_geojson, ensemble, outlier_mask,
+    point_residuals, quality_report)
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402

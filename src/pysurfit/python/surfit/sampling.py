@@ -167,12 +167,14 @@ def _clip_rectangle(polygon, bounds):
     return polygon
 
 
-def _cell_area(point, others, bounds):
+def _cell_area(point, points, index, bounds):
     polygon = _clip_rectangle(
         [(bounds[0], bounds[2]), (bounds[1], bounds[2]),
          (bounds[1], bounds[3]), (bounds[0], bounds[3])], bounds)
-    for index in range(others.shape[0]):
-        other = others[index]
+    for other_index in range(points.shape[0]):
+        if other_index == index:
+            continue
+        other = points[other_index]
         a = 2.0 * (other[0] - point[0])
         b = 2.0 * (other[1] - point[1])
         c = (other[0] ** 2 + other[1] ** 2
@@ -183,7 +185,43 @@ def _cell_area(point, others, bounds):
     return _area(polygon)
 
 
-def voronoi_weights(x, y, bounds=None):
+def _areas_clip(points, bounds):
+    areas = np.zeros(points.shape[0], dtype=float)
+    for index in range(points.shape[0]):
+        areas[index] = _cell_area(points[index], points, index, bounds)
+    return areas
+
+
+def _areas_scipy(points, bounds):
+    try:
+        from scipy.spatial import Voronoi, QhullError
+    except ImportError:
+        raise
+    try:
+        diagram = Voronoi(points)
+    except QhullError as error:
+        raise ValueError("scipy could not build the Voronoi diagram") from error
+    areas = np.zeros(points.shape[0], dtype=float)
+    for index in range(points.shape[0]):
+        region = diagram.regions[diagram.point_region[index]]
+        if region and -1 not in region:
+            polygon = [diagram.vertices[vertex] for vertex in region]
+            areas[index] = _area(_clip_rectangle(polygon, bounds))
+        else:
+            areas[index] = _cell_area(points[index], points, index, bounds)
+    return areas
+
+
+def _weights_from_areas(areas, inverse, counts):
+    if np.any(areas <= 0):
+        raise ValueError("a Voronoi cell has zero area; check duplicates/bounds")
+    raw = (1.0 / areas)[inverse] / counts[inverse]
+    if not np.isfinite(raw).all() or raw.sum() <= 0:
+        raise ValueError("could not build finite non-negative weights")
+    return raw / raw.mean()
+
+
+def voronoi_weights(x, y, bounds=None, backend="auto"):
     """Polygonal declustering weights for 2D sample locations.
 
     The weight is proportional to the inverse area of the point's Voronoi cell
@@ -195,8 +233,11 @@ def voronoi_weights(x, y, bounds=None):
 
     This is 2D on purpose: in a surfit surface ``z`` is the measured value,
     not a spatial coordinate.  Use a separate 3D helper only for true 3D
-    samples.  SciPy is optional; it supplies the Voronoi topology, while the
-    clipping is done here.
+    samples.
+
+    ``backend="auto"`` uses SciPy's Voronoi topology when SciPy is installed
+    and falls back to pure half-plane clipping otherwise.  ``"scipy"`` requires
+    SciPy; ``"clip"`` is always available and never imports it.
     """
     x = np.asarray(x, dtype=float).ravel()
     y = np.asarray(y, dtype=float).ravel()
@@ -204,12 +245,8 @@ def voronoi_weights(x, y, bounds=None):
         raise ValueError("x and y must have the same length")
     if x.size < 3:
         raise ValueError("voronoi_weights needs at least three points")
-    try:
-        from scipy.spatial import Voronoi, QhullError
-    except ImportError as error:
-        raise ImportError(
-            "voronoi_weights needs scipy; install the scipy package"
-        ) from error
+    if backend not in ("auto", "scipy", "clip"):
+        raise ValueError("backend must be 'auto', 'scipy' or 'clip'")
     xmin, xmax, ymin, ymax = _bounds_2d(x, y, bounds)
     unique, inverse, counts = np.unique(
         np.column_stack((x, y)), axis=0, return_inverse=True,
@@ -218,23 +255,16 @@ def voronoi_weights(x, y, bounds=None):
         raise ValueError("only %d distinct points" % unique.shape[0])
     if np.linalg.matrix_rank(unique - unique[0]) < 2:
         raise ValueError("points are collinear; 2D Voronoi area is undefined")
-    try:
-        diagram = Voronoi(unique)
-    except QhullError as error:
-        raise ValueError("scipy could not build the Voronoi diagram") from error
     bounds_tuple = (xmin, xmax, ymin, ymax)
-    areas = np.zeros(unique.shape[0], dtype=float)
-    for index in range(unique.shape[0]):
-        region = diagram.regions[diagram.point_region[index]]
-        if region and -1 not in region:
-            polygon = [diagram.vertices[vertex] for vertex in region]
-            areas[index] = _area(_clip_rectangle(polygon, bounds_tuple))
-        else:
-            others = np.delete(unique, index, axis=0)
-            areas[index] = _cell_area(unique[index], others, bounds_tuple)
-    if np.any(areas <= 0):
-        raise ValueError("a Voronoi cell has zero area; check duplicates/bounds")
-    raw = (1.0 / areas)[inverse] / counts[inverse]
-    if not np.isfinite(raw).all() or raw.sum() <= 0:
-        raise ValueError("could not build finite non-negative weights")
-    return raw / raw.mean()
+    if backend == "clip":
+        areas = _areas_clip(unique, bounds_tuple)
+    else:
+        try:
+            areas = _areas_scipy(unique, bounds_tuple)
+        except ImportError:
+            if backend == "scipy":
+                raise ImportError(
+                    "backend='scipy' needs scipy; use backend='clip'"
+                ) from None
+            areas = _areas_clip(unique, bounds_tuple)
+    return _weights_from_areas(areas, inverse, counts)

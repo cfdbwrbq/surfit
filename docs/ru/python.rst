@@ -215,8 +215,10 @@ GeoJSON и CSV — формат передачи в GIS или таблицу д
 ``surfit.voronoi_weights(x, y, bounds=None)`` возвращает веса со средним 1:
 вес точки пропорционален обратной площади её ячейки Вороного, обрезанной по
 ``bounds``. ``bounds`` — mapping с ``min_x/max_x/min_y/max_y`` или
-``(xmin, xmax, ymin, ymax)``; по умолчанию — bbox точек. SciPy даёт топологию
-Вороного и необязателен.
+``(xmin, xmax, ymin, ymax)``; по умолчанию — bbox точек.
+``backend="auto"`` использует SciPy, если он установлен, и откатывается на
+чистое half-plane clipping; ``"clip"`` вообще не импортирует SciPy, а
+``"scipy"`` требует его. Среднее весов — 1.
 
 ```python
 weights = surfit.voronoi_weights(x, y, bounds=extent)

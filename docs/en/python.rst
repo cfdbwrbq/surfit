@@ -221,7 +221,9 @@ Polygonal declustering
 a point's weight is proportional to the inverse area of its Voronoi cell
 clipped to ``bounds``.  ``bounds`` is a mapping with
 ``min_x/max_x/min_y/max_y`` or ``(xmin, xmax, ymin, ymax)``; the default is the
-point bounding box.  SciPy supplies the Voronoi topology and is optional.
+point bounding box.  ``backend="auto"`` uses SciPy when it is installed and
+falls back to pure half-plane clipping; ``"clip"`` never imports SciPy, and
+``"scipy"`` requires it.  The result has mean 1.
 
 ```python
 weights = surfit.voronoi_weights(x, y, bounds=extent)

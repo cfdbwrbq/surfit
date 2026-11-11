@@ -218,6 +218,10 @@ reduced = surfit.decluster_points(
     x, y, z, weights=sigma_inv, method="mean", block=10.0)
 # methods: mean, nearest, idw, min, max; raw points stay for residuals
 
+# 2D polygonal declustering: inverse clipped Voronoi cell area, mean 1.
+weights = surfit.voronoi_weights(x, y, bounds=extent)
+# backend="auto" uses scipy when present; "clip" is pure numpy fallback
+
 # Collar (solve larger, crop back) and support-based resolution.
 padded = surfit.pad_extent(extent, margin=20.0)
 values, extent = surfit.crop_surface(values, padded, original_extent)

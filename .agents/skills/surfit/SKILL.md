@@ -287,6 +287,8 @@ functional (for example before the points rule); the stack then solves
 bottom-up and enforces ``top >= lower + min_thickness``.
   ``apply_pinchout(name, mode="merge"|"undef")`` is an explicit post-solve
 projection; ``report()["seconds"]`` records wall time.
+  ``surfit.benchmark_stack({...}, repeats=3)` compares direct, sequential
+and parallel stack timings; it is not a CI speed gate.
 
 For held-out calibration use ``conformal_quantile(residuals, level)`` and
 ``calibrated_interval(center, residuals, level)``.  Calibrate on held-out

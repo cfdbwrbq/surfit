@@ -152,6 +152,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
        попадают в отчёт
    * - ``python3 src/pysurfit/tests/test_calibration.py``
      - split-conformal квантиль и калиброванный интервал
+   * - ``python3 src/pysurfit/tests/test_benchmark.py``
+     - возвращаются direct/sequential/parallel timings (без speed gate)
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
    * - ``python3 src/pysurfit/tests/test_strict.py``

@@ -549,6 +549,22 @@ extent/step. Используйте его, когда несколько пов
 проекции, а не скрытые ограничения solver’а. ``report()["seconds"]`` хранит
 время решения стека.
 
+Benchmark
+---------
+
+``surfit.benchmark_stack`` сравнивает direct in-memory цикл, последовательный
+stack и параллельный stack на builder’ах вызывающего кода::
+
+    result = surfit.benchmark_stack(
+        {"top": build_top, "bottom": build_bottom},
+        repeats=3, workers=4)
+    result["sequential"]["median"], result["parallel"]["median"]
+    result["speedup_parallel"]
+
+Это только wall time; числа зависят от данных, ядер и опций сборки, поэтому
+это не CI-критерий производительности. Builder должен создавать новую Session
+на каждый вызов.
+
 Serial-режим pool
 -----------------
 

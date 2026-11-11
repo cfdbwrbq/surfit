@@ -121,7 +121,7 @@ def check_api():
         "psf_report", "estimate_psf",
         "solve_tiled", "select_geometries", "tile_boxes", "SurfaceStack",
         "read_geotiff", "save_geotiff_stack", "conformal_quantile",
-        "calibrated_interval",
+        "calibrated_interval", "benchmark_stack",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

@@ -151,6 +151,9 @@ run stack "$PYTHON" "$TESTS/test_stack.py"
 step "calibrated interval"
 run calibration "$PYTHON" "$TESTS/test_calibration.py"
 
+step "stack benchmark summary"
+run benchmark "$PYTHON" "$TESTS/test_benchmark.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

@@ -552,6 +552,22 @@ there; ``mode="undef"`` marks the upper cells undefined.  These are explicit
 post-solve projections, not hidden solver constraints.  ``report()["seconds"]``
 records the wall time of the stack solve.
 
+Benchmark
+---------
+
+``surfit.benchmark_stack`` compares a direct in-memory loop, the sequential
+stack and the parallel stack on the caller's builders::
+
+    result = surfit.benchmark_stack(
+        {"top": build_top, "bottom": build_bottom},
+        repeats=3, workers=4)
+    result["sequential"]["median"], result["parallel"]["median"]
+    result["speedup_parallel"]
+
+It reports wall time only; the numbers depend on the data, cores and build
+options, so they are not a CI performance assertion.  Builders must create a
+fresh Session on every call.
+
 Serial pool mode
 ----------------
 

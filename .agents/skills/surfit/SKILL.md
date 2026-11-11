@@ -278,7 +278,14 @@ stack.report()["crossings"]
 ```
 
 `SurfaceStack` is orchestration over independent Sessions; it is not a second
-solver and does not turn surfit into a 3D modeller.
+solver and does not turn surfit into a 3D modeller.  ``solve(parallel=True)``
+fans independent layers out to a thread pool; ``thickness(name)`` and
+``pinchout_mask(name)`` expose the relation between adjacent layers.
+
+For held-out calibration use ``conformal_quantile(residuals, level)`` and
+``calibrated_interval(center, residuals, level)``.  Calibrate on held-out
+residuals, not training residuals; call it a calibrated interval, not a
+posterior.
 
 ## Files and examples
 

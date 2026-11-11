@@ -195,6 +195,11 @@ Validation, uncertainty and resolution
   `doi:10.1016/j.cageo.2012.06.002 <https://doi.org/10.1016/j.cageo.2012.06.002>`_
 * CF Conventions 1.13. `cfconventions.org <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.13/cf-conventions.html>`_
 * OGC GeoTIFF 1.1. `docs.ogc.org <https://docs.ogc.org/is/19-008r4/19-008r4.html>`_
+* Polygonal declustering — inverse Voronoi cell area; the recipe here is a
+  2D, clipped version. `Cell Declustering Parameter Selection
+  <https://geostatisticslessons.com/pdfs/celldeclustering.pdf>`_ and
+  `Polygonal declustering notes
+  <https://repositories.lib.utexas.edu/server/api/core/bitstreams/573969bf-dac7-42f1-b913-de5a49f4fa1b/content>`_.
 
 Rules and applications
 ----------------------

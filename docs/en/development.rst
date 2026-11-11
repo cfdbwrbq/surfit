@@ -127,6 +127,9 @@ Testing
    * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
      - block bootstrap samples complete blocks; block labels and auto labels
        agree
+   * - ``python3 src/pysurfit/tests/test_voronoi_weights.py``
+     - 2D polygonal declustering: known cell areas, duplicate splitting,
+       collinearity and bounds errors (SKIP without scipy)
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - per-cell support arrays and the report coverage; declustering methods
        reduce blocks while preserving the total weight

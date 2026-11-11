@@ -90,7 +90,8 @@ def check_api():
     required = (
         "Session", "serial_threads", "area_read", "get_threads", "init_threads",
         "read_postgis", "diagnostics", "tiled", "cross_validate",
-        "file_sha256", "source_hashes", "decluster_points", "block_labels",
+        "file_sha256", "source_hashes", "decluster_points", "voronoi_weights",
+        "block_labels",
         "experimental_variogram", "fit_variogram", "anisotropy",
         "diagnostic_points", "to_crs", "transform_extent",
         "pad_extent", "crop_surface", "resolution_report", "select_parameter",

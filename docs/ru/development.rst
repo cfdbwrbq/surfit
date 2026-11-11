@@ -129,6 +129,9 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
      - блочный bootstrap выбирает целые блоки; метки блоков и авто-метки
        согласованы
+   * - ``python3 src/pysurfit/tests/test_voronoi_weights.py``
+     - 2D polygonal declustering: известные площади ячеек, деление дубликатов,
+       коллинеарность и ошибки bounds (SKIP без scipy)
    * - ``python3 src/pysurfit/tests/test_quality_attributes.py``
      - массивы поддержки ячеек и покрытие в report; методы декластеризации
        сводят блоки, сохраняя суммарный вес

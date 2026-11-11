@@ -90,6 +90,9 @@ run metadata "$PYTHON" "$TESTS/test_metadata.py"
 step "per-node support and declustering"
 run quality-attributes "$PYTHON" "$TESTS/test_quality_attributes.py"
 
+step "polygonal declustering"
+run voronoi "$PYTHON" "$TESTS/test_voronoi_weights.py"
+
 step "variogram diagnostics"
 run variogram "$PYTHON" "$TESTS/test_variogram.py"
 

@@ -214,6 +214,26 @@ GeoJSON and CSV are the intended hand-off to a GIS or a review spreadsheet.
 Contour-label and fault-direction codes are not invented here; this layer
 classifies the point support it can actually see.
 
+Polygonal declustering
+~~~~~~~~~~~~~~~~~~~~~~
+
+``surfit.voronoi_weights(x, y, bounds=None)`` returns weights whose mean is 1:
+a point's weight is proportional to the inverse area of its Voronoi cell
+clipped to ``bounds``.  ``bounds`` is a mapping with
+``min_x/max_x/min_y/max_y`` or ``(xmin, xmax, ymin, ymax)``; the default is the
+point bounding box.  SciPy supplies the Voronoi topology and is optional.
+
+```python
+weights = surfit.voronoi_weights(x, y, bounds=extent)
+task.pnts_set_weights("wells", weights)
+```
+
+Use this for **2D sample locations**; in a surfit surface ``z`` is the measured
+value, not a spatial coordinate.  Duplicates share their cell area, boundary
+cells are clipped rather than dropped, and the helper raises on collinear or
+too few points.  ``decluster_points`` is the different operation that reduces
+blocks to representatives.
+
 Provenance metadata
 -------------------
 

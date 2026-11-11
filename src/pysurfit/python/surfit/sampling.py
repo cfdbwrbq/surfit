@@ -108,3 +108,133 @@ def decluster_points(x, y, z, weights=None, method="mean", block=None):
 
 # A short alias for callers that already use the "points_" command prefix.
 decluster = decluster_points
+
+
+def _bounds_2d(x, y, bounds):
+    if bounds is None:
+        xmin, xmax = float(np.min(x)), float(np.max(x))
+        ymin, ymax = float(np.min(y)), float(np.max(y))
+    elif hasattr(bounds, "get"):
+        xmin = float(bounds["min_x"])
+        xmax = float(bounds["max_x"])
+        ymin = float(bounds["min_y"])
+        ymax = float(bounds["max_y"])
+    else:
+        xmin, xmax, ymin, ymax = (float(value) for value in bounds)
+    if not (xmin < xmax and ymin < ymax):
+        raise ValueError("bounds must have min_x < max_x and min_y < max_y")
+    if (np.any(x < xmin) or np.any(x > xmax)
+            or np.any(y < ymin) or np.any(y > ymax)):
+        raise ValueError("all points must lie inside bounds")
+    return xmin, xmax, ymin, ymax
+
+
+def _clip(polygon, a, b, c):
+    """Clip a convex polygon to ``a*x + b*y <= c`` (Sutherland-Hodgman)."""
+    output = []
+    eps = 1e-12
+    for index, first in enumerate(polygon):
+        second = polygon[(index + 1) % len(polygon)]
+        first_value = a * first[0] + b * first[1] - c
+        second_value = a * second[0] + b * second[1] - c
+        if first_value <= eps:
+            output.append(first)
+        if (first_value > eps and second_value < -eps) or (
+                first_value < -eps and second_value > eps):
+            fraction = first_value / (first_value - second_value)
+            output.append((first[0] + fraction * (second[0] - first[0]),
+                           first[1] + fraction * (second[1] - first[1])))
+    return output
+
+
+def _area(polygon):
+    if len(polygon) < 3:
+        return 0.0
+    total = 0.0
+    for index, first in enumerate(polygon):
+        second = polygon[(index + 1) % len(polygon)]
+        total += first[0] * second[1] - second[0] * first[1]
+    return abs(total) / 2.0
+
+
+def _clip_rectangle(polygon, bounds):
+    xmin, xmax, ymin, ymax = bounds
+    for a, b, c in ((-1.0, 0.0, -xmin), (1.0, 0.0, xmax),
+                    (0.0, -1.0, -ymin), (0.0, 1.0, ymax)):
+        polygon = _clip(polygon, a, b, c)
+        if not polygon:
+            return []
+    return polygon
+
+
+def _cell_area(point, others, bounds):
+    polygon = _clip_rectangle(
+        [(bounds[0], bounds[2]), (bounds[1], bounds[2]),
+         (bounds[1], bounds[3]), (bounds[0], bounds[3])], bounds)
+    for index in range(others.shape[0]):
+        other = others[index]
+        a = 2.0 * (other[0] - point[0])
+        b = 2.0 * (other[1] - point[1])
+        c = (other[0] ** 2 + other[1] ** 2
+             - point[0] ** 2 - point[1] ** 2)
+        polygon = _clip(polygon, a, b, c)
+        if not polygon:
+            return 0.0
+    return _area(polygon)
+
+
+def voronoi_weights(x, y, bounds=None):
+    """Polygonal declustering weights for 2D sample locations.
+
+    The weight is proportional to the inverse area of the point's Voronoi cell
+    clipped to ``bounds``.  ``bounds`` is a mapping with
+    ``min_x/max_x/min_y/max_y`` or ``(xmin, xmax, ymin, ymax)``; the default is
+    the point bounding box.  The result has mean 1, so it can be written with
+    ``pnts_set_weights``; zero-area duplicates are split between the duplicate
+    points.
+
+    This is 2D on purpose: in a surfit surface ``z`` is the measured value,
+    not a spatial coordinate.  Use a separate 3D helper only for true 3D
+    samples.  SciPy is optional; it supplies the Voronoi topology, while the
+    clipping is done here.
+    """
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    if x.size != y.size:
+        raise ValueError("x and y must have the same length")
+    if x.size < 3:
+        raise ValueError("voronoi_weights needs at least three points")
+    try:
+        from scipy.spatial import Voronoi, QhullError
+    except ImportError as error:
+        raise ImportError(
+            "voronoi_weights needs scipy; install the scipy package"
+        ) from error
+    xmin, xmax, ymin, ymax = _bounds_2d(x, y, bounds)
+    unique, inverse, counts = np.unique(
+        np.column_stack((x, y)), axis=0, return_inverse=True,
+        return_counts=True)
+    if unique.shape[0] < 3:
+        raise ValueError("only %d distinct points" % unique.shape[0])
+    if np.linalg.matrix_rank(unique - unique[0]) < 2:
+        raise ValueError("points are collinear; 2D Voronoi area is undefined")
+    try:
+        diagram = Voronoi(unique)
+    except QhullError as error:
+        raise ValueError("scipy could not build the Voronoi diagram") from error
+    bounds_tuple = (xmin, xmax, ymin, ymax)
+    areas = np.zeros(unique.shape[0], dtype=float)
+    for index in range(unique.shape[0]):
+        region = diagram.regions[diagram.point_region[index]]
+        if region and -1 not in region:
+            polygon = [diagram.vertices[vertex] for vertex in region]
+            areas[index] = _area(_clip_rectangle(polygon, bounds_tuple))
+        else:
+            others = np.delete(unique, index, axis=0)
+            areas[index] = _cell_area(unique[index], others, bounds_tuple)
+    if np.any(areas <= 0):
+        raise ValueError("a Voronoi cell has zero area; check duplicates/bounds")
+    raw = (1.0 / areas)[inverse] / counts[inverse]
+    if not np.isfinite(raw).all() or raw.sum() <= 0:
+        raise ValueError("could not build finite non-negative weights")
+    return raw / raw.mean()

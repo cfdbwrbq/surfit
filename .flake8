@@ -20,7 +20,7 @@ per-file-ignores =
     src/pysurfit/python/surfit/geotiff.py: WPS110,WPS210,WPS211,WPS221,WPS231,WPS336,WPS358,WPS432
     src/pysurfit/python/surfit/cross_validation.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS232,WPS238,WPS358,WPS432,WPS504
     src/pysurfit/python/surfit/provenance.py: WPS110,WPS202,WPS426,WPS504
-    src/pysurfit/python/surfit/sampling.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221
+    src/pysurfit/python/surfit/sampling.py: WPS110,WPS111,WPS114,WPS202,WPS210,WPS211,WPS221,WPS231,WPS238,WPS358,WPS432
     src/pysurfit/python/surfit/variogram.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS231,WPS236,WPS358,WPS432,WPS441,WPS459,WPS518
     src/pysurfit/python/surfit/crs.py: WPS111,WPS210
     src/pysurfit/python/surfit/padding.py: WPS110,WPS111,WPS210,WPS221,WPS226,WPS358

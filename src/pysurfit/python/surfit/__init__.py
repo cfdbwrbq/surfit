@@ -691,7 +691,8 @@ from surfit.cross_validation import (  # noqa: E402
 from surfit.variogram import (  # noqa: E402
     anisotropy, experimental_variogram, fit_variogram)
 from surfit.provenance import file_sha256, source_hashes  # noqa: E402
-from surfit.sampling import decluster, decluster_points  # noqa: E402
+from surfit.sampling import (  # noqa: E402
+    decluster, decluster_points, voronoi_weights)
 from surfit.crs import (  # noqa: E402
     is_geographic_crs, require_projected, to_crs, transform_extent)
 from surfit.padding import crop_surface, pad_extent  # noqa: E402

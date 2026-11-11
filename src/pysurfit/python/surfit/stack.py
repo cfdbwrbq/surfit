@@ -6,6 +6,8 @@ order, and reports crossings, thickness and pinch-outs.  A layer is independent
 otherwise, so the existing Session API remains the primitive.
 """
 
+import time
+
 import numpy as np
 
 from surfit import _surfit as _core
@@ -60,6 +62,7 @@ class SurfaceStack:
         self._relations = {}
         self._tasks = []
         self._values = []
+        self._timings = {}
         self._extent = None
 
     def add_layer(self, name, build, above=None, min_thickness=0.0,
@@ -111,6 +114,7 @@ class SurfaceStack:
             raise ValueError("a stack needs at least one layer")
         if self._relations and parallel:
             raise ValueError("relations require sequential solve")
+        started = time.perf_counter()
         tasks = []
         try:
             if self._relations:
@@ -178,6 +182,7 @@ class SurfaceStack:
             raise
         self._tasks = tasks
         self._values = values
+        self._timings = {"seconds": time.perf_counter() - started}
         self._extent = extent
         return self
 
@@ -203,6 +208,28 @@ class SurfaceStack:
         thickness = self.thickness(name)
         return np.isfinite(thickness) & (thickness <= float(threshold))
 
+    def apply_pinchout(self, name, threshold=0.0, mode="merge"):
+        """Apply an explicit post-solve pinch-out to the named layer.
+
+        ``mode="merge"`` sets the upper layer to the lower value (zero
+        thickness); ``mode="undef"`` marks the upper cells undefined.  This is
+        a projection after the solve, not a hidden solver constraint.
+        """
+        if mode not in ("merge", "undef"):
+            raise ValueError("mode must be 'merge' or 'undef'")
+        names = self.layer_names()
+        if name not in names:
+            raise KeyError("unknown layer %r" % (name,))
+        index = names.index(name)
+        if index == len(names) - 1:
+            raise ValueError("the last layer has no next layer")
+        mask = self.pinchout_mask(name, threshold)
+        if mode == "merge":
+            self._values[index][mask] = self._values[index + 1][mask]
+        else:
+            self._values[index][mask] = _UNDEF
+        return int(mask.sum())
+
     def values(self, name=None):
         """Return one layer array, or a name -> array mapping."""
         if not self._values:
@@ -220,7 +247,7 @@ class SurfaceStack:
         if not self._values:
             raise RuntimeError("solve() the stack first")
         report = {"name": self._name, "layers": [], "crossings": 0,
-                  "thickness": []}
+                  "thickness": [], "seconds": self._timings.get("seconds")}
         for index, ((name, _), values) in enumerate(
                 zip(self._layers, self._values)):
             defined = _defined(values)

@@ -547,6 +547,10 @@ error, not a silently ignored condition.
 ``solve(parallel=True)`` builds independent layers in a thread pool.
 ``thickness(name)`` returns the array to the next layer and
 ``pinchout_mask(name)`` selects cells at or below zero thickness.
+``apply_pinchout(name, mode="merge")`` sets the upper layer to the lower value
+there; ``mode="undef"`` marks the upper cells undefined.  These are explicit
+post-solve projections, not hidden solver constraints.  ``report()["seconds"]``
+records the wall time of the stack solve.
 
 Serial pool mode
 ----------------

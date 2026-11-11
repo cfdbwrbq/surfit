@@ -75,6 +75,17 @@ def main():
     assert np.min(top[both] - bottom[both]) >= 0.9
     constrained.close()
 
+    pinched = surfit.SurfaceStack("pinched")
+    pinched.add_layer("top", lambda: layer(10.0))
+    pinched.add_layer("bottom", lambda: layer(10.0))
+    pinched.solve()
+    assert pinched.pinchout_mask("top").sum() > 0
+    assert pinched.apply_pinchout("top", mode="merge") > 0
+    assert np.allclose(pinched.values("top"), pinched.values("bottom"))
+    assert pinched.report()["crossings"] == 0
+    assert pinched.report()["seconds"] >= 0.0
+    pinched.close()
+
     duplicate = surfit.SurfaceStack("duplicate")
     duplicate.add_layer("a", lambda: layer(1.0))
     try:

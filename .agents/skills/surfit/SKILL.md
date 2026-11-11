@@ -285,6 +285,8 @@ A solver-level relation is opt-in: the upper builder receives a
 ``SurfaceRelation`` and must call ``relation.apply(task)`` before the next
 functional (for example before the points rule); the stack then solves
 bottom-up and enforces ``top >= lower + min_thickness``.
+  ``apply_pinchout(name, mode="merge"|"undef")`` is an explicit post-solve
+projection; ``report()["seconds"]`` records wall time.
 
 For held-out calibration use ``conformal_quantile(residuals, level)`` and
 ``calibrated_interval(center, residuals, level)``.  Calibrate on held-out

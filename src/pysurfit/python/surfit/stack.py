@@ -31,6 +31,25 @@ def _same_extent(first, second):
                for key in keys)
 
 
+class SurfaceRelation:
+    """A condition passed to a layer builder for an inter-surface relation."""
+
+    def __init__(self, values, extent, min_thickness=0.0, penalty=0.0):
+        self.values = np.asarray(values, dtype=float)
+        self.extent = dict(extent)
+        self.min_thickness = float(min_thickness)
+        self.penalty = float(penalty)
+
+    def apply(self, task):
+        """Add the relation to an *unsolved* task before its next functional."""
+        shifted = self.values + self.min_thickness
+        shifted[~_defined(self.values)] = _UNDEF
+        task.add_surface(shifted, self.extent["min_x"], self.extent["step_x"],
+                         self.extent["min_y"], self.extent["step_y"],
+                         "__stack_relation")
+        task.surface_geq("__stack_relation", self.penalty)
+
+
 class SurfaceStack:
     """A named, ordered set of surfaces on one grid."""
 
@@ -38,16 +57,34 @@ class SurfaceStack:
         self._name = name
         self._map_name = name
         self._layers = []
+        self._relations = {}
         self._tasks = []
         self._values = []
         self._extent = None
 
-    def add_layer(self, name, build):
-        """Add a layer; ``build()`` returns a solved or solvable Session."""
+    def add_layer(self, name, build, above=None, min_thickness=0.0,
+                  penalty=0.0):
+        """Add a layer; ``build()`` returns a Session.
+
+        ``above`` names a layer lower in the stack.  The stack solves
+        bottom-up and calls ``build(relation)`` for the constrained layer; the
+        callback must call ``relation.apply(task)`` before its next functional
+        (for example before the points rule).  ``this >= lower + min_thickness``.
+        A builder that does not accept the relation argument raises a clear
+        error rather than silently ignoring the condition.
+        """
         if not callable(build):
             raise TypeError("build must be callable")
         if any(str(name) == existing for existing, _ in self._layers):
             raise ValueError("duplicate layer %r" % (name,))
+        if above is not None:
+            if str(above) in [str(item) for item, _ in self._layers]:
+                raise ValueError("relation target %r must be added later" % (above,))
+            self._relations[str(name)] = {
+                "target": str(above),
+                "min_thickness": float(min_thickness),
+                "penalty": float(penalty),
+            }
         self._layers.append((str(name), build))
         return self
 
@@ -72,25 +109,67 @@ class SurfaceStack:
         """
         if not self._layers:
             raise ValueError("a stack needs at least one layer")
+        if self._relations and parallel:
+            raise ValueError("relations require sequential solve")
         tasks = []
         try:
-            if parallel:
-                from concurrent.futures import ThreadPoolExecutor
-                with ThreadPoolExecutor(max_workers=workers) as pool:
-                    tasks = list(pool.map(self._build_layer, self._layers))
+            if self._relations:
+                solved = {}
+                ordered = list(reversed(self._layers))
+                result = {}
+                for name, build in ordered:
+                    relation_spec = self._relations.get(name)
+                    if relation_spec is not None:
+                        target = relation_spec["target"]
+                        if target not in solved:
+                            raise ValueError(
+                                "relation target %r is not solved" % (target,))
+                        relation = SurfaceRelation(
+                            solved[target][0], solved[target][1],
+                            relation_spec["min_thickness"],
+                            relation_spec["penalty"])
+                        try:
+                            task = build(relation)
+                        except TypeError as error:
+                            raise TypeError(
+                                "layer %r with a relation must accept "
+                                "relation in build(relation)" % (name,)) from error
+                    else:
+                        task = build()
+                    if not hasattr(task, "values"):
+                        raise TypeError(
+                            "layer %r build() must return a Session" % (name,))
+                    task.solve()
+                    layer_values = np.asarray(task.values(), dtype=float)
+                    layer_extent = _extent_of(task)
+                    solved[name] = (layer_values, layer_extent)
+                    result[name] = (task, layer_values, layer_extent)
+                tasks = [result[name][0] for name, _ in self._layers]
+                values = [result[name][1] for name, _ in self._layers]
+                extent = result[self._layers[-1][0]][2]
+                for (name, _), value, layer_extent in zip(
+                        self._layers, values, [result[n][2] for n, _ in self._layers]):
+                    if not _same_extent(extent, layer_extent):
+                        raise ValueError("layer %r does not share the stack grid"
+                                         % (name,))
             else:
-                tasks = [self._build_layer(item) for item in self._layers]
-            values = []
-            extent = None
-            for (name, _), task in zip(self._layers, tasks):
-                layer_values = np.asarray(task.values(), dtype=float)
-                layer_extent = _extent_of(task)
-                if extent is None:
-                    extent = layer_extent
-                elif not _same_extent(extent, layer_extent):
-                    raise ValueError("layer %r does not share the stack grid"
-                                     % (name,))
-                values.append(layer_values)
+                if parallel:
+                    from concurrent.futures import ThreadPoolExecutor
+                    with ThreadPoolExecutor(max_workers=workers) as pool:
+                        tasks = list(pool.map(self._build_layer, self._layers))
+                else:
+                    tasks = [self._build_layer(item) for item in self._layers]
+                values = []
+                extent = None
+                for (name, _), task in zip(self._layers, tasks):
+                    layer_values = np.asarray(task.values(), dtype=float)
+                    layer_extent = _extent_of(task)
+                    if extent is None:
+                        extent = layer_extent
+                    elif not _same_extent(extent, layer_extent):
+                        raise ValueError("layer %r does not share the stack grid"
+                                         % (name,))
+                    values.append(layer_values)
         except Exception:
             for task in tasks:
                 close = getattr(task, "close", None)

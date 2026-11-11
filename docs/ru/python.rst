@@ -527,6 +527,20 @@ pinch-out — неположительная толщина. Стек также
 extent/step. Используйте его, когда несколько поверхностей нужно решить и
 проверить вместе; для одной поверхности остаётся обычный ``Session``.
 
+Для отношения верхний builder получает ``SurfaceRelation`` и должен применить
+его до следующего functional::
+
+    def build_top(relation):
+        task = surfit.Session(...)
+        relation.apply(task)       # top >= lower + min_thickness
+        task.points("wells")
+        task.completer(1, 1.6)
+        return task
+
+    stack.add_layer("top", build_top, above="bottom", min_thickness=1.0)
+
+Стек решает снизу вверх. Builder, не принимающий relation, даёт ошибку, а не
+молча игнорирует условие.
 ``solve(parallel=True)`` строит независимые слои в thread pool.
 ``thickness(name)`` возвращает массив до следующего слоя, а
 ``pinchout_mask(name)`` выбирает ячейки с нулевой или отрицательной толщиной.

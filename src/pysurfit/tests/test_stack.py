@@ -18,8 +18,10 @@ sys.path.insert(0, BIN)
 import surfit  # noqa: E402
 
 
-def layer(value):
+def layer(value, relation=None):
     task = surfit.Session(map_name="layer", tol=1e-7)
+    if relation is not None:
+        relation.apply(task)
     assert all(task.add_points([0, 1, 0, 1], [0, 0, 1, 1],
                                [value] * 4, name="p"))
     task.grid(0, 1, 0.5, 0, 1, 0.5)
@@ -60,6 +62,18 @@ def main():
     assert np.allclose(thickness[np.isfinite(thickness)], 6.0)
     assert parallel.pinchout_mask("top").sum() == 0
     parallel.close()
+
+    constrained = surfit.SurfaceStack("constrained")
+    constrained.add_layer("top", lambda relation: layer(5.0, relation),
+                          above="bottom", min_thickness=1.0)
+    constrained.add_layer("bottom", lambda: layer(10.0))
+    constrained.solve()
+    top = constrained.values("top")
+    bottom = constrained.values("bottom")
+    assert constrained.report()["crossings"] == 0
+    both = surfit.defined_mask(top) & surfit.defined_mask(bottom)
+    assert np.min(top[both] - bottom[both]) >= 0.9
+    constrained.close()
 
     duplicate = surfit.SurfaceStack("duplicate")
     duplicate.add_layer("a", lambda: layer(1.0))

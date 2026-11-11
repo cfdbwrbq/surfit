@@ -530,6 +530,20 @@ one, and a pinch-out is a non-positive thickness.  The stack also rejects
 layers that do not share the same extent/step.  Use it when several surfaces
 must be solved and checked together; keep ordinary ``Session`` for one surface.
 
+For a relation, the upper builder receives a ``SurfaceRelation`` and must
+apply it before its next functional::
+
+    def build_top(relation):
+        task = surfit.Session(...)
+        relation.apply(task)       # top >= lower + min_thickness
+        task.points("wells")
+        task.completer(1, 1.6)
+        return task
+
+    stack.add_layer("top", build_top, above="bottom", min_thickness=1.0)
+
+The stack solves bottom-up.  A builder that does not accept the relation is an
+error, not a silently ignored condition.
 ``solve(parallel=True)`` builds independent layers in a thread pool.
 ``thickness(name)`` returns the array to the next layer and
 ``pinchout_mask(name)`` selects cells at or below zero thickness.

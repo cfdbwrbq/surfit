@@ -245,6 +245,41 @@ bounds = surfit.transform_extent(extent, "EPSG:4326", "EPSG:32637")
 # an affine grid survives reprojection
 ```
 
+## Generalised surfaces
+
+For data that does not arrive as a file:
+
+```python
+task.add_points(x, y, z, weights=sigma_inv, name="p")
+task.add_curves(x, y, name="line")
+task.add_areas(x, y, name="zone")
+task.add_contours(x, y, z, name="iso")
+```
+
+For raster exchange use `surfit.read_geotiff(path)` and
+`surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`.
+North-up/cell-centre conventions are explicit; rotated rasters are rejected.
+
+For grouped validation:
+
+```python
+surfit.cross_validate(build, x, y, z, mode="group", groups=group_id)
+# folds=None means leave-one-group-out
+```
+
+For several ordered surfaces on one grid:
+
+```python
+stack = surfit.SurfaceStack("site")
+stack.add_layer("top", build_top)
+stack.add_layer("bottom", build_bottom)
+stack.solve()
+stack.report()["crossings"]
+```
+
+`SurfaceStack` is orchestration over independent Sessions; it is not a second
+solver and does not turn surfit into a 3D modeller.
+
 ## Files and examples
 
 - Example data: `examples/surfit/tests/data`.

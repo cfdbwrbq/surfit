@@ -29,6 +29,27 @@ def main():
         np.array([[1.0, 2.0]]), residuals, level=0.6)
     assert field["lower"].shape == (1, 2)
     assert np.isclose(field["quantile"], 3.0)
+    asymmetric = surfit.calibrated_interval(
+        0.0, [-2.0, -1.0, 0.0, 1.0, 5.0], level=0.8, symmetric=False)
+    assert asymmetric["lower"] == -2.0
+    assert asymmetric["upper"] == 5.0
+    assert asymmetric["symmetric"] is False
+
+    groups = np.array(["a", "a", "a", "b", "b", "b"])
+    grouped = surfit.group_conformal_quantiles(
+        [0.0, 1.0, 2.0, 0.0, 10.0, 20.0], groups, level=0.8)
+    assert grouped["global"] >= grouped["groups"]["a"]
+    assert grouped["groups"]["b"] > grouped["groups"]["a"]
+    coverage = surfit.interval_coverage(
+        [0.0, 1.0, 3.0, 4.0], [-1.0] * 4, [2.0] * 4)
+    assert coverage["n"] == 4
+    assert coverage["covered"] == 2
+    assert coverage["fraction"] == 0.5
+    per_group = surfit.coverage_by_group(
+        [0.0, 1.0, 3.0, 4.0], [-1.0] * 4, [2.0] * 4,
+        ["a", "a", "b", "b"])
+    assert len(per_group) == 2
+    assert per_group[0]["group"] == "a"
     for bad in (0.0, 1.0):
         try:
             surfit.conformal_quantile(residuals, level=bad)

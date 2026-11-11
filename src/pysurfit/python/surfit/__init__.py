@@ -740,7 +740,8 @@ from surfit.postgis import read_postgis  # noqa: E402  (after the core re-export
 from surfit.diagnostics import (  # noqa: E402
     _session_outliers, _session_residuals, bootstrap_uncertainty,
     calibrated_interval, cell_attributes, conformal_quantile,
-    diagnostic_points, diagnostics_to_geojson, ensemble, outlier_mask,
+    coverage_by_group, diagnostic_points, diagnostics_to_geojson, ensemble,
+    group_conformal_quantiles, interval_coverage, outlier_mask,
     point_residuals, quality_report)
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_stack)

@@ -353,6 +353,23 @@ array::
 Calibrate on held-out residuals, not on training residuals.  This is a
 calibrated ensemble interval, not a posterior and not kriging variance.
 
+Coverage and groups
+~~~~~~~~~~~~~~~~~~~
+
+``surfit.interval_coverage(observed, lower, upper)`` reports ``n``,
+``covered``, ``fraction``, ``mean_width`` and ``median_width``.
+``surfit.coverage_by_group`` does the same per group.
+``surfit.group_conformal_quantiles`` returns a global and per-group quantile.
+Use ``symmetric=False`` for a signed-residual interval::
+
+    coverage = surfit.interval_coverage(
+        observed, interval["lower"], interval["upper"])
+    by_group = surfit.coverage_by_group(
+        observed, interval["lower"], interval["upper"], groups=site_id)
+    group_q = surfit.group_conformal_quantiles(residuals, site_id, 0.9)
+
+Calibrate and report coverage on held-out residuals.
+
 The outer IRLS driver
 ---------------------
 

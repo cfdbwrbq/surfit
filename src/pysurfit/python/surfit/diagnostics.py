@@ -538,18 +538,110 @@ def conformal_quantile(residuals, level=0.9):
     return float(np.partition(np.abs(residuals), rank - 1)[rank - 1])
 
 
-def calibrated_interval(center, residuals, level=0.9):
-    """Symmetric split-conformal interval around ``center``.
+def calibrated_interval(center, residuals, level=0.9, symmetric=True):
+    """Split-conformal interval around ``center``.
 
     ``center`` is a scalar or an array; ``residuals`` are held-out residuals
-    used to calibrate the width.  The result is a symmetric interval, not a
-    posterior and not a kriging variance.
+    used to calibrate the width.  ``symmetric=False`` uses signed residual
+    quantiles and returns an asymmetric interval.  This is not a posterior and
+    not a kriging variance.
     """
-    quantile = conformal_quantile(residuals, level)
+    residuals = np.asarray(residuals, dtype=float).ravel()
+    residuals = residuals[np.isfinite(residuals)]
     center = np.asarray(center, dtype=float)
+    if not 0.0 < level < 1.0:
+        raise ValueError("level must be between 0 and 1")
+    if symmetric:
+        lower_q = -conformal_quantile(residuals, level)
+        upper_q = -lower_q
+        quantile = -lower_q
+    else:
+        tail = (1.0 - level) / 2.0
+        lower_q = _signed_quantile(residuals, tail)
+        upper_q = _signed_quantile(residuals, 1.0 - tail)
+        quantile = float("nan")
     return {
-        "lower": center - quantile,
-        "upper": center + quantile,
+        "lower": center + lower_q,
+        "upper": center + upper_q,
         "quantile": quantile,
+        "lower_quantile": float(lower_q),
+        "upper_quantile": float(upper_q),
         "level": float(level),
+        "symmetric": bool(symmetric),
     }
+
+
+def _signed_quantile(values, level):
+    values = np.sort(np.asarray(values, dtype=float))
+    count = values.size
+    rank = int(np.ceil((count + 1) * level))
+    rank = min(max(rank, 1), count)
+    return float(values[rank - 1])
+
+
+def group_conformal_quantiles(residuals, groups, level=0.9):
+    """Conformal absolute-residual quantiles per group plus the global one."""
+    residuals = np.asarray(residuals, dtype=float).ravel()
+    groups = np.asarray(groups).ravel()
+    if residuals.size != groups.size:
+        raise ValueError("groups must have one value per residual")
+    result = {"global": conformal_quantile(residuals, level), "groups": {}}
+    for group in np.unique(groups):
+        selected = residuals[groups == group]
+        result["groups"][group] = conformal_quantile(selected, level)
+    return result
+
+
+def interval_coverage(observed, lower, upper, weights=None):
+    """Empirical coverage and width of an interval.
+
+    Returns ``n``, ``covered``, ``fraction``, ``mean_width`` and
+    ``median_width``.  Points with non-finite values are skipped; weights, when
+    supplied, make ``fraction`` weighted.
+    """
+    observed = np.asarray(observed, dtype=float).ravel()
+    lower = np.asarray(lower, dtype=float).ravel()
+    upper = np.asarray(upper, dtype=float).ravel()
+    if not (observed.size == lower.size == upper.size):
+        raise ValueError("observed, lower and upper must have the same length")
+    if weights is None:
+        weights = np.ones(observed.size, dtype=float)
+    else:
+        weights = np.asarray(weights, dtype=float).ravel()
+        if weights.size != observed.size:
+            raise ValueError("weights must have one value per point")
+    used = (np.isfinite(observed) & np.isfinite(lower) & np.isfinite(upper)
+            & np.isfinite(weights) & (weights > 0))
+    observed = observed[used]
+    lower = lower[used]
+    upper = upper[used]
+    weights = weights[used]
+    if observed.size == 0:
+        return {"n": 0, "covered": 0, "fraction": float("nan"),
+                "mean_width": float("nan"), "median_width": float("nan")}
+    inside = (observed >= lower) & (observed <= upper)
+    weight_sum = float(weights.sum())
+    return {
+        "n": int(observed.size),
+        "covered": int(inside.sum()),
+        "fraction": float(weights[inside].sum() / weight_sum),
+        "mean_width": float(np.average(upper - lower, weights=weights)),
+        "median_width": float(np.median(upper - lower)),
+    }
+
+
+def coverage_by_group(observed, lower, upper, groups, weights=None):
+    """Per-group interval coverage, preserving group order."""
+    groups = np.asarray(groups).ravel()
+    if groups.size != np.asarray(observed).size:
+        raise ValueError("groups must have one value per observation")
+    result = []
+    for group in np.unique(groups):
+        selected = groups == group
+        item = interval_coverage(
+            np.asarray(observed)[selected], np.asarray(lower)[selected],
+            np.asarray(upper)[selected],
+            None if weights is None else np.asarray(weights)[selected])
+        item["group"] = group.item() if hasattr(group, "item") else group
+        result.append(item)
+    return result

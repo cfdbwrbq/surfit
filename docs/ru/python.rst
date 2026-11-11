@@ -351,6 +351,23 @@ level=0.9)`` строит симметричный калиброванный и
 Калибруйте на held-out остатках, не на train. Это калиброванный интервал
 ансамбля, а не posterior и не kriging variance.
 
+Coverage и группы
+~~~~~~~~~~~~~~~~~
+
+``surfit.interval_coverage(observed, lower, upper)`` возвращает ``n``,
+``covered``, ``fraction``, ``mean_width`` и ``median_width``.
+``surfit.coverage_by_group`` делает то же по группам.
+``surfit.group_conformal_quantiles`` возвращает глобальный и групповые
+квантили. ``symmetric=False`` даёт интервал по знаковым остаткам::
+
+    coverage = surfit.interval_coverage(
+        observed, interval["lower"], interval["upper"])
+    by_group = surfit.coverage_by_group(
+        observed, interval["lower"], interval["upper"], groups=site_id)
+    group_q = surfit.group_conformal_quantiles(residuals, site_id, 0.9)
+
+Калибруйте и считайте coverage на held-out остатках.
+
 Внешний IRLS-драйвер
 --------------------
 

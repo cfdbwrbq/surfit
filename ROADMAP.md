@@ -29,23 +29,13 @@ reproducible exchange format.
 | pinch-out projection (`merge`/`undef`) | done |
 | parallel stack solve and timings | done |
 | split-conformal quantile and calibrated interval | done |
+| coverage report and group-conformal quantiles | done |
 | direct/sequential/parallel benchmark | done |
 | stack persistence (`.npy` layers + `manifest.json`) | done |
 
 ## Next
 
-### 1. Coverage report and group-conformal calibration
-
-Add:
-
-- empirical coverage of calibrated intervals;
-- asymmetric intervals;
-- group-conformal calibration from the same groups used by CV;
-- per-layer coverage in the stack report.
-
-Why: an interval that is not checked for coverage is only a number.
-
-### 2. Constraint graph
+### 1. Constraint graph
 
 The current relation is linear (`above` the next lower layer).  Generalise to a
 small DAG:
@@ -57,7 +47,7 @@ small DAG:
 
 Why: real stacks contain lenses, wedges and non-neighbour constraints.
 
-### 3. Memory-mapped stack
+### 2. Memory-mapped stack
 
 Keep layer values on disk:
 
@@ -68,19 +58,19 @@ Keep layer values on disk:
 
 Why: the current stack holds every layer in RAM.
 
-### 4. Native array constructors
+### 3. Native array constructors
 
 `add_points`/`add_curves` currently use a temporary columned file.  A native
 C++/pybind path would remove the I/O and preserve names/weights without a round
 trip.
 
-### 5. Raster polish
+### 4. Raster polish
 
 - `tifffile` fallback when GDAL is absent;
 - multi-band stack without the per-layer manifest workaround;
 - COG/overviews.
 
-### 6. Release
+### 5. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

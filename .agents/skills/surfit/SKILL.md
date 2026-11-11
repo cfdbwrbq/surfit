@@ -296,6 +296,8 @@ For held-out calibration use ``conformal_quantile(residuals, level)`` and
 ``calibrated_interval(center, residuals, level)``.  Calibrate on held-out
 residuals, not training residuals; call it a calibrated interval, not a
 posterior.
+  ``interval_coverage`` / ``coverage_by_group`` report empirical coverage;
+``group_conformal_quantiles`` gives group-specific widths.
 
 ## Files and examples
 

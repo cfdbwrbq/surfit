@@ -281,6 +281,10 @@ stack.report()["crossings"]
 solver and does not turn surfit into a 3D modeller.  ``solve(parallel=True)``
 fans independent layers out to a thread pool; ``thickness(name)`` and
 ``pinchout_mask(name)`` expose the relation between adjacent layers.
+A solver-level relation is opt-in: the upper builder receives a
+``SurfaceRelation`` and must call ``relation.apply(task)`` before the next
+functional (for example before the points rule); the stack then solves
+bottom-up and enforces ``top >= lower + min_thickness``.
 
 For held-out calibration use ``conformal_quantile(residuals, level)`` and
 ``calibrated_interval(center, residuals, level)``.  Calibrate on held-out

@@ -544,6 +544,15 @@ apply it before its next functional::
 
 The stack solves bottom-up.  A builder that does not accept the relation is an
 error, not a silently ignored condition.
+A solved stack can be persisted without a private binary format::
+
+    stack.save("stack_dir")
+    loaded = surfit.SurfaceStack.load("stack_dir")
+
+The directory contains ``layers/*.npy`` and ``manifest.json`` with names,
+order, extent, timings and the report.  Loading restores values, thickness and
+the report; it does not recreate the original Sessions.
+
 ``solve(parallel=True)`` builds independent layers in a thread pool.
 ``thickness(name)`` returns the array to the next layer and
 ``pinchout_mask(name)`` selects cells at or below zero thickness.

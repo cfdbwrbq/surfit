@@ -5,6 +5,7 @@
 
 import os
 import sys
+import tempfile
 
 import numpy as np
 
@@ -74,6 +75,21 @@ def main():
     both = surfit.defined_mask(top) & surfit.defined_mask(bottom)
     assert np.min(top[both] - bottom[both]) >= 0.9
     constrained.close()
+
+    with tempfile.TemporaryDirectory() as directory:
+        initial = surfit.SurfaceStack("persisted")
+        initial.add_layer("top", lambda: layer(10.0))
+        initial.add_layer("bottom", lambda: layer(4.0))
+        initial.solve()
+        before = initial.report()
+        initial.save(directory)
+        loaded = surfit.SurfaceStack.load(directory)
+        assert loaded.layer_names() == ["top", "bottom"]
+        assert np.allclose(loaded.values("top"), initial.values("top"))
+        assert loaded.report()["crossings"] == before["crossings"]
+        assert loaded.report()["layers"][0]["thickness"]["pinchouts"] == 0
+        loaded.close()
+        initial.close()
 
     pinched = surfit.SurfaceStack("pinched")
     pinched.add_layer("top", lambda: layer(10.0))

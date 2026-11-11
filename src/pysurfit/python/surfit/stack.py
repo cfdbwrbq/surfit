@@ -94,6 +94,70 @@ class SurfaceStack:
     def layer_names(self):
         return [name for name, _ in self._layers]
 
+    def save(self, directory):
+        """Persist the solved stack as .npy layers plus a JSON manifest."""
+        import json
+        import os
+
+        if not self._values:
+            raise RuntimeError("solve() the stack first")
+        os.makedirs(directory, exist_ok=True)
+        layers_dir = os.path.join(directory, "layers")
+        os.makedirs(layers_dir, exist_ok=True)
+        document = {
+            "format": "surfit-surface-stack",
+            "version": 1,
+            "name": self._name,
+            "extent": dict(self._extent),
+            "layers": [],
+            "timings": dict(self._timings),
+            "report": self.report(),
+        }
+        for index, ((name, _), values) in enumerate(
+                zip(self._layers, self._values)):
+            filename = "%03d.npy" % index
+            np.save(os.path.join(layers_dir, filename), values,
+                    allow_pickle=False)
+            document["layers"].append({"name": name, "file": filename})
+        with open(os.path.join(directory, "manifest.json"), "w",
+                  encoding="utf-8") as stream:
+            json.dump(document, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        return directory
+
+    @classmethod
+    def load(cls, directory):
+        """Load a stack written by :meth:`save`; layers are read-only arrays."""
+        import json
+        import os
+
+        manifest_path = os.path.join(directory, "manifest.json")
+        with open(manifest_path, encoding="utf-8") as stream:
+            document = json.load(stream)
+        if document.get("format") != "surfit-surface-stack":
+            raise ValueError("not a surfit surface stack: %s" % (directory,))
+        if int(document.get("version", 0)) != 1:
+            raise ValueError("unsupported stack version")
+        stack = cls(document.get("name", "stack"))
+        stack._extent = dict(document["extent"])
+        stack._timings = dict(document.get("timings", {}))
+        layers = []
+        values = []
+        for item in document["layers"]:
+            path = os.path.join(directory, "layers", item["file"])
+            array = np.load(path, allow_pickle=False)
+            expected = (int(stack._extent["count_y"]),
+                        int(stack._extent["count_x"]))
+            if array.shape != expected:
+                raise ValueError("layer %r has shape %s, expected %s"
+                                 % (item["name"], array.shape, expected))
+            layers.append((str(item["name"]), None))
+            values.append(array)
+        stack._layers = layers
+        stack._values = values
+        stack._tasks = []
+        return stack
+
     def _build_layer(self, item):
         name, build = item
         task = build()

@@ -2,6 +2,10 @@
 
 ## Layered surface systems
 
+The product roadmap is in [ROADMAP.md](ROADMAP.md); the design detail is in
+[SURFACE_STACK_PLAN.md](SURFACE_STACK_PLAN.md).
+
+
 The generalisation plan from one surface to an ordered surface stack is in
 [SURFACE_STACK_PLAN.md](SURFACE_STACK_PLAN.md).  It covers array/raster
 ingestion, group-aware validation, stack orchestration and calibrated

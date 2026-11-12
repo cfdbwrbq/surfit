@@ -109,6 +109,15 @@ task.solve()
 result = task.values()            # the surface created last, i.e. the result
 ```
 
+### Interoperability
+
+Regular grids and `SurfaceStack` layers can be triangulated and written as
+glTF, OBJ or STL; `to_pyvista()` is optional.  GeoParquet points/curves/areas
+can be read and written without GDAL when `pyarrow` and `shapely` are
+installed.  Task recipes run with `surfit run recipe.json`.  See
+[CAPABILITIES.md](CAPABILITIES.md) for the full list and the recorded
+limitations (no FlatGeobuf writer, no GCV, exterior-only polygons).
+
 ### File formats
 
 The shapefile / BLN / Surfer / GMT / Grass / ArcGIS / xyz / jpg / bmp loaders and

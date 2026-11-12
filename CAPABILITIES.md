@@ -204,7 +204,7 @@
 ## Ограничения
 
 - только 2.5D, без 3D voxel/octree;
-- нет mesh/CAD export;
+- нет CAD-редактора и mesh-топологии; визуализационный glTF/OBJ/STL/PyVista export есть;
 - нет ML/property prediction;
 - нет GUI/map composition;
 - slope/curvature bounds — penalty-условия, не post-solve проекция;

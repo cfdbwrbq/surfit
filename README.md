@@ -1,6 +1,6 @@
 # surfit
 
-[English](README.md) | [中文](README.zh.md)
+[English](README.md) | [Русский](https://cfdbwrbq.github.io/surfit/ru/) | [中文](README.zh.md)
 
 **Regular-grid interpolation and approximation from scattered data, under
 gridding rules.**

@@ -1,6 +1,6 @@
 # surfit
 
-[English](README.md) | **中文**
+[English](README.md) | [Русский](https://cfdbwrbq.github.io/surfit/ru/) | **中文**
 
 **在网格规则约束下，由离散数据构建规则网格的插值与近似。**
 

@@ -586,6 +586,23 @@ A solved stack can be persisted without a private binary format::
 The directory contains ``layers/*.npy`` and ``manifest.json`` with names,
 order, extent, timings and the report.  Loading restores values, thickness and
 the report; it does not recreate the original Sessions.
+Provenance
+~~~~~~~~~~
+
+Attach auditable metadata before saving::
+
+    stack.set_layer_provenance(
+        "top",
+        sources={"wells.csv": "sha256..."},
+        params={"solver": "points"},
+        metadata={"crs": "EPSG:32637", "units": "m"},
+    )
+    stack.provenance("top")
+
+The manifest stores the record, the engine version and the per-layer
+``sources``/``params``/``metadata``.  Values are caller-supplied; the stack
+does not hash files behind your back.
+
 For large stacks, keep layer values on disk::
 
     stack.solve(memmap=True, memmap_dir="stack_values")

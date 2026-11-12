@@ -150,6 +150,13 @@ def main():
         initial.add_layer("top", lambda: layer(10.0))
         initial.add_layer("bottom", lambda: layer(4.0))
         initial.solve()
+        initial.set_layer_provenance(
+            "top", sources={"wells.csv": "abc"},
+            params={"solver": "points"}, metadata={"units": "m"})
+        assert initial.provenance("top")["params"]["solver"] == "points"
+        copied = initial.provenance("top")
+        copied["params"]["solver"] = "mutated"
+        assert initial.provenance("top")["params"]["solver"] == "points"
         before = initial.report()
         initial.save(directory)
         loaded = surfit.SurfaceStack.load(directory)
@@ -157,6 +164,8 @@ def main():
         assert np.allclose(loaded.values("top"), initial.values("top"))
         assert loaded.report()["crossings"] == before["crossings"]
         assert loaded.report()["layers"][0]["thickness"]["pinchouts"] == 0
+        assert loaded.provenance("top")["sources"]["wells.csv"] == "abc"
+        assert loaded.provenance("top")["metadata"]["units"] == "m"
         loaded.close()
         initial.close()
 

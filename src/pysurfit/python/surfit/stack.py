@@ -82,6 +82,7 @@ class SurfaceStack:
         self._tasks = []
         self._values = []
         self._timings = {}
+        self._provenance = {}
         self._memmaps = []
         self._extent = None
 
@@ -121,6 +122,33 @@ class SurfaceStack:
         })
         return self
 
+    def set_layer_provenance(self, name, sources=None, params=None,
+                             metadata=None):
+        """Attach auditable metadata to a layer.
+
+        ``sources`` maps a source path/name to its SHA-256 (or another stable
+        identifier); ``params`` and ``metadata`` are JSON-ready mappings.
+        Repeated calls merge into the existing record.
+        """
+        if name not in self.layer_names():
+            raise KeyError("unknown layer %r" % (name,))
+        record = self._provenance.setdefault(str(name), {})
+        if sources is not None:
+            record.setdefault("sources", {}).update(dict(sources))
+        if params is not None:
+            record.setdefault("params", {}).update(dict(params))
+        if metadata is not None:
+            record.setdefault("metadata", {}).update(dict(metadata))
+        return self
+
+    def provenance(self, name):
+        """Return a copy of one layer's provenance record."""
+        if name not in self.layer_names():
+            raise KeyError("unknown layer %r" % (name,))
+        import copy
+
+        return copy.deepcopy(self._provenance.get(str(name), {}))
+
     def _topological_order(self):
         names = self.layer_names()
         incoming = {name: 0 for name in names}
@@ -152,8 +180,11 @@ class SurfaceStack:
 
     def save(self, directory):
         """Persist the solved stack as .npy layers plus a JSON manifest."""
+        import copy
         import json
         import os
+
+        from surfit.provenance import engine_version
 
         if not self._values:
             raise RuntimeError("solve() the stack first")
@@ -163,10 +194,12 @@ class SurfaceStack:
         document = {
             "format": "surfit-surface-stack",
             "version": 1,
+            "engine_version": engine_version(),
             "name": self._name,
             "extent": dict(self._extent),
             "layers": [],
             "timings": dict(self._timings),
+            "provenance": copy.deepcopy(self._provenance),
             "report": self.report(),
         }
         for index, ((name, _), values) in enumerate(
@@ -202,6 +235,7 @@ class SurfaceStack:
         stack = cls(document.get("name", "stack"))
         stack._extent = dict(document["extent"])
         stack._timings = dict(document.get("timings", {}))
+        stack._provenance = dict(document.get("provenance", {}))
         layers = []
         values = []
         for item in document["layers"]:

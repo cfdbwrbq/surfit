@@ -583,6 +583,23 @@ extent/step. Используйте его, когда несколько пов
 В каталоге лежат ``layers/*.npy`` и ``manifest.json`` с именами, порядком,
 extent, timings и отчётом. Загрузка восстанавливает значения, толщину и отчёт;
 исходные Session она не пересоздаёт.
+Provenance
+~~~~~~~~~~
+
+Перед сохранением можно приложить аудируемые метаданные::
+
+    stack.set_layer_provenance(
+        "top",
+        sources={"wells.csv": "sha256..."},
+        params={"solver": "points"},
+        metadata={"crs": "EPSG:32637", "units": "m"},
+    )
+    stack.provenance("top")
+
+Manifest хранит запись, версию движка и per-layer
+``sources``/``params``/``metadata``. Значения задаёт вызывающий код; стек не
+хеширует файлы втихую.
+
 Для больших стеков держите значения слоёв на диске::
 
     stack.solve(memmap=True, memmap_dir="stack_values")

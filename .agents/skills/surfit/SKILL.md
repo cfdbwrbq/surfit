@@ -297,6 +297,9 @@ projection; ``report()["seconds"]`` records wall time.
 ``.npy`` plus ``manifest.json``; loading restores values/report, not Sessions.
   ``stack.validate(max_crossings=0, min_thickness=..., min_coverage=...)``
 returns typed violations; ``strict=True`` raises ``StackValidationError``.
+  ``set_layer_provenance(name, sources=..., params=..., metadata=...)``
+is written into the manifest with the engine version; ``provenance(name)``
+returns a copy.
   ``solve(memmap=True, memmap_dir=...)`` stores values on disk;
 ``load(..., mmap=True)`` returns read-only memmaps.
   ``surfit.benchmark_stack({...}, repeats=3)` compares direct, sequential

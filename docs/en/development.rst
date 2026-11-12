@@ -146,8 +146,8 @@ Testing
    * - ``python3 src/pysurfit/tests/test_array_ingest.py``
      - points, curves, areas and contours can be registered from numpy arrays
    * - ``python3 src/pysurfit/tests/test_stack.py``
-     - ordered layers share a grid; crossings, thickness, pinch-outs and the
-       validation gate are checked
+     - ordered layers share a grid; crossings, thickness, pinch-outs,
+       validation and provenance are checked
    * - ``python3 src/pysurfit/tests/test_calibration.py``
      - split-conformal quantile and calibrated interval
    * - ``python3 src/pysurfit/tests/test_benchmark.py``

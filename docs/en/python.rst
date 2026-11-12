@@ -657,6 +657,25 @@ The recipe has ``name``, ``grid``, ``data`` (points/curves/areas/contours or a
 ``.npy`` surface), ordered ``rules`` and ``output``.  JSON always works; YAML
 needs PyYAML.  The runner is thin and calls normal Session methods.
 
+Mesh and 3D export
+------------------
+
+A regular grid can be triangulated and handed to 3D tools::
+
+    mesh = surfit.grid_mesh(values, extent, mask=None)
+    surfit.export_gltf("map.gltf", mesh)
+    surfit.export_obj("map.obj", mesh)
+    surfit.export_stl("map.stl", mesh)
+
+    stack.export_gltf("stack.gltf")
+    stack.export_obj("stack.obj")
+    stack.export_stl("top.stl", name="top")
+
+Cells with an undefined or masked corner are skipped.  glTF uses embedded
+buffers and maps Z-up surfaces to glTF Y-up; OBJ uses object groups; STL takes
+one layer.  PyVista is optional: ``stack.to_pyvista()`` returns PolyData or
+MultiBlock.  This is visualisation export, not a CAD/mesh editor.
+
 Layered surfaces
 ----------------
 

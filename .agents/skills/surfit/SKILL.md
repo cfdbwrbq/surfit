@@ -205,6 +205,8 @@ surfit.benchmark_solvers(build, solvers=("cg", "jcg", "ssor"))
 ensemble = surfit.SurfaceEnsemble.from_stacks([stack_a, stack_b])
 difference = ensemble - other_ensemble
 surfit.run_recipe("task.json")
+surfit.export_gltf("map.gltf", surfit.grid_mesh(values, extent))
+stack.export_obj("stack.obj")
 ```
 
 `volume_percentiles` needs coherent realizations; never sum per-cell interval

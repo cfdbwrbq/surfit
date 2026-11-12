@@ -306,6 +306,34 @@ class SurfaceStack:
 
         return _to_zarr(self, path, mode=mode, **kwargs)
 
+    def export_gltf(self, path, names=None, masks=None, up_axis="y"):
+        """Write selected layers as one glTF file."""
+        from surfit.mesh import export_gltf, stack_meshes
+
+        return export_gltf(path, stack_meshes(self, names, masks),
+                           up_axis=up_axis)
+
+    def export_obj(self, path, names=None, masks=None):
+        """Write selected layers as OBJ groups."""
+        from surfit.mesh import export_obj, stack_meshes
+
+        return export_obj(path, stack_meshes(self, names, masks))
+
+    def export_stl(self, path, name=None, mask=None, binary=True):
+        """Write one layer as STL."""
+        from surfit.mesh import export_stl, grid_mesh
+
+        name = self.layer_names()[0] if name is None else name
+        return export_stl(path, grid_mesh(
+            self.values(name), self.extent(), mask=mask, name=name),
+            binary=binary)
+
+    def to_pyvista(self, names=None, masks=None):
+        """Return a PyVista object for selected layers (optional)."""
+        from surfit.mesh import stack_meshes, to_pyvista as _to_pyvista
+
+        return _to_pyvista(stack_meshes(self, names, masks))
+
     def section(self, path_x, path_y, samples=200, method="bilinear"):
         """Sample all layers and intervals along a polyline."""
         from surfit.sections import stack_section

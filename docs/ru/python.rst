@@ -654,6 +654,25 @@ Dask не обещается. ``regression_trend`` подгоняет тренд
 ``.npy``-поверхность), упорядоченные ``rules`` и ``output``. JSON работает
 всегда; YAML требует PyYAML. Runner тонкий и вызывает обычные методы Session.
 
+Mesh и 3D-экспорт
+-----------------
+
+Регулярную сетку можно триангулировать и отдать в 3D-инструменты::
+
+    mesh = surfit.grid_mesh(values, extent, mask=None)
+    surfit.export_gltf("map.gltf", mesh)
+    surfit.export_obj("map.obj", mesh)
+    surfit.export_stl("map.stl", mesh)
+
+    stack.export_gltf("stack.gltf")
+    stack.export_obj("stack.obj")
+    stack.export_stl("top.stl", name="top")
+
+Ячейки с undefined/маскированным углом пропускаются. glTF использует
+встроенный buffer и переводит Z-up в Y-up glTF; OBJ пишет группы объектов;
+STL берёт один слой. PyVista опциональна: ``stack.to_pyvista()`` возвращает
+PolyData или MultiBlock. Это визуализационный экспорт, не CAD/mesh-редактор.
+
 Слоистые поверхности
 --------------------
 

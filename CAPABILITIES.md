@@ -147,7 +147,9 @@
 - regression-тренд + residual wrapper (OLS или sklearn-модель);
 - `add_regression_residuals`;
 - `SurfaceEnsemble` — когерентная арифметика, проценты, объёмы, изохоры;
-- `run_recipe` / `surfit run` — JSON/YAML-рецепты задач.
+- `run_recipe` / `surfit run` — JSON/YAML-рецепты задач;
+- `grid_mesh` / `export_gltf` / `export_obj` / `export_stl` — 3D-экспорт;
+- `stack.to_pyvista()` — опциональный PyVista/VTK.
 
 ### Слоистые поверхности
 

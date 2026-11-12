@@ -129,6 +129,7 @@ def check_api():
         "volume_percentiles", "stack_volume", "stack_section",
         "add_geodataframe", "regression_trend", "add_regression_residuals",
         "SurfaceEnsemble", "run_recipe", "recipe_summary",
+        "grid_mesh", "export_gltf", "export_obj", "export_stl",
         "benchmark_solvers",
         "gradient", "slope_max", "curvature_max",
     )

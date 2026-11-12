@@ -175,6 +175,9 @@ run extensions "$PYTHON" "$TESTS/test_extensions.py"
 step "ensembles and recipes"
 run ensembles "$PYTHON" "$TESTS/test_ensemble_recipe.py"
 
+step "mesh export"
+run mesh "$PYTHON" "$TESTS/test_mesh.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

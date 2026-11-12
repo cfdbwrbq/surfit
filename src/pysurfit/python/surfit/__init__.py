@@ -743,6 +743,7 @@ from surfit.regression import (  # noqa: E402
 from surfit.ensemble import SurfaceEnsemble  # noqa: E402
 from surfit.recipe import recipe_summary, run_recipe  # noqa: E402
 from surfit.solver_benchmark import benchmark_solvers  # noqa: E402
+from surfit.mesh import grid_mesh, export_gltf, export_obj, export_stl  # noqa: E402
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402

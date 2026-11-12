@@ -357,7 +357,7 @@ stays sequential.
 Measured decisions and deferred directions
 ------------------------------------------
 
-Not every q1/q2/q3 idea was taken.  The distinction is explicit:
+Not every proposed extension was taken.  The distinction is explicit:
 
 **Measured**
 
@@ -370,21 +370,21 @@ Not every q1/q2/q3 idea was taken.  The distinction is explicit:
 
 **Deferred or not applicable**
 
-- **3D Voronoi declustering (q1)** — not implemented.  ``voronoi_weights`` is
+- **3D Voronoi declustering** — not implemented.  ``voronoi_weights`` is
   2D because ``z`` is the measured value of the surface, not a third spatial
   coordinate; a 3D recipe would reweight the value axis.  No 3D benchmark is
   claimed.
 - **Variable grid spacing, spatially varying anisotropy, drainage
-  enforcement, C++ contouring, stochastic simulation (q2)** — deferred.  They
+  enforcement, C++ contouring, stochastic simulation** — deferred.  They
   need a different data model or a dedicated validation set, and no numeric
   benchmark justifies the complexity yet.
-- **Lazy Dask / batch tiled interface (q2/q3)** — deferred.  Tiled solve and
+- **Lazy Dask / batch tiled interface** — deferred.  Tiled solve and
   memmap exist; a thin batch wrapper is preferable to a Dask dependency.
-- **FlatGeobuf (q3)** — not included.  The Python package has a reader but no
+- **FlatGeobuf** — not included.  The Python package has a reader but no
   writer; a read-only adapter would be asymmetric.
-- **GCV (q3)** — not implemented.  CMOFS/penalty/multilevel do not expose one
+- **GCV** — not implemented.  CMOFS/penalty/multilevel do not expose one
   linear influence matrix; the holdout L-curve is a heuristic, not GCV.
-- **Incremental recompute and coupled cross-layer solve (q3)** — deferred.
+- **Incremental recompute and coupled cross-layer solve** — deferred.
   They change the solver contract and have no benchmark yet.
 
 Deferred is not synonymous with rejected forever; it means the project does
@@ -437,7 +437,7 @@ Working on the project
 ----------------------
 
 The project keeps a catalogue of mistakes and the rules derived from them in
-the local agent notes, together with the practice that produces it.  Those
+the local project notes, together with the practice that produces it.  Those
 notes are not part of the published repository.  Read them before working on a
 subsystem they cover, and add to them after any non-trivial failure.
 

@@ -54,3 +54,6 @@ SILENT_EXCEPTIONS.md
 
 # Generated working data
 grid.dat
+
+# Optional dependency environment for manual integration runs
+.optional-site/

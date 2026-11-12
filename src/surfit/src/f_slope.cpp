@@ -64,7 +64,7 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 				      method_mask_undefined->get(center + 1))) {
 					REAL diff = (*method_X)(center + 1) - (*method_X)(center);
 					if (fabs(diff) > limit * dx) {
-						REAL target = (diff > 0 ? 1 : -1) * limit * dx;
+						REAL target = (diff > 0 ? 1 : -1) * limit;
 						add_equation(result, v, {center, center + 1},
 						             {-1.0 / dx, 1.0 / dx}, target, mult);
 						violations++;
@@ -75,7 +75,7 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 				      method_mask_undefined->get(center + nx))) {
 					REAL diff = (*method_X)(center + nx) - (*method_X)(center);
 					if (fabs(diff) > limit * dy) {
-						REAL target = (diff > 0 ? 1 : -1) * limit * dy;
+						REAL target = (diff > 0 ? 1 : -1) * limit;
 						add_equation(result, v, {center, center + nx},
 						             {-1.0 / dy, 1.0 / dy}, target, mult);
 						violations++;
@@ -90,7 +90,7 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 					              2.0 * (*method_X)(center) + (*method_X)(center - 1);
 					REAL bound = limit * dx * dx;
 					if (fabs(second) > bound) {
-						REAL target = (second > 0 ? 1 : -1) * bound;
+						REAL target = (second > 0 ? 1 : -1) * limit;
 						add_equation(result, v, {center - 1, center, center + 1},
 						             {1.0 / (dx * dx), -2.0 / (dx * dx), 1.0 / (dx * dx)}, target, mult);
 						violations++;
@@ -104,7 +104,7 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 					              2.0 * (*method_X)(center) + (*method_X)(center - nx);
 					REAL bound = limit * dy * dy;
 					if (fabs(second) > bound) {
-						REAL target = (second > 0 ? 1 : -1) * bound;
+						REAL target = (second > 0 ? 1 : -1) * limit;
 						add_equation(result, v, {center - nx, center, center + nx},
 						             {1.0 / (dy * dy), -2.0 / (dy * dy), 1.0 / (dy * dy)}, target, mult);
 						violations++;

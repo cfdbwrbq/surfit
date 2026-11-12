@@ -150,8 +150,18 @@ public:
 	//! per-point weights; NULL means every point has weight 1
 	vec * W;
 
+	//! optional local dZ/dx; NULL for ordinary points
+	vec * GX;
+
+	//! optional local dZ/dy; NULL for ordinary points
+	vec * GY;
+
 	//! replaces the per-point weights; the size must match the points
 	bool set_weights(const std::vector<double> & weights);
+
+	//! sets local gradients; sizes must match the points
+	bool set_gradients(const std::vector<double> & gx,
+			   const std::vector<double> & gy);
 
 	//! this = this + pnts
 	bool plus(const d_points * pnts);

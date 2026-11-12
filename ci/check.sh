@@ -142,6 +142,9 @@ run strict "$PYTHON" "$TESTS/test_strict.py"
 step "GeoTIFF output"
 run geotiff "$PYTHON" "$TESTS/test_geotiff.py"
 
+step "dip and gradient points"
+run gradient "$PYTHON" "$TESTS/test_gradient.py"
+
 step "out-of-core tiled mosaic"
 run tiled "$PYTHON" "$TESTS/test_tiled.py"
 

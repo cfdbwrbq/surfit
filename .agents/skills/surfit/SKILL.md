@@ -146,6 +146,10 @@ stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
 flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
 # flags are suggestions; zero their weights and re-solve
 
+task.add_dip_points(x, y, dip, azimuth, name="dip")
+task.gradient("dip")                 # soft local dZ/dx, dZ/dy constraint
+# absolute level still comes from points/areas/completer
+
 from surfit.spatial_diagnostics import morans_i, residual_variogram
 from surfit.spatial_diagnostics import distance_to_data, error_by_distance
 # global RMSE hides structure; these expose autocorrelation and distance bias

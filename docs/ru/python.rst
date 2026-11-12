@@ -304,6 +304,22 @@ SHA-256 в quality report.
 Это диагностика и стартовые значения, а не кригинг и не ковариационная
 модель. Движок по-прежнему решает одну поверхность.
 
+Dip и azimuth
+--------------
+
+Точки с локальными градиентами напрямую задают производные::
+
+    task.add_dip_points(x, y, dip_degrees, azimuth_degrees, name="dip")
+    task.gradient("dip")
+
+    task.add_gradient_points(x, y, dzdx, dzdy, name="grad")
+
+``azimuth`` отсчитывается по часовой стрелке от +Y; ``gx = tan(dip)*sin(azimuth)``,
+``gy = tan(dip)*cos(azimuth)``. Ядерный функционал добавляет
+конечно-разностные уравнения производных в ближайших узлах, поэтому
+абсолютный уровень по-прежнему задают points/areas/``completer``. Это мягкое
+data-условие, не kriging-модель.
+
 Spatial residual diagnostics
 ----------------------------
 
@@ -493,6 +509,11 @@ Quality workflow
 ``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)``
 пишет по GeoTIFF на слой плюс ``manifest.json`` с именами, порядком, extent,
 CRS и nodata. Это формат обмена, а не приватный контейнер.
+Повёрнутый растр читается через GDAL warp: передайте ``target_extent`` для
+явной регулярной сетки, иначе используются bounding box и размер пикселя.
+В результате есть флаги ``rotated`` и ``resampled`` и записан способ
+ресемплинга.
+
 ``save_geotiff_bands(path, {name: array}, extent, ...)`` пишет один
 multi-band GeoTIFF с описаниями band’ов. ``save_geotiff(..., cog=True)`` и
 ``save_geotiff_bands(..., cog=True)`` пишут Cloud Optimized GeoTIFF через

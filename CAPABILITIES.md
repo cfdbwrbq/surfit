@@ -136,6 +136,8 @@
 - разрезы `SurfaceStack` по ломаной;
 - интервалы и слои в разрезе;
 - `rule_report()` — порядок правил, типы, conditions, residual и violations там, где они известны;
+- `add_dip_points` / `add_gradient_points` — локальные производные;
+- `gradient()` — soft-условие на dZ/dx и dZ/dy;
 - GeoPandas/Shapely адаптер (опционально);
 - CRS-проверка без тихого перепроецирования;
 - xarray `Dataset` и Zarr export (опционально);
@@ -193,6 +195,7 @@
 - нет mesh/CAD export;
 - нет ML/property prediction;
 - нет GUI/map composition;
+- slope/curvature bounds пока не реализованы;
 - rule report показывает residual для conditional-правил и violations для известных inequality-правил; для non-penalty data-правил residual = None;
 - P10/P50/P90 нельзя получить сложением per-cell интервалов;
 - GeoPandas, xarray, Zarr и sklearn — опциональны;

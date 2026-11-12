@@ -308,6 +308,22 @@ and long/short range ratio for the existing rule::
 These are diagnostics and starting values, not kriging and not a covariance
 model.  The engine still solves one surface.
 
+Dip and azimuth
+---------------
+
+Points with local gradients can constrain derivatives directly::
+
+    task.add_dip_points(x, y, dip_degrees, azimuth_degrees, name="dip")
+    task.gradient("dip")
+
+    task.add_gradient_points(x, y, dzdx, dzdy, name="grad")
+
+``azimuth`` is measured clockwise from +Y; ``gx = tan(dip)*sin(azimuth)``,
+``gy = tan(dip)*cos(azimuth)``.  The core functional adds finite-difference
+derivative equations at the nearest nodes, so the absolute level is still set
+by points, areas or ``completer``.  This is a soft data condition, not a
+kriging model.
+
 Spatial residual diagnostics
 ----------------------------
 
@@ -496,6 +512,10 @@ misaligned.
 ``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`` writes
 one GeoTIFF per layer plus ``manifest.json`` with names, order, extent, CRS and
 nodata.  It is an exchange format, not a private container.
+A rotated raster is read through GDAL warp: pass ``target_extent`` for an
+explicit regular grid, otherwise the bounding box and pixel size are used.
+The result has ``rotated`` and ``resampled`` flags and records the resampling.
+
 ``save_geotiff_bands(path, {name: array}, extent, ...)`` writes one
 multi-band GeoTIFF with band descriptions.  ``save_geotiff(..., cog=True)`` and
 ``save_geotiff_bands(..., cog=True)`` write a Cloud Optimized GeoTIFF through

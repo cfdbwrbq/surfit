@@ -65,6 +65,10 @@ d_points * create_points(const d_points * ipnts)
 	d_points * copy = new d_points(X, Y, Z, names, ipnts->getName());
 	if (ipnts->W)
 		copy->W = create_vec(*(ipnts->W));
+	if (ipnts->GX)
+		copy->GX = create_vec(*(ipnts->GX));
+	if (ipnts->GY)
+		copy->GY = create_vec(*(ipnts->GY));
 	return copy;
 };
 
@@ -74,6 +78,8 @@ d_points::d_points() : data("pnts") {
 	Z = NULL;
 	names = NULL;
 	W = NULL;
+	GX = NULL;
+	GY = NULL;
 };
 
 d_points::d_points(vec *& iX, vec *& iY, vec *& iZ, 
@@ -87,6 +93,8 @@ d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
 	setName(ipoints_name);
 	names = NULL;
 	W = NULL;
+	GX = NULL;
+	GY = NULL;
 };
 
 d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
@@ -102,6 +110,8 @@ d_points::d_points(vec *& iX, vec *& iY, vec *& iZ,
 	setName(ipoints_name);
 	names = inames;
 	W = NULL;
+	GX = NULL;
+	GY = NULL;
 };
 
 d_points::~d_points() {
@@ -115,6 +125,10 @@ d_points::~d_points() {
 		names->release();
 	if (W)
 		W->release();
+	if (GX)
+		GX->release();
+	if (GY)
+		GY->release();
 };
 
 size_t d_points::size() const {
@@ -132,6 +146,25 @@ bool d_points::set_weights(const std::vector<double> & weights) {
 	if (W)
 		W->release();
 	W = next;
+	return true;
+};
+
+bool d_points::set_gradients(const std::vector<double> & gx,
+			     const std::vector<double> & gy) {
+	if (gx.size() != size() || gy.size() != size())
+		return false;
+	vec * next_x = create_vec(gx.size());
+	vec * next_y = create_vec(gy.size());
+	for (size_t i = 0; i < gx.size(); i++) {
+		(*next_x)(i) = gx[i];
+		(*next_y)(i) = gy[i];
+	}
+	if (GX)
+		GX->release();
+	if (GY)
+		GY->release();
+	GX = next_x;
+	GY = next_y;
 	return true;
 };
 

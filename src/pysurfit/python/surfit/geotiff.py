@@ -144,16 +144,88 @@ def save_geotiff(path, values, extent, crs=None, nodata=None, metadata=None,
     return path
 
 
-def read_geotiff(path, band=1, nodata=None):
+def _rotated_target(transform, width, height, step_x, step_y):
+    corners = []
+    for px, py in ((0, 0), (width, 0), (0, height), (width, height)):
+        corners.append((transform[0] + px * transform[1] + py * transform[2],
+                        transform[3] + px * transform[4] + py * transform[5]))
+    xs = [point[0] for point in corners]
+    ys = [point[1] for point in corners]
+    min_x = min(xs) + step_x / 2.0
+    min_y = min(ys) + step_y / 2.0
+    count_x = max(2, int(np.floor((max(xs) - min(xs)) / step_x)) + 1)
+    count_y = max(2, int(np.floor((max(ys) - min(ys)) / step_y)) + 1)
+    return {
+        "min_x": min_x,
+        "max_x": min_x + (count_x - 1) * step_x,
+        "min_y": min_y,
+        "max_y": min_y + (count_y - 1) * step_y,
+        "step_x": step_x,
+        "step_y": step_y,
+        "count_x": count_x,
+        "count_y": count_y,
+    }
+
+
+def _validate_target(extent):
+    required = ("min_x", "max_x", "min_y", "max_y",
+                "step_x", "step_y", "count_x", "count_y")
+    missing = [key for key in required if key not in extent]
+    if missing:
+        raise ValueError("target_extent is missing %s" % (missing,))
+    if float(extent["step_x"]) <= 0 or float(extent["step_y"]) <= 0:
+        raise ValueError("target_extent steps must be positive")
+    return dict(extent)
+
+
+def _warp_rotated(dataset, band, target, resample, nodata):
+    from osgeo import gdal
+
+    count_x = int(target["count_x"])
+    count_y = int(target["count_y"])
+    step_x = float(target["step_x"])
+    step_y = float(target["step_y"])
+    half_x = step_x / 2.0
+    half_y = step_y / 2.0
+    bounds = (
+        float(target["min_x"]) - half_x,
+        float(target["min_y"]) - half_y,
+        float(target["min_x"]) + (count_x - 1) * step_x + half_x,
+        float(target["min_y"]) + (count_y - 1) * step_y + half_y,
+    )
+    options = gdal.WarpOptions(
+        format="MEM", width=count_x, height=count_y, outputBounds=bounds,
+        xRes=step_x, yRes=step_y, resampleAlg=resample,
+        srcNodata=None if nodata is None else float(nodata),
+        dstNodata=None if nodata is None else float(nodata))
+    warped = gdal.Warp("", dataset, options=options)
+    if warped is None:
+        raise ValueError("read_geotiff: GDAL warp failed")
+    values = warped.GetRasterBand(band).ReadAsArray().astype(float)
+    missing = warped.GetRasterBand(band).GetNoDataValue()
+    if missing is not None:
+        values[values == missing] = UNDEF_VALUE
+    values = np.flipud(values)
+    warped = None
+    return values, target, missing
+
+
+def read_geotiff(path, band=1, nodata=None, target_extent=None,
+                 resample="bilinear"):
     """Read one north-up GeoTIFF band into a surfit grid.
 
-    GDAL is preferred; ``tifffile`` is a fallback for the pixel data and
-    scale/tiepoint tags (CRS is then ``None``).  Returns ``values``, ``extent``,
-    ``crs`` and ``nodata``.  Rotated or west-up rasters are rejected.
+    GDAL is preferred; ``tifffile`` is a fallback for north-up pixel data and
+    scale/tiepoint tags (CRS is then ``None``).  A rotated raster is explicitly
+    warped to a regular north-up grid: ``target_extent`` selects that grid,
+    otherwise its bounding box and pixel size are used.  The result records
+    ``rotated`` and ``resampled`` so the caller can see that a warp happened.
     """
     try:
         from osgeo import gdal
     except ImportError:
+        if target_extent is not None or not (resample == "bilinear"):
+            raise ImportError(
+                "read_geotiff needs GDAL for a rotated/targeted read") from None
         return _read_tifffile(path, band)
     dataset = gdal.Open(str(path))
     if dataset is None:
@@ -161,11 +233,30 @@ def read_geotiff(path, band=1, nodata=None):
     if band < 1 or band > dataset.RasterCount:
         raise ValueError("read_geotiff: band %d is out of range" % (band,))
     transform = dataset.GetGeoTransform(can_return_null=True)
-    if transform is None or transform[2] != 0 or transform[4] != 0:
+    if transform is None:
+        raise ValueError("read_geotiff: raster has no geotransform")
+    rotated = (transform[2] != 0 or transform[4] != 0 or transform[1] <= 0)
+    if rotated or target_extent is not None:
+        if target_extent is None:
+            step_x = float(np.hypot(transform[1], transform[4]))
+            step_y = float(np.hypot(transform[2], transform[5]))
+            step = min(step_x, step_y)
+            target = _rotated_target(transform, dataset.RasterXSize,
+                                     dataset.RasterYSize, step, step)
+        else:
+            target = _validate_target(target_extent)
+        if resample not in ("nearest", "bilinear", "cubic"):
+            raise ValueError("resample must be nearest, bilinear or cubic")
+        values, target, missing = _warp_rotated(
+            dataset, band, target, resample, nodata)
+        crs = dataset.GetProjection()
+        dataset = None
+        return {"values": values, "extent": target, "crs": crs or None,
+                "nodata": missing, "rotated": bool(rotated),
+                "resampled": True, "resampling": resample}
+    if transform[2] != 0 or transform[4] != 0:
         raise ValueError(
             "read_geotiff: only north-up rasters without rotation are supported")
-    if transform[1] <= 0:
-        raise ValueError("read_geotiff: west-up x spacing is not supported")
     raster = dataset.GetRasterBand(band)
     values = raster.ReadAsArray().astype(float)
     file_nodata = raster.GetNoDataValue()
@@ -178,7 +269,8 @@ def read_geotiff(path, band=1, nodata=None):
     crs = dataset.GetProjection()
     dataset = None
     return {"values": values, "extent": extent, "crs": crs or None,
-            "nodata": missing}
+            "nodata": missing, "rotated": False, "resampled": False,
+            "resampling": None}
 
 
 def save_geotiff_stack(directory, layers, extent, crs=None, nodata=None):

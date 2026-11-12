@@ -418,6 +418,26 @@ class Session:
             pnts_set_weights(name, list(weights))
         return result
 
+    def add_gradient_points(self, x, y, gx, gy, name="gradient_points"):
+        """Register points with local dZ/dx and dZ/dy."""
+        return _core.add_gradient_points_array(x, y, gx, gy, name)
+
+    def add_dip_points(self, x, y, dip, azimuth, name="dip_points"):
+        """Register dip (degrees) and azimuth (degrees clockwise from +Y).
+
+        The components are ``gx = tan(dip)*sin(azimuth)`` and
+        ``gy = tan(dip)*cos(azimuth)``; negative dip means the opposite
+        direction.
+        """
+        import math
+
+        dip = np.asarray(dip, dtype=float)
+        azimuth = np.asarray(azimuth, dtype=float)
+        tangent = np.tan(np.deg2rad(dip))
+        gx = tangent * np.sin(np.deg2rad(azimuth))
+        gy = tangent * np.cos(np.deg2rad(azimuth))
+        return self.add_gradient_points(x, y, gx, gy, name=name)
+
     def add_curves(self, x, y, name="curves"):
         """Register a 2D polyline from arrays."""
         return _core.add_curves_array(x, y, name)

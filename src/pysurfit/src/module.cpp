@@ -46,6 +46,7 @@
 #include "other_tcl.h"
 #include "others_tcl.h"
 #include "f_points_tcl.h"
+#include "f_gradient.h"
 #include "surfs_tcl.h"
 #include "grid_tcl.h"
 #include "grid.h"
@@ -326,6 +327,61 @@ boolvec * add_points_array(
 	d_points * points = create_points(vx, vy, vz, name.c_str());
 	_surfit_pnts_add(points);
 	return added_flag();
+}
+
+boolvec * add_gradient_points_array(
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & x,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & y,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & gx,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & gy,
+		const std::string & name) {
+	auto x_info = x.request();
+	auto y_info = y.request();
+	auto gx_info = gx.request();
+	auto gy_info = gy.request();
+	check_same_size(x_info.shape[0], y_info.shape[0],
+	                "x and y must have the same length");
+	check_same_size(x_info.shape[0], gx_info.shape[0],
+	                "x and gx must have the same length");
+	check_same_size(x_info.shape[0], gy_info.shape[0],
+	                "x and gy must have the same length");
+	vec * vx = array_vec(x, "x");
+	vec * vy = array_vec(y, "y");
+	vec * vz = create_vec(0);
+	for (py::ssize_t i = 0; i < x_info.shape[0]; i++)
+		vz->push_back(0.0);
+	d_points * points = create_points(vx, vy, vz, name.c_str());
+	std::vector<double> values_x;
+	std::vector<double> values_y;
+	const double * px = static_cast<const double *>(gx_info.ptr);
+	const double * py = static_cast<const double *>(gy_info.ptr);
+	for (py::ssize_t i = 0; i < gx_info.shape[0]; i++) {
+		values_x.push_back(px[i]);
+		values_y.push_back(py[i]);
+	}
+	if (!points->set_gradients(values_x, values_y))
+		throw py::value_error("gradient arrays do not match points");
+	_surfit_pnts_add(points);
+	return added_flag();
+}
+
+boolvec * gradient_points(const std::string & name, double weight) {
+	if (surfit::surfit_pnts == NULL)
+		return NULL;
+	for (auto it = surfit::surfit_pnts->begin();
+	     it != surfit::surfit_pnts->end(); ++it) {
+		surfit::d_points * points = *it;
+		if (!StringMatch(name.c_str(), points->getName()))
+			continue;
+		surfit::functionals_push_back(
+			new surfit::f_gradient(points, static_cast<REAL>(weight)));
+		return added_flag();
+	}
+	return NULL;
 }
 
 boolvec * add_curves_array(
@@ -1179,6 +1235,24 @@ PYBIND11_MODULE(_surfit, m) {
 	      "node counts and extent of a surface, as a dict");
 	m.def("functionals_info", &functionals_info,
 	      "ordered gridding-rule sequence with names, types and conditions");
+
+	m.def("add_gradient_points_array", [](py::array_t<double, py::array::c_style |
+	                                       py::array::forcecast> x,
+	                                       py::array_t<double, py::array::c_style |
+	                                       py::array::forcecast> y,
+	                                       py::array_t<double, py::array::c_style |
+	                                       py::array::forcecast> gx,
+	                                       py::array_t<double, py::array::c_style |
+	                                       py::array::forcecast> gy,
+	                                       const std::string & name) {
+		return drain_boolvec(add_gradient_points_array(x, y, gx, gy, name));
+	}, py::arg("x"), py::arg("y"), py::arg("gx"), py::arg("gy"),
+	   py::arg("name") = "gradient_points",
+	   "register points with local dZ/dx and dZ/dy");
+	m.def("gradient", [](const std::string & name, double weight) {
+		return drain_boolvec(gradient_points(name, weight));
+	}, py::arg("name") = "*", py::arg("weight") = 1.0,
+	   "add a local-gradient condition from points");
 
 	m.def("add_points_array", [](py::array_t<double, py::array::c_style |
 	                              py::array::forcecast> x,

@@ -22,7 +22,7 @@ sys.path.insert(0, BIN)
 import surfit  # noqa: E402
 
 try:
-    from osgeo import gdal
+    from osgeo import gdal, osr
 except ImportError:
     gdal = None
 
@@ -83,7 +83,27 @@ def main():
             assert np.allclose(
                 surfit.read_geotiff(cog)["values"], task.values())
 
-    print("PASS: GeoTIFF single, multi-band, COG and fallback paths")
+        rotated = os.path.join(directory, "rotated.tif")
+        driver = gdal.GetDriverByName("GTiff")
+        dataset = driver.Create(rotated, 4, 4, 1, gdal.GDT_Float64)
+        angle = np.deg2rad(30.0)
+        dataset.SetGeoTransform((0.0, np.cos(angle), -np.sin(angle),
+                                 0.0, np.sin(angle), np.cos(angle)))
+        spatial = osr.SpatialReference()
+        spatial.ImportFromEPSG(32637)
+        dataset.SetProjection(spatial.ExportToWkt())
+        dataset.GetRasterBand(1).WriteArray(np.arange(16.0).reshape(4, 4))
+        dataset = None
+        warped = surfit.read_geotiff(rotated)
+        assert warped["rotated"] is True
+        assert warped["resampled"] is True
+        target = {"min_x": 0.0, "max_x": 4.0, "min_y": 0.0, "max_y": 4.0,
+                  "step_x": 1.0, "step_y": 1.0, "count_x": 5, "count_y": 5}
+        exact = surfit.read_geotiff(rotated, target_extent=target)
+        assert exact["extent"] == target
+        assert exact["values"].shape == (5, 5)
+
+    print("PASS: GeoTIFF single, multi-band, COG and rotated paths")
 
 
 if __name__ == "__main__":

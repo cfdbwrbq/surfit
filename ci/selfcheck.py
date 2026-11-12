@@ -128,6 +128,7 @@ def check_api():
         "error_by_group", "volume_between", "volume_ensemble",
         "volume_percentiles", "stack_volume", "stack_section",
         "add_geodataframe", "regression_trend", "add_regression_residuals",
+        "gradient",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

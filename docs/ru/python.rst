@@ -654,6 +654,44 @@ Dask не обещается. ``regression_trend`` подгоняет тренд
 ``.npy``-поверхность), упорядоченные ``rules`` и ``output``. JSON работает
 всегда; YAML требует PyYAML. Runner тонкий и вызывает обычные методы Session.
 
+GeoParquet
+----------
+
+Векторные данные можно читать и писать без GDAL, если установлены ``pyarrow``
+и ``shapely``::
+
+    surfit.add_geoparquet(task, "points.parquet", kind="points")
+    surfit.save_geoparquet("points.parquet", geometries, crs="EPSG:32637")
+
+Поддерживаются Point, LineString и Polygon; несовпадение CRS — ошибка.
+Адаптер опциональный и импортируется лениво.
+
+Выбор сглаживания: прототип L-кривой
+------------------------------------
+
+``select_parameter_lcurve`` делает один solve на кандидата на одном
+детерминированном holdout-разбиении и записывает data misfit и roughness::
+
+    result = surfit.select_parameter_lcurve(
+        build, x, y, z, [0.5, 1.0, 1.6], extent=extent,
+        holdout=0.25, seed=0)
+    result["parameter"], result["scores"]
+
+Это эвристический поиск угла с одним дополнительным solve на кандидата, не
+GCV. Spatial cross-validation через ``select_parameter`` остаётся baseline.
+
+Статус GCV и FlatGeobuf
+-----------------------
+
+GCV не реализован. Для него нужен trace матрицы влияния; CMOFS, penalty-loop
+и многоуровневая схема не дают одного линейного smoother’а, а случайная
+оценка trace легко выдаётся за GCV. Поддерживаемый прототип — holdout
+L-кривая; spatial CV остаётся baseline.
+
+FlatGeobuf не включён. Python-пакет ``flatgeobuf`` даёт reader, но не writer,
+поэтому read-only адаптер был бы асимметричным API; используйте GeoParquet или
+GDAL/pyogrio, если FlatGeobuf обязателен.
+
 Mesh и 3D-экспорт
 -----------------
 

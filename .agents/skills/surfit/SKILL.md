@@ -206,6 +206,10 @@ ensemble = surfit.SurfaceEnsemble.from_stacks([stack_a, stack_b])
 difference = ensemble - other_ensemble
 surfit.run_recipe("task.json")
 surfit.export_gltf("map.gltf", surfit.grid_mesh(values, extent))
+surfit.add_geoparquet(task, "points.parquet", kind="points")
+surfit.select_parameter_lcurve(build, x, y, z, candidates, extent=extent)
+# holdout L-curve prototype; select_parameter remains the CV baseline
+# no GCV and no FlatGeobuf writer: use GeoParquet or GDAL/pyogrio
 stack.export_obj("stack.obj")
 ```
 

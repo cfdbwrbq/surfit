@@ -657,6 +657,45 @@ The recipe has ``name``, ``grid``, ``data`` (points/curves/areas/contours or a
 ``.npy`` surface), ordered ``rules`` and ``output``.  JSON always works; YAML
 needs PyYAML.  The runner is thin and calls normal Session methods.
 
+GeoParquet
+----------
+
+Vector data can be read and written without GDAL when ``pyarrow`` and
+``shapely`` are installed::
+
+    surfit.add_geoparquet(task, "points.parquet", kind="points")
+    surfit.save_geoparquet("points.parquet", geometries, crs="EPSG:32637")
+
+Point, LineString and Polygon geometries are supported; CRS mismatch raises.
+The adapter is optional and imported lazily.
+
+Smoothing selection: L-curve prototype
+--------------------------------------
+
+``select_parameter_lcurve`` runs one solve per candidate on one deterministic
+holdout split and records data misfit versus roughness::
+
+    result = surfit.select_parameter_lcurve(
+        build, x, y, z, [0.5, 1.0, 1.6], extent=extent,
+        holdout=0.25, seed=0)
+    result["parameter"], result["scores"]
+
+It is a heuristic corner finder with one extra solve per candidate, not GCV.
+Spatial cross-validation via ``select_parameter`` remains the validation
+baseline.
+
+GCV and FlatGeobuf status
+-------------------------
+
+GCV is not implemented.  It needs the trace of the influence matrix; CMOFS,
+penalty loops and the multilevel ladder do not expose one linear smoother, and
+a randomized trace estimate would be easy to mislabel as GCV.  The holdout
+L-curve is the supported prototype; spatial CV remains the baseline.
+
+FlatGeobuf is not included.  The Python ``flatgeobuf`` package exposes a
+reader but no writer, so a read-only adapter would be an asymmetric API; use
+GeoParquet, or GDAL/pyogrio when FlatGeobuf is mandatory.
+
 Mesh and 3D export
 ------------------
 

@@ -744,6 +744,7 @@ from surfit.ensemble import SurfaceEnsemble  # noqa: E402
 from surfit.recipe import recipe_summary, run_recipe  # noqa: E402
 from surfit.solver_benchmark import benchmark_solvers  # noqa: E402
 from surfit.mesh import grid_mesh, export_gltf, export_obj, export_stl  # noqa: E402
+from surfit.geoparquet import add_geoparquet, save_geoparquet  # noqa: E402
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402
@@ -759,6 +760,7 @@ from surfit.padding import crop_surface, pad_extent  # noqa: E402
 from surfit.resolution import (  # noqa: E402
     estimate_psf, psf_report, resolution_report)
 from surfit.smoothing import select_parameter  # noqa: E402
+from surfit.lcurve import roughness, select_parameter_lcurve  # noqa: E402
 from surfit.tiled import (  # noqa: E402
     select_geometries, solve_tiled, tile_boxes)
 from surfit.stack import SurfaceStack, StackValidationError  # noqa: E402

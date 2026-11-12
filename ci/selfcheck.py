@@ -130,6 +130,8 @@ def check_api():
         "add_geodataframe", "regression_trend", "add_regression_residuals",
         "SurfaceEnsemble", "run_recipe", "recipe_summary",
         "grid_mesh", "export_gltf", "export_obj", "export_stl",
+        "add_geoparquet", "save_geoparquet",
+        "select_parameter_lcurve", "roughness",
         "benchmark_solvers",
         "gradient", "slope_max", "curvature_max",
     )

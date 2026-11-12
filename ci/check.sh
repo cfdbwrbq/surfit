@@ -178,6 +178,12 @@ run ensembles "$PYTHON" "$TESTS/test_ensemble_recipe.py"
 step "mesh export"
 run mesh "$PYTHON" "$TESTS/test_mesh.py"
 
+step "GeoParquet"
+run geoparquet "$PYTHON" "$TESTS/test_geoparquet.py"
+
+step "L-curve prototype"
+run lcurve "$PYTHON" "$TESTS/test_lcurve.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

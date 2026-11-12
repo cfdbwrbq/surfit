@@ -149,7 +149,9 @@
 - `SurfaceEnsemble` — когерентная арифметика, проценты, объёмы, изохоры;
 - `run_recipe` / `surfit run` — JSON/YAML-рецепты задач;
 - `grid_mesh` / `export_gltf` / `export_obj` / `export_stl` — 3D-экспорт;
-- `stack.to_pyvista()` — опциональный PyVista/VTK.
+- `stack.to_pyvista()` — опциональный PyVista/VTK;
+- `add_geoparquet` / `save_geoparquet` — GeoParquet без GDAL (pyarrow + shapely);
+- `select_parameter_lcurve` — prototype выбора сглаживания по holdout L-кривой, не GCV.
 
 ### Слоистые поверхности
 
@@ -209,6 +211,9 @@
 - rule report показывает residual для conditional-правил и violations для известных inequality-правил; для non-penalty data-правил residual = None;
 - P10/P50/P90 нельзя получить сложением per-cell интервалов;
 - GeoPandas, xarray, Zarr и sklearn — опциональны;
+- GeoParquet — опционально (pyarrow + shapely);
+- FlatGeobuf не включён: у Python-пакета нет writer, read-only API не делаем;
+- GCV не реализован; есть holdout L-curve prototype, spatial CV — baseline;
 - один solver, без kriging-ковариационной модели;
 - GDAL, SciPy, pyproj, tifffile — опциональны;
 - Linux x86_64 — основная платформа;

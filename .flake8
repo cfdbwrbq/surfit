@@ -41,3 +41,5 @@ per-file-ignores =
     docs/check_docs.py: WPS202,WPS210,WPS231
     src/pysurfit/python/surfit/solver_benchmark.py: WPS110
     src/pysurfit/python/surfit/mesh.py: WPS110,WPS111,WPS202,WPS210,WPS213,WPS221,WPS226,WPS231,WPS432,WPS478
+    src/pysurfit/python/surfit/geoparquet.py: WPS110,WPS111,WPS202,WPS210,WPS211,WPS221,WPS226,WPS229,WPS231,WPS232,WPS238,WPS301,WPS478,WPS504
+    src/pysurfit/python/surfit/lcurve.py: WPS110,WPS111,WPS210,WPS211,WPS221,WPS231,WPS232,WPS358,WPS432,WPS459,WPS478

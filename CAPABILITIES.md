@@ -214,6 +214,11 @@
 - GeoParquet — опционально (pyarrow + shapely);
 - FlatGeobuf не включён: у Python-пакета нет writer, read-only API не делаем;
 - GCV не реализован; есть holdout L-curve prototype, spatial CV — baseline;
+- `voronoi_weights` — 2D; 3D Voronoi declustering не входит в ядро;
+- variable grid, spatially varying anisotropy, drainage, C++ contouring,
+  stochastic simulation, lazy Dask, incremental/coupled solves — отложены;
+- измеренные отказы (OpenMP, `pcg`) и причины отложенных идей — в
+  `docs/en/development.rst`, раздел «Measured decisions and deferred directions».
 - один solver, без kriging-ковариационной модели;
 - GDAL, SciPy, pyproj, tifffile — опциональны;
 - Linux x86_64 — основная платформа;

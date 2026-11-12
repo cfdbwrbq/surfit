@@ -380,6 +380,22 @@ Known issues
   penalty loops (``mean``, ``wmean``, ``ineq``) stop on a change of the norm and
   can leave 14-21% at the same tolerance. Compare solutions by the residual, or
   use a tolerance well below the accuracy that is needed.
+* **Slope/curvature conditions trade data fit.** ``slope_max`` and
+  ``curvature_max`` are penalty conditions, not projections; they must be added
+  before ``completer``.  The mask path is exercised, but the numeric bound test
+  uses an area, so review a site-specific mask.
+* **PCG is a prototype.** ``set_solver("pcg")`` is diagonal-preconditioned CG;
+  it matches CG numerically but was slower on the 512² benchmark.  CG remains
+  the default.
+* **L-curve is a heuristic.** ``select_parameter_lcurve`` uses one holdout
+  split and one extra solve per candidate; it is not GCV.  GCV is not
+  implemented because the solver does not expose one linear influence matrix.
+* **GeoParquet is optional and exterior-only for polygons.** It needs
+  ``pyarrow`` and ``shapely``; MultiPolygon interiors/holes are not preserved.
+  FlatGeobuf is not included because the Python package has no writer.
+* **Mesh export is visualisation, not CAD.** glTF uses one embedded base64
+  buffer, OBJ has object groups, STL takes one layer; no CAD topology, normals
+  or material export.  PyVista is optional.
 
 Working on the project
 ----------------------

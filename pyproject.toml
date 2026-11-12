@@ -28,6 +28,8 @@ surfit = "surfit.cli:main"
 [project.optional-dependencies]
 # surfit.progress() draws a live progress bar from the engine's log messages.
 progress = ["tqdm>=4.20"]
+geoparquet = ["pyarrow>=8", "shapely>=2"]
+mesh = ["pyvista>=0.40"]
 
 [project.urls]
 Homepage = "http://surfit.sourceforge.net"

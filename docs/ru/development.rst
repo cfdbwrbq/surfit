@@ -386,6 +386,22 @@ OpenMP не взяли потому что:
   изменению нормы и при том же допуске оставляют 14–21%. Сравнивайте решения
   по невязке или берите допуск заметно ниже нужной точности.
 
+* **Slope/curvature conditions меняют data fit.** ``slope_max`` и
+  ``curvature_max`` — penalty-условия, не проекции; их нужно добавлять до
+  ``completer``. Mask-путь проверен, но численная граница тестируется на area;
+  проверяйте конкретную маску.
+* **PCG — prototype.** ``set_solver("pcg")`` — diagonal-preconditioned CG;
+  численно совпадает с CG, но на benchmark 512² медленнее. Default — CG.
+* **L-curve — эвристика.** ``select_parameter_lcurve`` использует один holdout
+  split и один дополнительный solve на кандидата; это не GCV. GCV не
+  реализован, потому что solver не даёт одну линейную influence matrix.
+* **GeoParquet опционален, полигоны — только exterior.** Нужны ``pyarrow`` и
+  ``shapely``; внутренние кольца MultiPolygon не сохраняются. FlatGeobuf не
+  включён: у Python-пакета нет writer.
+* **Mesh export — визуализация, не CAD.** glTF использует один embedded base64
+  buffer, OBJ — object groups, STL — один слой; нет CAD-топологии, нормалей и
+  материалов. PyVista опциональна.
+
 Работа над проектом
 -------------------
 

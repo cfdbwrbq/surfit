@@ -14,7 +14,8 @@ a global C++ state, a hand-written pybind11 layer, byte-for-byte parity tests an
 a documentation deliverable. A change can pass the full suite and still break a
 contract that no test names.
 
-Read `AGENTS.md` and, when present, `HANDOFF.md` first. State the intended
+Read the local agent notes (`AGENTS.md`, `HANDOFF.md`) when present; they are
+not part of the published repository. State the intended
 change in one sentence. If you cannot, stop and ask; do not review a diff whose
 purpose you are guessing.
 

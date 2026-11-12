@@ -324,6 +324,21 @@ derivative equations at the nearest nodes, so the absolute level is still set
 by points, areas or ``completer``.  This is a soft data condition, not a
 kriging model.
 
+Slope and curvature bounds
+--------------------------
+
+Local bounds are applied as a final projection, not as another data rule::
+
+    task.slope_max(5.0)                    # whole grid
+    task.slope_max(5.0, area_name="zone")  # inside an area
+    task.curvature_max(0.5, mask_name="m") # second difference bound
+
+``slope_max`` takes degrees and bounds ``|dZ/dx|`` and ``|dZ/dy|``;
+``curvature_max`` bounds the absolute second difference in the same units.
+With both names empty the projection is global.  It runs after the solve and
+can adjust data cells, so it is a policy projection, not a hard data
+constraint; inspect ``rule_report`` and the result before relying on it.
+
 Spatial residual diagnostics
 ----------------------------
 

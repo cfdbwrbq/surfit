@@ -90,6 +90,9 @@ public:
 	//! captured number of violating cells/points; -1 if unknown
 	int get_violations() const { return diagnostic_violations; };
 
+	//! optional final projection on the solved vector
+	virtual void post_process(extvec * X) {};
+
 	//! capture the residual of the last conditional linear system
 	void set_diagnostic_residual(REAL value) { diagnostic_residual = value; };
 

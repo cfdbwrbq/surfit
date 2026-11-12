@@ -145,6 +145,9 @@ run geotiff "$PYTHON" "$TESTS/test_geotiff.py"
 step "dip and gradient points"
 run gradient "$PYTHON" "$TESTS/test_gradient.py"
 
+step "slope and curvature bounds"
+run slope "$PYTHON" "$TESTS/test_slope.py"
+
 step "out-of-core tiled mosaic"
 run tiled "$PYTHON" "$TESTS/test_tiled.py"
 

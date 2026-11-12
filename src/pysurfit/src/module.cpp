@@ -47,6 +47,7 @@
 #include "others_tcl.h"
 #include "f_points_tcl.h"
 #include "f_gradient.h"
+#include "f_slope.h"
 #include "surfs_tcl.h"
 #include "grid_tcl.h"
 #include "grid.h"
@@ -63,6 +64,8 @@
 #include "curv_tcl.h"
 #include "cntr_tcl.h"
 #include "mask_tcl.h"
+#include "mask.h"
+#include "area.h"
 #include "area_tcl.h"
 #include "curvs_tcl.h"
 #include "hist_tcl.h"
@@ -382,6 +385,29 @@ boolvec * gradient_points(const std::string & name, double weight) {
 		return added_flag();
 	}
 	return NULL;
+}
+
+boolvec * slope_bound(double limit, const std::string & area_name,
+                     const std::string & mask_name, double penalty,
+                     int mode) {
+	surfit::d_area * area = NULL;
+	surfit::d_mask * mask = NULL;
+	for (auto it = surfit::surfit_areas->begin();
+	     it != surfit::surfit_areas->end(); ++it)
+		if (StringMatch(area_name.c_str(), (*it)->getName())) {
+			area = *it; break;
+		}
+	for (auto it = surfit::surfit_masks->begin();
+	     it != surfit::surfit_masks->end(); ++it)
+		if (StringMatch(mask_name.c_str(), (*it)->getName())) {
+			mask = *it; break;
+		}
+	if (area == NULL && mask == NULL && !(area_name.empty() && mask_name.empty()))
+		return NULL;
+	surfit::functionals_push_back(
+		new surfit::f_slope(static_cast<REAL>(limit), area, mask, true,
+		                    mode, surfit::get_mult(static_cast<REAL>(penalty))));
+	return added_flag();
 }
 
 boolvec * add_curves_array(
@@ -1235,6 +1261,20 @@ PYBIND11_MODULE(_surfit, m) {
 	      "node counts and extent of a surface, as a dict");
 	m.def("functionals_info", &functionals_info,
 	      "ordered gridding-rule sequence with names, types and conditions");
+
+	m.def("slope_max", [](double angle, const std::string & area_name,
+	                      const std::string & mask_name, double penalty) {
+		double limit = std::tan(angle * 3.14159265358979323846 / 180.0);
+		return drain_boolvec(slope_bound(limit, area_name, mask_name,
+		                                penalty, 0));
+	}, py::arg("angle_degrees"), py::arg("area_name") = "",
+	   py::arg("mask_name") = "", py::arg("penalty_factor") = 0);
+	m.def("curvature_max", [](double limit, const std::string & area_name,
+	                         const std::string & mask_name, double penalty) {
+		return drain_boolvec(slope_bound(limit, area_name, mask_name,
+		                                penalty, 1));
+	}, py::arg("limit"), py::arg("area_name") = "",
+	   py::arg("mask_name") = "", py::arg("penalty_factor") = 0);
 
 	m.def("add_gradient_points_array", [](py::array_t<double, py::array::c_style |
 	                                       py::array::forcecast> x,

@@ -135,7 +135,7 @@
 - `volume_ensemble`, `volume_percentiles`;
 - разрезы `SurfaceStack` по ломаной;
 - интервалы и слои в разрезе;
-- `rule_report()` — порядок правил, типы и conditions;
+- `rule_report()` — порядок правил, типы, conditions и violations там, где они известны;
 - GeoPandas/Shapely адаптер (опционально);
 - CRS-проверка без тихого перепроецирования;
 - xarray `Dataset` и Zarr export (опционально);
@@ -193,7 +193,7 @@
 - нет mesh/CAD export;
 - нет ML/property prediction;
 - нет GUI/map composition;
-- rule report показывает порядок/conditions, но не per-rule penalty residual;
+- rule report показывает violations для известных inequality-правил, но не per-rule penalty residual для всех функционалов;
 - P10/P50/P90 нельзя получить сложением per-cell интервалов;
 - GeoPandas, xarray, Zarr и sklearn — опциональны;
 - один solver, без kriging-ковариационной модели;

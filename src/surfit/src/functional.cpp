@@ -45,6 +45,7 @@ functional::functional(const char * newname, int itype) {
 	functionals_cond = new std::vector<functional *>;
 	type = itype;
 	pos = INT_MAX;
+	diagnostic_violations = -1;
 };
 
 functional::~functional() {

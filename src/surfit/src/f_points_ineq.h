@@ -45,6 +45,7 @@ public:
 	~f_points_ineq();
 
 	const char * getManagerName() const { return "surfit"; };
+	int compute_violations() const;
 
 	bool minimize();
 	bool make_matrix_and_vector(matr *& matrix, extvec *& v, bitvec * mask_solved, bitvec * mask_undefined);

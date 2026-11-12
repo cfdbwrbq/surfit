@@ -84,6 +84,12 @@ public:
 
 	//! returns functional type
 	int getType() const;
+	//! capture condition violations while the solved vector is still alive
+	void capture_violations() { diagnostic_violations = compute_violations(); };
+
+	//! captured number of violating cells/points; -1 if unknown
+	int get_violations() const { return diagnostic_violations; };
+
 
 	//! sets functional type
 	void setType(int itype);
@@ -157,6 +163,12 @@ public:
 	void set_pos(size_t ipos);
 
 protected:
+
+	//! subclass hook for condition violations; -1 if unknown
+	virtual int compute_violations() const { return -1; };
+
+	//! captured violation count
+	int diagnostic_violations;
 
 	//! returns number of \ref data refered to this functional only
 	virtual int this_get_data_count() const = 0;

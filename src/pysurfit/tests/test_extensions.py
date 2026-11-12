@@ -67,6 +67,20 @@ def main():
     assert rules["rules"][0]["name"].startswith("f_points")
     task.close()
 
+    conflict = surfit.Session(map_name="conflict", tol=1e-6)
+    conflict.add_points([0, 1, 0, 1], [0, 0, 1, 1], [0.0] * 4,
+                        name="p")
+    conflict.grid(0, 1, 0.5, 0, 1, 0.5)
+    conflict.points("p")
+    conflict.geq(10)
+    conflict.completer(1, 1.6)
+    conflict.solve()
+    violation_rules = conflict.rule_report()["rules"]
+    inequality = [item for item in violation_rules
+                  if item["name"] == "f_ineq"]
+    assert inequality and inequality[0]["violations"] > 0
+    conflict.close()
+
     x = np.array([0.0, 1.0, 2.0, 3.0])
     y = np.array([0.0, 1.0, 0.0, 1.0])
     features = np.column_stack((x, y))

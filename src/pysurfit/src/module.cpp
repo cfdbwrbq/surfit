@@ -218,6 +218,7 @@ py::list functionals_info() {
 		record["type"] = item->getType();
 		record["pos"] = item->get_pos();
 		record["conditions"] = item->cond_size();
+		record["violations"] = item->get_violations();
 		record["manager"] = item->getManagerName();
 		result.append(record);
 	}

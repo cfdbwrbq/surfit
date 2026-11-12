@@ -36,6 +36,7 @@ public:
 	~f_ineq();
 
 	const char * getManagerName() const { return "surfit"; };
+	int compute_violations() const;
 
 	bool minimize();
 

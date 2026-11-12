@@ -152,5 +152,20 @@ bool f_ineq::solvable_without_cond(const bitvec * mask_solved,
 };
 
 
+int f_ineq::compute_violations() const {
+	if (method_X == NULL)
+		return -1;
+	int count = 0;
+	size_t total = method_basis_cntX * method_basis_cntY;
+	for (size_t i = 0; i < total; i++) {
+		REAL x_value = (*method_X)(i);
+		if (x_value == undef_value)
+			continue;
+		if ((leq && x_value > value) || (!leq && x_value < value))
+			count++;
+	}
+	return count;
+};
+
 }; // namespace surfit;
 

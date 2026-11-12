@@ -498,6 +498,8 @@ void grid_release() {
 		method_prev_grid->release();
 	method_prev_grid = NULL;
 	
+	for (size_t index = 0; index < functionals->size(); index++)
+		(*functionals)[index]->capture_violations();
 	d_surf * res_surf = create_surf(method_X, create_grid(method_grid), map_name);
 	if (method_grid)
 		method_grid->release();

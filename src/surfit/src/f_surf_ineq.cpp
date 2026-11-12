@@ -228,5 +228,27 @@ bool f_surf_ineq::solvable_without_cond(const bitvec * mask_solved,
 };
 
 
+int f_surf_ineq::compute_violations() const {
+	if (method_X == NULL || method_grid == NULL || srf == NULL)
+		return -1;
+	size_t from_x, from_y, to_x, to_y;
+	_grid_intersect1(method_grid, srf->grd, from_x, to_x, from_y, to_y);
+	int count = 0;
+	for (size_t j = from_y; j <= to_y; j++) {
+		for (size_t i = from_x; i <= to_x; i++) {
+			REAL x, y;
+			method_grid->getCoordNode(i, j, x, y);
+			REAL target = srf->getInterpValue(x, y);
+			if (target == srf->undef_value)
+				continue;
+			size_t pos = i + j * method_grid->getCountX();
+			REAL x_value = (*method_X)(pos);
+			if ((leq && x_value > target) || (!leq && x_value < target))
+				count++;
+		}
+	}
+	return count;
+};
+
 }; // namespace surfit;
 

@@ -362,5 +362,21 @@ bool f_points_ineq_user::solvable_without_cond(const bitvec * mask_solved,
 };
 
 
+int f_points_ineq::compute_violations() const {
+	if (method_X == NULL || f_sub_pnts == NULL || pnts == NULL)
+		return -1;
+	int count = 0;
+	for (size_t i = 0; i < f_sub_pnts->size(); i++) {
+		sub_points * sub = (*f_sub_pnts)[i];
+		REAL target = sub->value(pnts);
+		if (target == undef_value)
+			continue;
+		REAL x_value = (*method_X)(sub->cell_number);
+		if ((leq && x_value > target) || (!leq && x_value < target))
+			count++;
+	}
+	return count;
+};
+
 }; // namespace surfit;
 

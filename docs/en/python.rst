@@ -575,8 +575,9 @@ realizations: per-cell interval bounds must not be summed into a volume range.
 small helper on top.
 
 ``stack.section`` samples layers and calibrated intervals along a polyline.
-``rule_report`` lists the ordered rule sequence and attached conditions; it is
-a priority/order diagnostic, not a residual for every rule.
+``rule_report`` lists the ordered rule sequence and attached conditions.
+Recognized inequality rules also carry a ``violations`` count captured at the
+end of the solve; ``-1`` means the diagnostic is not available for that rule.
 
 ``add_geodataframe`` is an optional GeoPandas adapter: Point/LineString/Polygon
 coordinates, optional Z and weights.  CRS mismatch is an error, not a silent

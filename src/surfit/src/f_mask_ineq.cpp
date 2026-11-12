@@ -204,5 +204,23 @@ bool f_mask_ineq::solvable_without_cond(const bitvec * mask_solved,
 void f_mask_ineq::drop_private_data() {
 };
 
+int f_mask_ineq::compute_violations() const {
+	if (method_X == NULL || method_grid == NULL || mask == NULL)
+		return -1;
+	int count = 0;
+	for (size_t i = 0; i < method_basis_cntX * method_basis_cntY; i++) {
+		size_t I, J;
+		one2two(i, I, J, method_basis_cntX, method_basis_cntY);
+		REAL x, y;
+		method_grid->getCoordNode(I, J, x, y);
+		if (mask->getValue(x, y) == false)
+			continue;
+		REAL x_value = (*method_X)(i);
+		if ((leq && x_value > value) || (!leq && x_value < value))
+			count++;
+	}
+	return count;
+};
+
 }; // namespace surfit;
 

@@ -376,6 +376,11 @@ Some proposed extensions are not implemented:
   read-only adapter would be asymmetric.
 - **GCV** — CMOFS/penalty/multilevel do not expose one linear influence
   matrix.  The holdout L-curve is a heuristic, not GCV.
+- **IC(0) preconditioner** — a prototype was removed.  The matrix is
+  symmetric (measured asymmetry 0), but IC(0) hit a negative pivot at row 41
+  (``a_ii=28``, six lower entries) on the 8×8 completer phase.  A diagonal
+  fallback would duplicate ``pcg``; this needs a diagonal shift or reordering
+  before another attempt.
 
 
 Known issues

@@ -132,7 +132,7 @@ def check_api():
         "grid_mesh", "export_gltf", "export_obj", "export_stl",
         "add_geoparquet", "save_geoparquet",
         "select_parameter_lcurve", "roughness",
-        "benchmark_solvers",
+        "benchmark_solvers", "poisson_vcycle",
         "gradient", "slope_max", "curvature_max",
     )
     missing = [name for name in required if not hasattr(module, name)]

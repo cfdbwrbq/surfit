@@ -169,6 +169,9 @@ run solver-benchmark "$PYTHON" "$TESTS/test_solver_benchmark.py"
 step "prototype pcg"
 run pcg "$PYTHON" "$TESTS/test_pcg.py"
 
+step "V-cycle prototype"
+run vcycle "$PYTHON" "$TESTS/test_vcycle.py"
+
 step "extension utilities"
 run extensions "$PYTHON" "$TESTS/test_extensions.py"
 

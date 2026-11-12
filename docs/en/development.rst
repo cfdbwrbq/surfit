@@ -354,6 +354,28 @@ If this area is revisited, the order is: reduce ``do_jobs``/batching, parallel
 assembly, then a single OpenMP path only for the measured serial hotspot.  SSOR
 stays sequential.
 
+Galerkin V-cycle prototype
+--------------------------
+
+A standalone geometric V-cycle for the cell-centred 2D Poisson operator uses
+bilinear interpolation, a Galerkin coarse operator and red-black Gauss-Seidel.
+Residual norms for the unit right-hand side:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - grid
+     - residual after each of five cycles
+   * - 32²
+     - 27.51 → 3.03 → 0.278 → 0.0399 → 0.00608
+   * - 64²
+     - 100.41 → 16.81 → 3.52 → 1.23 → 0.376 → 0.0844
+
+This is a feasibility baseline, not an integrated surfit solver: the CMOFS
+matrix is not exposed as a hierarchy, and no speedup against ``cg`` is claimed.
+The prototype is ``surfit.poisson_vcycle`` and has a regression test.
+
 Deferred work
 -------------
 

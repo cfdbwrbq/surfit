@@ -69,7 +69,21 @@ def main():
             os.path.join(stack, manifest["layers"][1]["file"]))
         assert np.allclose(second["values"], task.values())
 
-    print("PASS: GeoTIFF values, projection, nodata, reader and stack")
+        bands = os.path.join(directory, "bands.tif")
+        surfit.save_geotiff_bands(
+            bands, {"one": task.values(), "two": task.values()},
+            loaded["extent"], crs="EPSG:32637")
+        assert np.allclose(
+            surfit.read_geotiff(bands, band=2)["values"], task.values())
+
+        if gdal.GetDriverByName("COG") is not None:
+            cog = os.path.join(directory, "cog.tif")
+            surfit.save_geotiff(cog, task.values(), loaded["extent"],
+                                crs="EPSG:32637", cog=True)
+            assert np.allclose(
+                surfit.read_geotiff(cog)["values"], task.values())
+
+    print("PASS: GeoTIFF single, multi-band, COG and fallback paths")
 
 
 if __name__ == "__main__":

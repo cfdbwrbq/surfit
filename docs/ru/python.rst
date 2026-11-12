@@ -476,6 +476,13 @@ Quality workflow
 ``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)``
 пишет по GeoTIFF на слой плюс ``manifest.json`` с именами, порядком, extent,
 CRS и nodata. Это формат обмена, а не приватный контейнер.
+``save_geotiff_bands(path, {name: array}, extent, ...)`` пишет один
+multi-band GeoTIFF с описаниями band’ов. ``save_geotiff(..., cog=True)`` и
+``save_geotiff_bands(..., cog=True)`` пишут Cloud Optimized GeoTIFF через
+GDAL COG driver. Без GDAL используется ``tifffile`` для пикселей и
+scale/tiepoint-тегов; запрос CRS или COG даёт явный ImportError, а не молча
+теряет georeference.
+
 
 Strict-режим
 ------------

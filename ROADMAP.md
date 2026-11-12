@@ -35,16 +35,11 @@ reproducible exchange format.
 | stack persistence (`.npy` layers + `manifest.json`) | done |
 | memory-mapped stack values and `load(..., mmap=True)` | done |
 | native array constructors (no temporary file) | done |
+| multi-band GeoTIFF, COG, optional tifffile fallback | done |
 
 ## Next
 
-### 1. Raster polish
-
-- `tifffile` fallback when GDAL is absent;
-- multi-band stack without the per-layer manifest workaround;
-- COG/overviews.
-
-### 2. Release
+### 1. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

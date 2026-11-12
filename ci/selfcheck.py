@@ -120,7 +120,8 @@ def check_api():
         "pad_extent", "crop_surface", "resolution_report", "select_parameter",
         "psf_report", "estimate_psf",
         "solve_tiled", "select_geometries", "tile_boxes", "SurfaceStack",
-        "read_geotiff", "save_geotiff_stack", "conformal_quantile",
+        "read_geotiff", "save_geotiff_stack", "save_geotiff_bands",
+        "conformal_quantile",
         "calibrated_interval", "benchmark_stack", "interval_coverage",
         "coverage_by_group", "group_conformal_quantiles",
     )

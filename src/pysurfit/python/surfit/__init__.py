@@ -707,7 +707,7 @@ from surfit.diagnostics import (  # noqa: E402
     group_conformal_quantiles, interval_coverage, outlier_mask,
     point_residuals, quality_report)
 from surfit.geotiff import (  # noqa: E402
-    read_geotiff, save_geotiff, save_geotiff_stack)
+    read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402
     block_labels, cross_validate, fold_assignment)
 from surfit.variogram import (  # noqa: E402

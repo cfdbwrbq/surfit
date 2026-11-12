@@ -261,6 +261,8 @@ columned file is written.
 
 For raster exchange use `surfit.read_geotiff(path)` and
 `surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`.
+`save_geotiff_bands` writes one multi-band file; `cog=True` writes COG via
+GDAL; without GDAL, `tifffile` handles pixels/tags but a CRS request raises.
 North-up/cell-centre conventions are explicit; rotated rasters are rejected.
 
 For grouped validation:

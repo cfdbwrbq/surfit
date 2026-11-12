@@ -1,9 +1,12 @@
-"""Optional GeoTIFF output with a real CRS.
+"""Optional GeoTIFF input and output.
 
-GDAL is not a required dependency of surfit.  Import this module only when the
-extra is installed (``python -m pip install gdal`` or the system package); the
-rest of the package keeps working without it.
+GDAL is preferred because it carries CRS, nodata and GeoTIFF tags.  When GDAL
+is absent, ``tifffile`` can read/write the pixel data and the simple
+north-up georeferencing tags; a CRS cannot be written without GDAL, and that
+case raises instead of silently dropping the CRS.
 """
+
+import os
 
 import numpy as np
 
@@ -11,37 +14,111 @@ from surfit import UNDEF_VALUE
 from surfit.provenance import engine_version
 
 
-def save_geotiff(path, values, extent, crs=None, nodata=None, metadata=None):
-    """Write a (count_y, count_x) grid as a north-up GeoTIFF.
-
-    ``extent`` is the ``surf_extent`` dict; nodes are cell centres, so the
-    raster corners are half a step outside the first and last node.  ``crs`` is
-    anything ``osr.SpatialReference.SetFromUserInput`` accepts, for example
-    ``"EPSG:32637"`` or a WKT string.
-    """
-    try:
-        from osgeo import gdal, osr
-    except ImportError as error:
-        raise ImportError(
-            "save_geotiff needs GDAL; install the system gdal python bindings"
-        ) from error
-
-    values = np.asarray(values, dtype=float)
-    count_y, count_x = values.shape
-    if count_y != int(extent["count_y"]) or count_x != int(extent["count_x"]):
-        raise ValueError("values shape does not match extent")
-
-    driver = gdal.GetDriverByName("GTiff")
-    dataset = driver.Create(
-        path, count_x, count_y, 1, gdal.GDT_Float64,
-        options=["TILED=YES", "COMPRESS=DEFLATE", "BIGTIFF=IF_SAFER"])
-    geotransform = (
+def _extent_geotransform(extent):
+    return (
         float(extent["min_x"]) - float(extent["step_x"]) / 2.0,
         float(extent["step_x"]), 0.0,
         float(extent["max_y"]) + float(extent["step_y"]) / 2.0,
         0.0, -float(extent["step_y"]),
     )
-    dataset.SetGeoTransform(geotransform)
+
+
+def _extent_from_transform(transform, count_y, count_x):
+    step_x = float(transform[1])
+    step_y = abs(float(transform[5]))
+    x_min = float(transform[0]) + step_x / 2.0
+    y_center = float(transform[3]) + float(transform[5]) / 2.0
+    if transform[5] < 0:
+        y_min = y_center - (count_y - 1) * step_y
+    else:
+        y_min = y_center
+    return {
+        "min_x": x_min,
+        "max_x": x_min + (count_x - 1) * step_x,
+        "min_y": y_min,
+        "max_y": y_min + (count_y - 1) * step_y,
+        "step_x": step_x,
+        "step_y": step_y,
+        "count_x": count_x,
+        "count_y": count_y,
+    }
+
+
+def _save_tifffile(path, values, extent, nodata):
+    try:
+        import tifffile
+    except ImportError as error:
+        raise ImportError(
+            "save_geotiff needs GDAL or tifffile"
+        ) from error
+    geotransform = _extent_geotransform(extent)
+    tags = [
+        (33550, "d", 3, (geotransform[1], abs(geotransform[5]), 0.0), False),
+        (33922, "d", 6, (0.0, 0.0, 0.0, geotransform[0],
+                         geotransform[3], 0.0), False),
+    ]
+    tifffile.imwrite(path, np.flipud(values), extratags=tags)
+    return path
+
+
+def _read_tifffile(path, band):
+    try:
+        import tifffile
+    except ImportError as error:
+        raise ImportError(
+            "read_geotiff needs GDAL or tifffile"
+        ) from error
+    with tifffile.TiffFile(path) as tif:
+        page = tif.pages[band - 1]
+        values = page.asarray().astype(float)
+        page_tags = page.tags
+        scale = page_tags.get("ModelPixelScaleTag")
+        tiepoint = page_tags.get("ModelTiepointTag")
+        if scale is None or tiepoint is None:
+            raise ValueError(
+                "read_geotiff: tifffile found no GeoTIFF scale/tiepoint tags")
+        scale = scale.value
+        tiepoint = tiepoint.value
+        transform = (float(tiepoint[3]), float(scale[0]), 0.0,
+                     float(tiepoint[4]), 0.0, -float(scale[1]))
+        extent = _extent_from_transform(transform, *values.shape)
+        nodata_tag = page_tags.get("GDAL_NODATA")
+        missing = float(nodata_tag.value) if nodata_tag is not None else None
+    return {"values": np.flipud(values), "extent": extent, "crs": None,
+            "nodata": missing}
+
+
+def save_geotiff(path, values, extent, crs=None, nodata=None, metadata=None,
+                 cog=False):
+    """Write a (count_y, count_x) grid as a north-up GeoTIFF.
+
+    GDAL is used when available; ``tifffile`` is the fallback for pixels and
+    scale/tiepoint tags.  ``crs`` and ``cog=True`` require GDAL and raise a
+    clear ImportError otherwise.  ``cog=True`` writes a Cloud Optimized
+    GeoTIFF through GDAL's COG driver.
+    """
+    values = np.asarray(values, dtype=float)
+    count_y, count_x = values.shape
+    if count_y != int(extent["count_y"]) or count_x != int(extent["count_x"]):
+        raise ValueError("values shape does not match extent")
+    try:
+        from osgeo import gdal, osr
+    except ImportError:
+        if crs or cog:
+            raise ImportError(
+                "save_geotiff needs GDAL for CRS or COG output") from None
+        return _save_tifffile(path, values, extent, nodata)
+
+    target = path
+    temporary = None
+    if cog:
+        temporary = path + ".tmp.tif"
+        target = temporary
+    driver = gdal.GetDriverByName("GTiff")
+    dataset = driver.Create(
+        target, count_x, count_y, 1, gdal.GDT_Float64,
+        options=["TILED=YES", "COMPRESS=DEFLATE", "BIGTIFF=IF_SAFER"])
+    dataset.SetGeoTransform(_extent_geotransform(extent))
     if crs:
         spatial = osr.SpatialReference()
         spatial.SetFromUserInput(str(crs))
@@ -57,27 +134,27 @@ def save_geotiff(path, values, extent, crs=None, nodata=None, metadata=None):
                     "SURFIT_" + str(key).upper(), str(value))
     band = dataset.GetRasterBand(1)
     band.WriteArray(np.flipud(values))
-    band.SetNoDataValue(
-        float(UNDEF_VALUE if nodata is None else nodata))
+    band.SetNoDataValue(float(UNDEF_VALUE if nodata is None else nodata))
     dataset.FlushCache()
     dataset = None
+    if cog:
+        gdal.Translate(path, temporary, format="COG",
+                       creationOptions=["COMPRESS=DEFLATE"])
+        os.unlink(temporary)
     return path
 
 
 def read_geotiff(path, band=1, nodata=None):
     """Read one north-up GeoTIFF band into a surfit grid.
 
-    Returns ``{"values", "extent", "crs", "nodata"}``.  Cells are cell
-    centres, matching :func:`save_geotiff`; a north-up raster is flipped so
-    row 0 is ``min_y``.  Rotated or west-up rasters are rejected rather than
-    silently misaligned.  GDAL is optional.
+    GDAL is preferred; ``tifffile`` is a fallback for the pixel data and
+    scale/tiepoint tags (CRS is then ``None``).  Returns ``values``, ``extent``,
+    ``crs`` and ``nodata``.  Rotated or west-up rasters are rejected.
     """
     try:
         from osgeo import gdal
-    except ImportError as error:
-        raise ImportError(
-            "read_geotiff needs GDAL; install the system gdal python bindings"
-        ) from error
+    except ImportError:
+        return _read_tifffile(path, band)
     dataset = gdal.Open(str(path))
     if dataset is None:
         raise ValueError("read_geotiff: cannot open %s" % (path,))
@@ -95,26 +172,9 @@ def read_geotiff(path, band=1, nodata=None):
     missing = nodata if nodata is not None else file_nodata
     if missing is not None:
         values[values == missing] = UNDEF_VALUE
-    count_y, count_x = values.shape
-    step_x = float(transform[1])
-    step_y = abs(float(transform[5]))
-    x_min = float(transform[0]) + step_x / 2.0
-    y_center = float(transform[3]) + float(transform[5]) / 2.0
     if transform[5] < 0:
         values = np.flipud(values)
-        y_min = y_center - (count_y - 1) * step_y
-    else:
-        y_min = y_center
-    extent = {
-        "min_x": x_min,
-        "max_x": x_min + (count_x - 1) * step_x,
-        "min_y": y_min,
-        "max_y": y_min + (count_y - 1) * step_y,
-        "step_x": step_x,
-        "step_y": step_y,
-        "count_x": count_x,
-        "count_y": count_y,
-    }
+    extent = _extent_from_transform(transform, *values.shape)
     crs = dataset.GetProjection()
     dataset = None
     return {"values": values, "extent": extent, "crs": crs or None,
@@ -122,14 +182,8 @@ def read_geotiff(path, band=1, nodata=None):
 
 
 def save_geotiff_stack(directory, layers, extent, crs=None, nodata=None):
-    """Write named layers as individual GeoTIFFs plus a JSON manifest.
-
-    ``layers`` is a mapping name -> array.  The manifest keeps the layer order,
-    file names, extent, CRS and nodata; this is the exchange format, not a
-    second private container.
-    """
+    """Write named layers as individual GeoTIFFs plus a JSON manifest."""
     import json
-    import os
 
     os.makedirs(directory, exist_ok=True)
     document = {"layers": [], "extent": dict(extent), "crs": crs,
@@ -144,3 +198,44 @@ def save_geotiff_stack(directory, layers, extent, crs=None, nodata=None):
         json.dump(document, stream, indent=2, sort_keys=True)
         stream.write("\n")
     return document
+
+
+def save_geotiff_bands(path, layers, extent, crs=None, nodata=None,
+                       metadata=None, cog=False):
+    """Write several layers as bands of one GeoTIFF.
+
+    Band descriptions preserve layer names.  The function needs GDAL; it is
+    the multi-band counterpart of :func:`save_geotiff_stack`.
+    """
+    try:
+        from osgeo import gdal, osr
+    except ImportError as error:
+        raise ImportError(
+            "save_geotiff_bands needs GDAL") from error
+    count_y = int(extent["count_y"])
+    count_x = int(extent["count_x"])
+    target = path
+    temporary = None
+    if cog:
+        temporary = path + ".tmp.tif"
+        target = temporary
+    dataset = gdal.GetDriverByName("GTiff").Create(
+        target, count_x, count_y, len(layers), gdal.GDT_Float64,
+        options=["TILED=YES", "COMPRESS=DEFLATE", "BIGTIFF=IF_SAFER"])
+    dataset.SetGeoTransform(_extent_geotransform(extent))
+    if crs:
+        spatial = osr.SpatialReference()
+        spatial.SetFromUserInput(str(crs))
+        dataset.SetProjection(spatial.ExportToWkt())
+    for index, (name, values) in enumerate(layers.items(), 1):
+        band = dataset.GetRasterBand(index)
+        band.SetDescription(str(name))
+        band.WriteArray(np.flipud(np.asarray(values, dtype=float)))
+        band.SetNoDataValue(float(UNDEF_VALUE if nodata is None else nodata))
+    dataset.FlushCache()
+    dataset = None
+    if cog:
+        gdal.Translate(path, temporary, format="COG",
+                       creationOptions=["COMPRESS=DEFLATE"])
+        os.unlink(temporary)
+    return path

@@ -155,7 +155,7 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_benchmark.py``
      - возвращаются direct/sequential/parallel timings (без speed gate)
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
-     - значения GeoTIFF, geotransform, CRS и nodata (без GDAL — SKIP)
+     - GeoTIFF значения, reader, multi-band, COG и fallback
    * - ``python3 src/pysurfit/tests/test_strict.py``
      - opt-in strict mode превращает пустое совпадение площади в ValueError
    * - ``python3 src/pysurfit/tests/test_serial.py``

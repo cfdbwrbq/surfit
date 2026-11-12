@@ -479,6 +479,13 @@ misaligned.
 ``surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`` writes
 one GeoTIFF per layer plus ``manifest.json`` with names, order, extent, CRS and
 nodata.  It is an exchange format, not a private container.
+``save_geotiff_bands(path, {name: array}, extent, ...)`` writes one
+multi-band GeoTIFF with band descriptions.  ``save_geotiff(..., cog=True)`` and
+``save_geotiff_bands(..., cog=True)`` write a Cloud Optimized GeoTIFF through
+GDAL's COG driver.  Without GDAL, ``tifffile`` is the fallback for pixels and
+scale/tiepoint tags; a CRS or COG request raises a clear ImportError rather
+than silently dropping the georeference.
+
 
 Strict rules
 ------------

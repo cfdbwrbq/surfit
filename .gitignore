@@ -45,6 +45,9 @@ docs/_build/
 
 # Local working notes and plans (kept outside the package)
 AGENTS.md
+.agents/skills/surfit-review/
+.agents/skills/surfit-testing/
+.agents/skills/release-sync/
 PLANS.md
 ROADMAP.md
 SURFACE_STACK_PLAN.md

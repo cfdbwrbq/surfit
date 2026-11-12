@@ -401,9 +401,9 @@ Working on the project
 ----------------------
 
 The project keeps a catalogue of mistakes and the rules derived from them in
-``.agents/skills/error-to-skill/LESSONS.md``, together with the practice that
-produces it. Read it before working on a subsystem it covers, and add to it
-after any non-trivial failure.
+the local agent notes, together with the practice that produces it.  Those
+notes are not part of the published repository.  Read them before working on a
+subsystem they cover, and add to them after any non-trivial failure.
 
 License
 -------

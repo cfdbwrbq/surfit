@@ -124,6 +124,22 @@ def main():
         loaded.close()
         initial.close()
 
+    with tempfile.TemporaryDirectory() as directory:
+        mapped = surfit.SurfaceStack("mapped")
+        mapped.add_layer("top", lambda: layer(10.0))
+        mapped.add_layer("bottom", lambda: layer(4.0))
+        mapped.solve(memmap=True,
+                     memmap_dir=os.path.join(directory, "values"))
+        assert isinstance(mapped.values("top"), np.memmap)
+        assert mapped.report()["crossings"] == 0
+        mapped.save(os.path.join(directory, "saved"))
+        loaded = surfit.SurfaceStack.load(
+            os.path.join(directory, "saved"), mmap=True)
+        assert isinstance(loaded.values("bottom"), np.memmap)
+        assert np.allclose(loaded.values("top"), mapped.values("top"))
+        loaded.close()
+        mapped.close()
+
     pinched = surfit.SurfaceStack("pinched")
     pinched.add_layer("top", lambda: layer(10.0))
     pinched.add_layer("bottom", lambda: layer(10.0))

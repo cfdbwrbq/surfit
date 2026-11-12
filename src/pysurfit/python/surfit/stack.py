@@ -73,6 +73,7 @@ class SurfaceStack:
         self._tasks = []
         self._values = []
         self._timings = {}
+        self._memmaps = []
         self._extent = None
 
     def add_layer(self, name, build, above=None, below=None,
@@ -172,8 +173,13 @@ class SurfaceStack:
         return directory
 
     @classmethod
-    def load(cls, directory):
-        """Load a stack written by :meth:`save`; layers are read-only arrays."""
+    def load(cls, directory, mmap=False):
+        """Load a stack written by :meth:`save`.
+
+        With ``mmap=True`` the layer arrays are read-only memory maps; use
+        ``close()`` to release them.  A read-only stack cannot be projected
+        with ``apply_pinchout``.
+        """
         import json
         import os
 
@@ -191,7 +197,8 @@ class SurfaceStack:
         values = []
         for item in document["layers"]:
             path = os.path.join(directory, "layers", item["file"])
-            array = np.load(path, allow_pickle=False)
+            array = np.load(path, allow_pickle=False,
+                            mmap_mode="r" if mmap else None)
             expected = (int(stack._extent["count_y"]),
                         int(stack._extent["count_x"]))
             if array.shape != expected:
@@ -202,7 +209,23 @@ class SurfaceStack:
         stack._layers = layers
         stack._values = values
         stack._tasks = []
+        if mmap:
+            stack._memmaps = list(values)
         return stack
+
+    def _persist_values(self, values, directory):
+        import os
+
+        os.makedirs(directory, exist_ok=True)
+        mapped = []
+        for index, value in enumerate(values):
+            path = os.path.join(directory, "layer_%03d.dat" % index)
+            array = np.memmap(path, dtype="float64", mode="w+",
+                              shape=value.shape)
+            array[:] = value
+            array.flush()
+            mapped.append(array)
+        return mapped
 
     def _build_layer(self, item):
         name, build = item
@@ -213,7 +236,8 @@ class SurfaceStack:
             task.solve()
         return task
 
-    def solve(self, parallel=False, workers=None):
+    def solve(self, parallel=False, workers=None, memmap=False,
+              memmap_dir=None):
         """Build and solve every layer, checking the shared grid.
 
         ``parallel=True`` builds/solves independent layers in a thread pool.
@@ -224,6 +248,8 @@ class SurfaceStack:
             raise ValueError("a stack needs at least one layer")
         if self._relations and parallel:
             raise ValueError("relations require sequential solve")
+        if memmap and memmap_dir is None:
+            raise ValueError("memmap=True needs memmap_dir")
         started = time.perf_counter()
         tasks = []
         try:
@@ -289,6 +315,15 @@ class SurfaceStack:
                 if close is not None:
                     close()
             raise
+        if memmap:
+            mapped = self._persist_values(values, memmap_dir)
+            for task in tasks:
+                close = getattr(task, "close", None)
+                if close is not None:
+                    close()
+            tasks = []
+            values = mapped
+            self._memmaps = mapped
         self._tasks = tasks
         self._values = values
         self._timings = {"seconds": time.perf_counter() - started}
@@ -390,6 +425,12 @@ class SurfaceStack:
             close = getattr(task, "close", None)
             if close is not None:
                 close()
+        for array in self._memmaps:
+            array.flush()
+            mapping = getattr(array, "_mmap", None)
+            if mapping is not None:
+                mapping.close()
+        self._memmaps = []
         self._tasks = []
         self._values = []
 

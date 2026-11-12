@@ -576,6 +576,15 @@ extent/step. Используйте его, когда несколько пов
 В каталоге лежат ``layers/*.npy`` и ``manifest.json`` с именами, порядком,
 extent, timings и отчётом. Загрузка восстанавливает значения, толщину и отчёт;
 исходные Session она не пересоздаёт.
+Для больших стеков держите значения слоёв на диске::
+
+    stack.solve(memmap=True, memmap_dir="stack_values")
+    loaded = surfit.SurfaceStack.load("stack_dir", mmap=True)
+
+``values()`` тогда возвращает массивы ``numpy.memmap``. Загруженный с
+``mmap=True`` стек read-only: для ``apply_pinchout`` нужна записываемая копия.
+Вызывайте ``close()``, чтобы сбросить и освободить отображения.
+
 
 ``solve(parallel=True)`` строит независимые слои в thread pool.
 ``thickness(name)`` возвращает массив до следующего слоя, а

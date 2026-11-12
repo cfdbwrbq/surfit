@@ -579,6 +579,15 @@ A solved stack can be persisted without a private binary format::
 The directory contains ``layers/*.npy`` and ``manifest.json`` with names,
 order, extent, timings and the report.  Loading restores values, thickness and
 the report; it does not recreate the original Sessions.
+For large stacks, keep layer values on disk::
+
+    stack.solve(memmap=True, memmap_dir="stack_values")
+    loaded = surfit.SurfaceStack.load("stack_dir", mmap=True)
+
+``values()`` then returns ``numpy.memmap`` arrays.  A loaded ``mmap=True``
+stack is read-only: ``apply_pinchout`` would need a writable copy.  Call
+``close()`` to flush and release the mappings.
+
 
 ``solve(parallel=True)`` builds independent layers in a thread pool.
 ``thickness(name)`` returns the array to the next layer and

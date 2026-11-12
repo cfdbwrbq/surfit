@@ -33,33 +33,23 @@ reproducible exchange format.
 | coverage report and group-conformal quantiles | done |
 | direct/sequential/parallel benchmark | done |
 | stack persistence (`.npy` layers + `manifest.json`) | done |
+| memory-mapped stack values and `load(..., mmap=True)` | done |
 
 ## Next
 
-### 1. Memory-mapped stack
-
-Keep layer values on disk:
-
-- `SurfaceStack` values backed by `memmap`;
-- report crosses/thickness without loading everything;
-- benchmark 20–50 layers;
-- explicit `close()` for the mapping.
-
-Why: the current stack holds every layer in RAM.
-
-### 2. Native array constructors
+### 1. Native array constructors
 
 `add_points`/`add_curves` currently use a temporary columned file.  A native
 C++/pybind path would remove the I/O and preserve names/weights without a round
 trip.
 
-### 3. Raster polish
+### 2. Raster polish
 
 - `tifffile` fallback when GDAL is absent;
 - multi-band stack without the per-layer manifest workaround;
 - COG/overviews.
 
-### 4. Release
+### 3. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

@@ -354,41 +354,29 @@ If this area is revisited, the order is: reduce ``do_jobs``/batching, parallel
 assembly, then a single OpenMP path only for the measured serial hotspot.  SSOR
 stays sequential.
 
-Measured decisions and deferred directions
-------------------------------------------
+Deferred work
+-------------
 
-Not every proposed extension was taken.  The distinction is explicit:
+Some proposed extensions are not implemented:
 
-**Measured**
+- **OpenMP** — the existing matvec pool already covers the hot loop.  On
+  8 vCPU the 512² and 1024² cases reached 2.65× and 2.19×, CPU use was about
+  328%, and assembly was 25–31% of the time.
+- **Diagonal-preconditioned CG** — available as ``pcg``.  It matches CG
+  numerically, but on 512² it took 1.316 s against 0.889 s for ``cg``; CG
+  remains the default.
+- **3D Voronoi declustering** — ``voronoi_weights`` is 2D because ``z`` is the
+  measured value of the surface, not a third spatial coordinate.  True 3D
+  samples need a separate helper.
+- **Variable grid spacing, spatially varying anisotropy, drainage enforcement,
+  C++ contouring, stochastic simulation, lazy Dask, incremental recompute and
+  coupled cross-layer solve** — these need a different data model, a separate
+  validation set or a different solver contract; none has a benchmark yet.
+- **FlatGeobuf** — the Python package has a reader but no writer, so a
+  read-only adapter would be asymmetric.
+- **GCV** — CMOFS/penalty/multilevel do not expose one linear influence
+  matrix.  The holdout L-curve is a heuristic, not GCV.
 
-- **OpenMP** — not adopted.  On 8 vCPU the 512² and 1024² cases reached 2.65×
-  and 2.19×; CPU use was about 328%; assembly was 25–31% of the time.  The
-  existing matvec pool already covers the hot loop.  See the section above.
-- **Diagonal-preconditioned CG** — prototyped as ``pcg``.  It matches CG
-  numerically, but on 512² it took 1.316 s against 0.889 s for ``cg``.  It is
-  not the default.
-
-**Deferred or not applicable**
-
-- **3D Voronoi declustering** — not implemented.  ``voronoi_weights`` is
-  2D because ``z`` is the measured value of the surface, not a third spatial
-  coordinate; a 3D recipe would reweight the value axis.  No 3D benchmark is
-  claimed.
-- **Variable grid spacing, spatially varying anisotropy, drainage
-  enforcement, C++ contouring, stochastic simulation** — deferred.  They
-  need a different data model or a dedicated validation set, and no numeric
-  benchmark justifies the complexity yet.
-- **Lazy Dask / batch tiled interface** — deferred.  Tiled solve and
-  memmap exist; a thin batch wrapper is preferable to a Dask dependency.
-- **FlatGeobuf** — not included.  The Python package has a reader but no
-  writer; a read-only adapter would be asymmetric.
-- **GCV** — not implemented.  CMOFS/penalty/multilevel do not expose one
-  linear influence matrix; the holdout L-curve is a heuristic, not GCV.
-- **Incremental recompute and coupled cross-layer solve** — deferred.
-  They change the solver contract and have no benchmark yet.
-
-Deferred is not synonymous with rejected forever; it means the project does
-not claim the feature and does not hide the gap.
 
 Known issues
 ------------

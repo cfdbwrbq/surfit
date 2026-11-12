@@ -54,7 +54,7 @@ Terms
 
 **Spatial cross-validation (CV).** Hold out points by a spatial rule, build the
 model without them, and report the error on those points.  Random CV is
-optimistic for clustered samples; block CV is the honest default.
+optimistic for clustered samples; block CV is the safer default.
 
 **Block bootstrap.** Resample whole spatial blocks, not individual points, so
 the dependence between neighbours survives.  It reports ensemble spread, not a
@@ -987,7 +987,7 @@ there after ``import surfit``, under the same names:
    surfit.flow_points("wells")          # attach flow data to that rule
    surfit.surf_debit(0.0, 0.0, 1, 1, 1, "pressure")
 
-Two things are worth knowing:
+Two constraints:
 
 * ``dem_load_hgt_zip`` needs zlib. The CMake build enables it when
   ``find_package(ZLIB)`` succeeds; otherwise the command reports

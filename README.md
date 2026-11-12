@@ -10,9 +10,9 @@ gridding rules.**
 ![A surface built from five polygonal areas](docs/_static/map-area-3d.svg)
 
 surfit builds a regular 2.5D grid from points, curves, contours, areas,
-surfaces, trends and masks.  It is not just an interpolator: rules and
-inequalities are applied in a defined order, with an explicit penalty loop,
-and the result can be validated, stacked, sliced, exported and checked.
+surfaces, trends and masks.  Rules and inequalities are applied in a defined
+order with a penalty loop; the result can be validated, stacked, sliced,
+exported and checked.
 
 The C++ engine (2002–2015) is driven by a Python package and by the original
 Tcl front end.  Both use the same solver and the tests compare them
@@ -65,11 +65,11 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); select them with
 `surfit.defined_mask(grid)`.
 
-## What makes it different
+## Features
 
-- **Rules, not just a variogram.** Points, curves, contours, areas, surfaces,
+- **Rules beyond a variogram.** Points, curves, contours, areas, surfaces,
   trends, masks, inequalities and `completer` are applied in a defined order.
-- **An explicit solver.** CMOFS: sequential minimisation, a penalty loop and a
+- **Solver.** CMOFS: sequential minimisation, a penalty loop and a
   8×8 multilevel ladder; `cg`, `jcg`, `rf`, `jacobi` and `ssor`.
 - **Quality workflow.** Residuals, spatial cross-validation, block bootstrap,
   variograms, per-node support, declustering, typed diagnostics and provenance.
@@ -91,9 +91,7 @@ Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); select them with
 
 The docs are built with Sphinx from `docs/en` and `docs/ru`; the two trees are
 checked for structural parity by `docs/check_docs.py`.  GitHub Pages deploys
-the built trees from `.github/workflows/docs.yml`; if the Pages link is not
-live, enable **Settings → Pages → GitHub Actions** once, then rerun the
-workflow.
+the built trees from `.github/workflows/docs.yml`.
 
 ## Interoperability
 
@@ -111,7 +109,7 @@ stack.export_gltf("stack.gltf")
 stack.to_pyvista()
 ```
 
-Limitations are explicit: GeoParquet uses polygon exteriors; FlatGeobuf is not
+Known limitations: GeoParquet uses polygon exteriors; FlatGeobuf is not
 included because the Python package has no writer; mesh export is
 visualisation-only, not CAD; GCV is not implemented.
 
@@ -125,7 +123,7 @@ export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 ```
 
 ```bash
-# Fast self-check: docs, skills, Python surface
+# Fast self-check: docs, skills, Python API
 python3 ci/selfcheck.py
 
 # Full gate: examples, parity, docs, WPS, wheel smoke test

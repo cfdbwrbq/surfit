@@ -7,7 +7,7 @@ A one-page, English summary.  The [Python guide](docs/en/python.rst) and the
 
 - builds a regular 2.5D grid from scattered data;
 - values are constant inside a cell;
-- interpolation and approximation, not only exact through-point fitting;
+- interpolation and approximation, including through-point fitting;
 - one solve produces one surface on one grid;
 - undefined cells carry `UNDEF_VALUE`.
 

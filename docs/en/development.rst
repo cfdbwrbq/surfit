@@ -308,6 +308,52 @@ for the engine itself: ``tol`` is a step of the CG, not an error bound (see the
 known issues below), and the penalty loops need a stopping rule tied to the
 residual.
 
+Parallelism and OpenMP
+----------------------
+
+The solver already has a thread pool.  ``matr::mult``, ``axpy``, ``xpay`` and
+the scalar products use ``sstuff_get_threads``; independent Sessions and stack
+layers can run in parallel.  OpenMP was evaluated and not adopted.
+
+Measurements on 8 vCPUs, Release ``-O3``, synthetic 20% scattered points plus
+``completer``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 20 20
+
+   * - grid
+     - 1 worker
+     - 4 workers
+     - 8 workers
+   * - 512²
+     - 2.450 s
+     - 1.141 s (2.15×)
+     - 0.924 s (2.65×)
+   * - 1024²
+     - 8.394 s
+     - 4.312 s (1.95×)
+     - 3.833 s (2.19×)
+
+At 8 workers the CPU utilisation was about 328% (3.3 cores), not 800%.  A
+temporary clock split on 512² gave 0.883 s in the linear solve and 0.293 s in
+assembly (25% assembly); on 1024², 2.415 s and 1.091 s (31% assembly).
+
+OpenMP was not adopted because:
+
+- the dominant matvec is already threaded; adding OpenMP would create a second
+  thread pool and nested-parallelism risk;
+- the limit is memory bandwidth and synchronisation, not a missing compiler
+  pragma;
+- assembly is mostly serial, but even perfect parallel assembly would only
+  remove about 25–31% of the measured time;
+- small grids get slower with 8 workers than with 4 (64²: 0.034 s vs 0.028 s),
+  so more parallelism is not automatically better.
+
+If this area is revisited, the order is: reduce ``do_jobs``/batching, parallel
+assembly, then a single OpenMP path only for the measured serial hotspot.  SSOR
+stays sequential.
+
 Known issues
 ------------
 

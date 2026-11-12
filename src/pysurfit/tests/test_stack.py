@@ -46,6 +46,12 @@ def main():
     assert all(item["thickness"]["min"] >= 0
                for item in report["layers"][:-1])
     assert all(item["coverage"] == 1.0 for item in report["layers"])
+    stack.set_layer_uncertainty("top", residuals=[0.0, 1.0, 2.0],
+                                level=0.8)
+    interval = stack.interval("top")
+    assert interval["quantile"] == 2.0
+    assert interval["lower"].shape == stack.values("top").shape
+    assert stack.report()["layers"][0]["uncertainty"]["mean_width"] == 4.0
     validation = stack.validate(min_thickness=0.9, min_coverage=1.0)
     assert validation["ok"]
     assert validation["violations"] == []
@@ -110,6 +116,12 @@ def main():
     assert chain.report()["crossings"] == 0
     assert np.min(chain.thickness("top")) >= 0.9
     assert np.min(chain.thickness("middle")) >= 0.9
+    chain.set_layer_uncertainty("top", residuals=[10.0, 10.0], level=0.8)
+    chain.set_layer_uncertainty("middle", residuals=[1.0, 1.0], level=0.8)
+    conflicts = chain.report()["relation_conflicts"]
+    assert conflicts
+    assert conflicts[0]["cells"] > 0
+    assert not chain.validate(max_relation_conflicts=0)["ok"]
     chain.close()
 
     skip = surfit.SurfaceStack("skip")
@@ -153,6 +165,8 @@ def main():
         initial.set_layer_provenance(
             "top", sources={"wells.csv": "abc"},
             params={"solver": "points"}, metadata={"units": "m"})
+        initial.set_layer_uncertainty("top", residuals=[0.0, 1.0, 2.0],
+                                      level=0.8, coverage=0.75)
         assert initial.provenance("top")["params"]["solver"] == "points"
         copied = initial.provenance("top")
         copied["params"]["solver"] = "mutated"
@@ -166,6 +180,8 @@ def main():
         assert loaded.report()["layers"][0]["thickness"]["pinchouts"] == 0
         assert loaded.provenance("top")["sources"]["wells.csv"] == "abc"
         assert loaded.provenance("top")["metadata"]["units"] == "m"
+        assert loaded.interval("top")["quantile"] == 2.0
+        assert loaded.interval("top")["coverage"] == 0.75
         loaded.close()
         initial.close()
 

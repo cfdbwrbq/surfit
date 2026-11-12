@@ -586,6 +586,26 @@ A solved stack can be persisted without a private binary format::
 The directory contains ``layers/*.npy`` and ``manifest.json`` with names,
 order, extent, timings and the report.  Loading restores values, thickness and
 the report; it does not recreate the original Sessions.
+Uncertainty in the stack
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A solved layer can carry a calibrated interval::
+
+    stack.set_layer_uncertainty(
+        "top", residuals=held_out_residuals, level=0.9, coverage=0.88)
+    interval = stack.interval("top")       # lower, center, upper
+    stack.report()["layers"][0]["uncertainty"]
+
+``set_layer_uncertainty`` also accepts explicit ``lower``/``upper`` arrays.
+The optional ``coverage`` is caller-reported; the stack does not invent it.
+``report()["relation_conflicts"]`` counts cells where the optimistic lower
+surface still cannot clear the pessimistic upper surface.  Validate them::
+
+    stack.validate(max_relation_conflicts=0, strict=True)
+
+Intervals are saved under ``uncertainty/*.npy`` and restored by
+``SurfaceStack.load``.
+
 Streaming report
 ~~~~~~~~~~~~~~~~
 

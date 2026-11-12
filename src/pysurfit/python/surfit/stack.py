@@ -83,6 +83,7 @@ class SurfaceStack:
         self._values = []
         self._timings = {}
         self._provenance = {}
+        self._uncertainty = {}
         self._memmaps = []
         self._extent = None
 
@@ -149,6 +150,112 @@ class SurfaceStack:
 
         return copy.deepcopy(self._provenance.get(str(name), {}))
 
+    def set_layer_uncertainty(self, name, residuals=None, level=0.9,
+                              lower=None, upper=None, symmetric=True,
+                              coverage=None):
+        """Attach a calibrated interval to a solved layer.
+
+        Pass held-out ``residuals`` to calibrate the width, or explicit
+        ``lower``/``upper`` arrays.  ``coverage`` is optional caller-reported
+        empirical coverage; the stack does not invent it.
+        """
+        if not self._values:
+            raise RuntimeError("solve() the stack first")
+        names = self.layer_names()
+        if name not in names:
+            raise KeyError("unknown layer %r" % (name,))
+        if not 0.0 < level < 1.0:
+            raise ValueError("level must be between 0 and 1")
+        if coverage is not None and not 0.0 <= coverage <= 1.0:
+            raise ValueError("coverage must be between 0 and 1")
+        index = names.index(name)
+        center = self._values[index]
+        quantile = None
+        if residuals is not None:
+            if lower is not None or upper is not None:
+                raise ValueError("pass residuals or explicit bounds, not both")
+            from surfit.diagnostics import calibrated_interval
+
+            interval = calibrated_interval(
+                center, residuals, level=level, symmetric=symmetric)
+            lower = interval["lower"]
+            upper = interval["upper"]
+            quantile = interval["quantile"]
+        elif lower is None or upper is None:
+            raise ValueError("pass residuals or both lower and upper")
+        lower = np.asarray(lower, dtype=float)
+        upper = np.asarray(upper, dtype=float)
+        if lower.shape != center.shape or upper.shape != center.shape:
+            raise ValueError("uncertainty bounds must match the layer shape")
+        if np.any(lower > upper):
+            raise ValueError("lower bound exceeds upper bound")
+        self._uncertainty[str(name)] = {
+            "lower": lower,
+            "upper": upper,
+            "level": float(level),
+            "quantile": None if quantile is None else float(quantile),
+            "coverage": None if coverage is None else float(coverage),
+        }
+        return self
+
+    def interval(self, name):
+        """Return the calibrated interval for one layer."""
+        if name not in self.layer_names():
+            raise KeyError("unknown layer %r" % (name,))
+        record = self._uncertainty.get(str(name))
+        if record is None:
+            raise KeyError("layer %r has no uncertainty" % (name,))
+        return {
+            "lower": record["lower"],
+            "upper": record["upper"],
+            "center": self._values[self.layer_names().index(str(name))],
+            "level": record["level"],
+            "quantile": record["quantile"],
+            "coverage": record["coverage"],
+        }
+
+    def _uncertainty_summary(self, name):
+        record = self._uncertainty.get(name)
+        if record is None:
+            return None
+        lower = record["lower"]
+        upper = record["upper"]
+        width = upper - lower
+        finite = np.isfinite(width)
+        if not finite.any():
+            mean_width = None
+            median_width = None
+        else:
+            mean_width = float(np.mean(width[finite]))
+            median_width = float(np.median(width[finite]))
+        return {
+            "level": record["level"],
+            "quantile": record["quantile"],
+            "coverage": record["coverage"],
+            "mean_width": mean_width,
+            "median_width": median_width,
+        }
+
+    def _relation_conflicts(self):
+        conflicts = []
+        for relation in self._relations:
+            upper = self._uncertainty.get(relation["upper"])
+            lower = self._uncertainty.get(relation["lower"])
+            if upper is None or lower is None:
+                continue
+            margin = relation["min_thickness"]
+            mask = (np.isfinite(upper["lower"]) &
+                    np.isfinite(lower["upper"]))
+            cells = int((mask & (upper["lower"] <
+                                 lower["upper"] + margin)).sum())
+            conflicts.append({
+                "upper": relation["upper"],
+                "lower": relation["lower"],
+                "min_thickness": margin,
+                "cells": cells,
+            })
+        return conflicts
+
     def _topological_order(self):
         names = self.layer_names()
         incoming = {name: 0 for name in names}
@@ -210,7 +317,25 @@ class SurfaceStack:
             filename = "%03d.npy" % index
             np.save(os.path.join(layers_dir, filename), values,
                     allow_pickle=False)
-            document["layers"].append({"name": name, "file": filename})
+            item = {"name": name, "file": filename}
+            record = self._uncertainty.get(name)
+            if record is not None:
+                uncertainty_dir = os.path.join(directory, "uncertainty")
+                os.makedirs(uncertainty_dir, exist_ok=True)
+                lower_name = "%03d_lower.npy" % index
+                upper_name = "%03d_upper.npy" % index
+                np.save(os.path.join(uncertainty_dir, lower_name),
+                        record["lower"], allow_pickle=False)
+                np.save(os.path.join(uncertainty_dir, upper_name),
+                        record["upper"], allow_pickle=False)
+                item["uncertainty"] = {
+                    "lower_file": lower_name,
+                    "upper_file": upper_name,
+                    "level": record["level"],
+                    "quantile": record["quantile"],
+                    "coverage": record["coverage"],
+                }
+            document["layers"].append(item)
         with open(os.path.join(directory, "manifest.json"), "w",
                   encoding="utf-8") as stream:
             json.dump(document, stream, indent=2, sort_keys=True)
@@ -252,6 +377,25 @@ class SurfaceStack:
                                  % (item["name"], array.shape, expected))
             layers.append((str(item["name"]), None))
             values.append(array)
+            record = item.get("uncertainty")
+            if record is not None:
+                lower = np.load(
+                    os.path.join(directory, "uncertainty",
+                                 record["lower_file"]),
+                    allow_pickle=False,
+                    mmap_mode="r" if mmap else None)
+                upper = np.load(
+                    os.path.join(directory, "uncertainty",
+                                 record["upper_file"]),
+                    allow_pickle=False,
+                    mmap_mode="r" if mmap else None)
+                stack._uncertainty[str(item["name"])] = {
+                    "lower": lower,
+                    "upper": upper,
+                    "level": float(record["level"]),
+                    "quantile": record.get("quantile"),
+                    "coverage": record.get("coverage"),
+                }
         stack._layers = layers
         stack._values = values
         stack._tasks = []
@@ -433,7 +577,8 @@ class SurfaceStack:
         raise KeyError("unknown layer %r" % (name,))
 
     def validate(self, max_crossings=0, min_thickness=None,
-                 min_coverage=None, strict=False):
+                 min_coverage=None, max_relation_conflicts=None,
+                 strict=False):
         """Check the solved stack against explicit thresholds.
 
         Returns ``{"ok", "violations", "report", "thresholds"}``.  With
@@ -447,6 +592,11 @@ class SurfaceStack:
             raise ValueError("min_thickness must be finite or None")
         if min_coverage is not None and not 0.0 <= min_coverage <= 1.0:
             raise ValueError("min_coverage must be between 0 and 1")
+        if max_relation_conflicts is not None and (
+                not isinstance(max_relation_conflicts, int) or
+                max_relation_conflicts < 0):
+            raise ValueError(
+                "max_relation_conflicts must be a non-negative integer")
         report = self.report(streaming=self._uses_memmap())
         violations = []
         if report["crossings"] > max_crossings:
@@ -457,6 +607,20 @@ class SurfaceStack:
                 "message": "crossings %d exceed %d"
                            % (report["crossings"], max_crossings),
             })
+        if max_relation_conflicts is not None:
+            for conflict in report["relation_conflicts"]:
+                if conflict["cells"] > max_relation_conflicts:
+                    violations.append({
+                        "code": "relation_conflict",
+                        "upper": conflict["upper"],
+                        "lower": conflict["lower"],
+                        "value": int(conflict["cells"]),
+                        "limit": int(max_relation_conflicts),
+                        "message": "relation %r >= %r has %d uncertain "
+                                   "conflicts"
+                                   % (conflict["upper"], conflict["lower"],
+                                      conflict["cells"]),
+                    })
         for item in report["layers"]:
             if min_coverage is not None and item["coverage"] < min_coverage:
                 violations.append({
@@ -499,6 +663,9 @@ class SurfaceStack:
                                   else float(min_thickness)),
                 "min_coverage": (None if min_coverage is None
                                  else float(min_coverage)),
+                "max_relation_conflicts": (
+                    None if max_relation_conflicts is None
+                    else int(max_relation_conflicts)),
             },
         }
         if strict and violations:
@@ -591,8 +758,10 @@ class SurfaceStack:
                 "pinchouts": pinchouts,
                 "median_exact": median_exact,
             }
+            item["uncertainty"] = self._uncertainty_summary(name)
             report["crossings"] += crossings
             report["thickness"].append(item["thickness"])
+        report["relation_conflicts"] = self._relation_conflicts()
         return report
 
     def report(self, streaming=False):
@@ -633,8 +802,10 @@ class SurfaceStack:
                 "crossings": int(crossing.sum()),
                 "pinchouts": int(pinch.sum()),
             }
+            item["uncertainty"] = self._uncertainty_summary(name)
             report["crossings"] += int(crossing.sum())
             report["thickness"].append(item["thickness"])
+        report["relation_conflicts"] = self._relation_conflicts()
         return report
 
     def close(self):

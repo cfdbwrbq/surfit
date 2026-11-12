@@ -583,6 +583,26 @@ extent/step. Используйте его, когда несколько пов
 В каталоге лежат ``layers/*.npy`` и ``manifest.json`` с именами, порядком,
 extent, timings и отчётом. Загрузка восстанавливает значения, толщину и отчёт;
 исходные Session она не пересоздаёт.
+Uncertainty в стеке
+~~~~~~~~~~~~~~~~~~~
+
+Решённый слой может нести калиброванный интервал::
+
+    stack.set_layer_uncertainty(
+        "top", residuals=held_out_residuals, level=0.9, coverage=0.88)
+    interval = stack.interval("top")       # lower, center, upper
+    stack.report()["layers"][0]["uncertainty"]
+
+``set_layer_uncertainty`` также принимает явные массивы ``lower``/``upper``.
+Необязательный ``coverage`` задаёт вызывающий код; стек его не выдумывает.
+``report()["relation_conflicts"]`` считает ячейки, где оптимистичный нижний
+слой всё ещё не проходит над пессимистичным верхним. Проверка::
+
+    stack.validate(max_relation_conflicts=0, strict=True)
+
+Интервалы сохраняются в ``uncertainty/*.npy`` и восстанавливаются
+``SurfaceStack.load``.
+
 Streaming report
 ~~~~~~~~~~~~~~~~
 

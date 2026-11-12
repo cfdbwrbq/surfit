@@ -72,7 +72,36 @@ def main():
         assert np.nanmax(np.abs(np.diff(inside, axis=0))) <= \
             np.tan(np.deg2rad(5.0)) + 0.01
 
-    print("PASS: global and area slope/curvature bounds")
+    with surfit.Session(map_name="area-curvature", tol=1e-7) as area:
+        assert all(area.read_areas(area_path, "area1"))
+        area.add_points([5, 10, 5, 10], [5, 5, 10, 10],
+                        [0.0, 20.0, 0.0, 20.0], name="p")
+        area.grid(-12, 12, 1, -12, 12, 1)
+        area.points("p")
+        area.curvature_max(1.0, area_name="area1")
+        area.completer(1, 1.6)
+        area.solve()
+        values = area.values()
+        inside = values[17:23, 17:23]
+        second = np.abs(inside[1:-1, :-2] - 2.0 * inside[1:-1, 1:-1] +
+                        inside[1:-1, 2:])
+        assert np.nanmax(second) <= 1.1
+
+    mask_path = os.path.join(REPO, "examples", "surfit", "tests", "data",
+                             "mask.mask")
+    with surfit.Session(map_name="mask-bound", tol=1e-7) as masked:
+        assert all(masked.mask_load(mask_path, "test_mask"))
+        masked.add_points([5, 10, 5, 10], [5, 5, 10, 10],
+                          [0.0, 20.0, 0.0, 20.0], name="p")
+        masked.grid(-12, 12, 1, -12, 12, 1)
+        masked.points("p")
+        assert masked.slope_max(5.0, mask_name="test_mask")
+        masked.completer(1, 1.6)
+        masked.solve()
+        assert any(rule["name"] == "f_slope"
+                   for rule in masked.rule_report()["rules"])
+
+    print("PASS: global, area and mask slope/curvature bounds")
 
 
 if __name__ == "__main__":

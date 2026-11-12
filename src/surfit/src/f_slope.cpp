@@ -47,6 +47,8 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 	for (size_t j = 0; j < ny; j++) {
 		for (size_t i = 0; i < nx; i++) {
 			size_t center = i + j * nx;
+			if (method_mask_undefined && method_mask_undefined->get(center))
+				continue;
 			REAL x, y;
 			method_grid->getCoordNode(i, j, x, y);
 			bool in_region = true;
@@ -57,7 +59,9 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 			if (mask && mask->getValue(x, y) == false) in_region = false;
 			if (in_region == false) continue;
 			if (mode == 0) {
-				if (i + 1 < nx) {
+				if (i + 1 < nx &&
+				    !(method_mask_undefined &&
+				      method_mask_undefined->get(center + 1))) {
 					REAL diff = (*method_X)(center + 1) - (*method_X)(center);
 					if (fabs(diff) > limit * dx) {
 						REAL target = (diff > 0 ? 1 : -1) * limit * dx;
@@ -66,7 +70,9 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 						violations++;
 					}
 				}
-				if (j + 1 < ny) {
+				if (j + 1 < ny &&
+				    !(method_mask_undefined &&
+				      method_mask_undefined->get(center + nx))) {
 					REAL diff = (*method_X)(center + nx) - (*method_X)(center);
 					if (fabs(diff) > limit * dy) {
 						REAL target = (diff > 0 ? 1 : -1) * limit * dy;
@@ -76,7 +82,10 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 					}
 				}
 			} else {
-				if (i > 0 && i + 1 < nx) {
+				if (i > 0 && i + 1 < nx &&
+				    !(method_mask_undefined &&
+				      (method_mask_undefined->get(center - 1) ||
+				       method_mask_undefined->get(center + 1)))) {
 					REAL second = (*method_X)(center + 1) -
 					              2.0 * (*method_X)(center) + (*method_X)(center - 1);
 					REAL bound = limit * dx * dx;
@@ -87,7 +96,10 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 						violations++;
 					}
 				}
-				if (j > 0 && j + 1 < ny) {
+				if (j > 0 && j + 1 < ny &&
+				    !(method_mask_undefined &&
+				      (method_mask_undefined->get(center - nx) ||
+				       method_mask_undefined->get(center + nx)))) {
 					REAL second = (*method_X)(center + nx) -
 					              2.0 * (*method_X)(center) + (*method_X)(center - nx);
 					REAL bound = limit * dy * dy;

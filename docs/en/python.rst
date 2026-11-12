@@ -110,10 +110,10 @@ directly::
     task.add_areas(x, y, name="zone")
     task.add_contours(x, y, z, name="iso")
 
-The methods use a temporary columned file internally, then remove it; the data
-lives in the task as usual.  This is the shortest path from pandas, Arrow or a
-database cursor, and it keeps the caller's provenance mapping.  The existing
-``add_surface`` remains the array path for a raster/trend.
+The methods construct the engine objects directly from numpy arrays; no
+temporary columned file is involved.  This is the shortest path from pandas,
+Arrow or a database cursor, and it keeps the caller's provenance mapping.  The
+existing ``add_surface`` remains the array path for a raster/trend.
 
 Residual diagnostics
 --------------------

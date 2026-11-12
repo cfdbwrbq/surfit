@@ -256,6 +256,9 @@ task.add_areas(x, y, name="zone")
 task.add_contours(x, y, z, name="iso")
 ```
 
+These construct engine objects directly from numpy arrays; no temporary
+columned file is written.
+
 For raster exchange use `surfit.read_geotiff(path)` and
 `surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`.
 North-up/cell-centre conventions are explicit; rotated rasters are rejected.

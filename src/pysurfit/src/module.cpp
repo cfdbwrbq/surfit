@@ -51,6 +51,13 @@
 #include "solvers.h"
 #include "pnts_tcl.h"
 #include "points.h"
+#include "curv.h"
+#include "area.h"
+#include "cntr.h"
+#include "pnts_internal.h"
+#include "curv_internal.h"
+#include "area_internal.h"
+#include "cntr_internal.h"
 #include "curv_tcl.h"
 #include "cntr_tcl.h"
 #include "mask_tcl.h"
@@ -92,6 +99,21 @@ using surfit::area;
 using surfit::area_add;
 using surfit::area_read;
 using surfit::boolvec;
+using surfit::create_boolvec;
+using surfit::create_vec;
+using surfit::d_area;
+using surfit::d_cntr;
+using surfit::d_curv;
+using surfit::d_points;
+using surfit::create_area;
+using surfit::create_cntr;
+using surfit::create_curv;
+using surfit::create_points;
+using surfit::vec;
+using surfit::surfit_areas;
+using surfit::_add_surfit_cntrs;
+using surfit::_add_surfit_curvs;
+using surfit::_surfit_pnts_add;
 using surfit::clear_data;
 using surfit::completer;
 using surfit::create_grid;
@@ -232,6 +254,109 @@ void add_surface(py::array_t<double, py::array::c_style | py::array::forcecast> 
 
 	surfit_surfs->push_back(srf);
 }
+
+namespace {
+
+vec * array_vec(const py::array_t<double, py::array::c_style |
+                                  py::array::forcecast> & array,
+                const char * label) {
+	auto info = array.request();
+	if (info.ndim != 1)
+		throw py::value_error(std::string(label) + " must be one-dimensional");
+	vec * values = create_vec(0);
+	const double * data = static_cast<const double *>(info.ptr);
+	for (py::ssize_t i = 0; i < info.shape[0]; i++)
+		values->push_back(static_cast<REAL>(data[i]));
+	return values;
+}
+
+void check_same_size(py::ssize_t first, py::ssize_t second,
+                     const char * message) {
+	if (first != second)
+		throw py::value_error(message);
+}
+
+boolvec * added_flag() {
+	boolvec * result = create_boolvec();
+	result->push_back(true);
+	return result;
+}
+
+boolvec * add_points_array(
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & x,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & y,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & z,
+		const std::string & name) {
+	auto x_info = x.request();
+	auto y_info = y.request();
+	auto z_info = z.request();
+	check_same_size(x_info.shape[0], y_info.shape[0],
+	                "x and y must have the same length");
+	check_same_size(x_info.shape[0], z_info.shape[0],
+	                "x and z must have the same length");
+	vec * vx = array_vec(x, "x");
+	vec * vy = array_vec(y, "y");
+	vec * vz = array_vec(z, "z");
+	d_points * points = create_points(vx, vy, vz, name.c_str());
+	_surfit_pnts_add(points);
+	return added_flag();
+}
+
+boolvec * add_curves_array(
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & x,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & y,
+		const std::string & name) {
+	if (x.request().shape[0] != y.request().shape[0])
+		throw py::value_error("x and y must have the same length");
+	vec * vx = array_vec(x, "x");
+	vec * vy = array_vec(y, "y");
+	_add_surfit_curvs(create_curv(vx, vy, name.c_str()));
+	return added_flag();
+}
+
+boolvec * add_areas_array(
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & x,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & y,
+		const std::string & name) {
+	if (x.request().shape[0] != y.request().shape[0])
+		throw py::value_error("x and y must have the same length");
+	vec * vx = array_vec(x, "x");
+	vec * vy = array_vec(y, "y");
+	surfit_areas->push_back(create_area(create_curv(vx, vy), true,
+	                                    name.c_str()));
+	return added_flag();
+}
+
+boolvec * add_contours_array(
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & x,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & y,
+		const py::array_t<double, py::array::c_style |
+		                   py::array::forcecast> & z,
+		const std::string & name) {
+	auto x_info = x.request();
+	auto y_info = y.request();
+	auto z_info = z.request();
+	check_same_size(x_info.shape[0], y_info.shape[0],
+	                "x and y must have the same length");
+	check_same_size(x_info.shape[0], z_info.shape[0],
+	                "x and z must have the same length");
+	vec * vx = array_vec(x, "x");
+	vec * vy = array_vec(y, "y");
+	vec * vz = array_vec(z, "z");
+	_add_surfit_cntrs(create_cntr(vx, vy, vz, name.c_str()));
+	return added_flag();
+}
+
+}  // namespace
 
 /*! Geometry of a surface, in the coordinates of its nodes.
  *
@@ -1029,6 +1154,45 @@ PYBIND11_MODULE(_surfit, m) {
 	      "surface values as a (count_y, count_x) float64 array");
 	m.def("surf_extent", &surf_extent, py::arg("pos"),
 	      "node counts and extent of a surface, as a dict");
+	m.def("add_points_array", [](py::array_t<double, py::array::c_style |
+	                              py::array::forcecast> x,
+	                              py::array_t<double, py::array::c_style |
+	                              py::array::forcecast> y,
+	                              py::array_t<double, py::array::c_style |
+	                              py::array::forcecast> z,
+	                              const std::string & name) {
+		return drain_boolvec(add_points_array(x, y, z, name));
+	}, py::arg("x"), py::arg("y"), py::arg("z"),
+	   py::arg("name") = "points",
+	   "register points from one-dimensional arrays");
+	m.def("add_curves_array", [](py::array_t<double, py::array::c_style |
+	                              py::array::forcecast> x,
+	                              py::array_t<double, py::array::c_style |
+	                              py::array::forcecast> y,
+	                              const std::string & name) {
+		return drain_boolvec(add_curves_array(x, y, name));
+	}, py::arg("x"), py::arg("y"), py::arg("name") = "curves",
+	   "register a 2D curve from arrays");
+	m.def("add_areas_array", [](py::array_t<double, py::array::c_style |
+	                             py::array::forcecast> x,
+	                             py::array_t<double, py::array::c_style |
+	                             py::array::forcecast> y,
+	                             const std::string & name) {
+		return drain_boolvec(add_areas_array(x, y, name));
+	}, py::arg("x"), py::arg("y"), py::arg("name") = "areas",
+	   "register one polygon from arrays");
+	m.def("add_contours_array", [](py::array_t<double, py::array::c_style |
+	                                py::array::forcecast> x,
+	                                py::array_t<double, py::array::c_style |
+	                                py::array::forcecast> y,
+	                                py::array_t<double, py::array::c_style |
+	                                py::array::forcecast> z,
+	                                const std::string & name) {
+		return drain_boolvec(add_contours_array(x, y, z, name));
+	}, py::arg("x"), py::arg("y"), py::arg("z"),
+	   py::arg("name") = "contours",
+	   "register a 3D contour from arrays");
+
 	m.def("add_surface", &add_surface,
 	      py::arg("values"), py::arg("start_x"), py::arg("step_x"),
 	      py::arg("start_y"), py::arg("step_y"), py::arg("name"),

@@ -411,61 +411,24 @@ class Session:
         except Exception:  # noqa: BLE001 - never raise from a destructor
             return
 
-    def _array_file(self, columns):
-        import os
-        import tempfile
-
-        handle, path = tempfile.mkstemp(prefix="surfit-array-", suffix=".txt")
-        with os.fdopen(handle, "w", encoding="ascii") as stream:
-            for row in zip(*columns):
-                stream.write("\t".join("%.17g" % value for value in row))
-                stream.write("\n")
-        return path
-
     def add_points(self, x, y, z, weights=None, name="points"):
         """Register points from arrays without an intermediate user file."""
-        import os
-
-        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel(),
-                                 np.asarray(z).ravel()))
-        try:
-            result = pnts_read(path, name)
-            if weights is not None:
-                pnts_set_weights(name, list(weights))
-        finally:
-            os.unlink(path)
+        result = _core.add_points_array(x, y, z, name)
+        if weights is not None:
+            pnts_set_weights(name, list(weights))
         return result
 
     def add_curves(self, x, y, name="curves"):
         """Register a 2D polyline from arrays."""
-        import os
-
-        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel()))
-        try:
-            return curv_read(path, name)
-        finally:
-            os.unlink(path)
+        return _core.add_curves_array(x, y, name)
 
     def add_areas(self, x, y, name="areas"):
         """Register one polygon from arrays."""
-        import os
-
-        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel()))
-        try:
-            return area_read(path, name)
-        finally:
-            os.unlink(path)
+        return _core.add_areas_array(x, y, name)
 
     def add_contours(self, x, y, z, name="contours"):
         """Register a 3D contour polyline from arrays."""
-        import os
-
-        path = self._array_file((np.asarray(x).ravel(), np.asarray(y).ravel(),
-                                 np.asarray(z).ravel()))
-        try:
-            return cntr_read(path, name)
-        finally:
-            os.unlink(path)
+        return _core.add_contours_array(x, y, z, name)
 
     def read_areas(self, path, name):
         """Loads polygon areas from a text file under the given name."""

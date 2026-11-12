@@ -27,6 +27,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r docs/requirements.txt
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: build English and Russian docs
         run: docs/build.sh
       - uses: actions/upload-pages-artifact@v3

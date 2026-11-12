@@ -8,6 +8,9 @@ It interpolates and approximates scattered points, contours, surfaces and areas;
 it can take fault lines, trend surfaces, anisotropy and inequalities into
 account, and it supports a range of data formats.
 
+A one-page, human-readable capability list is in
+[CAPABILITIES.md](CAPABILITIES.md).
+
 ## How this port was made
 
 The original surfit engine and its Tcl front end were written by M. V.

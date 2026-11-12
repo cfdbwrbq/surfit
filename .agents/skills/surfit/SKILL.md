@@ -200,6 +200,7 @@ surfit.add_regression_residuals(task, x, y, z, features)
 surfit.add_geodataframe(task, gdf, kind="points")
 stack.to_xarray(); stack.to_zarr("stack.zarr")
 surfit.benchmark_solvers(build, solvers=("cg", "jcg", "ssor"))
+# solver="pcg" is a prototype diagonal-preconditioned CG; cg is still faster
 ensemble = surfit.SurfaceEnsemble.from_stacks([stack_a, stack_b])
 difference = ensemble - other_ensemble
 surfit.run_recipe("task.json")

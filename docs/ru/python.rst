@@ -539,6 +539,14 @@ scale/tiepoint-тегов; запрос CRS или COG даёт явный Impor
 теряет georeference.
 
 
+Solver benchmark и prototype
+----------------------------
+
+``surfit.benchmark_solvers(build, solvers=(...))`` замеряет сборку и solve для
+каждого solver’а. ``set_solver("pcg")`` включает prototype
+diagonal-preconditioned CG. На benchmark 512×512 он медленнее ``cg``; это
+инструмент измерения, не новый default.
+
 Strict-режим
 ------------
 

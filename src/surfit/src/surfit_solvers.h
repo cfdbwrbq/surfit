@@ -99,6 +99,19 @@ struct solver_jcg : public solver {
 	virtual const char * get_long_name() const { return "Jacobi Conjugate Gradients"; };
 };
 
+//! diagonal-preconditioned CG (prototype)
+struct solver_pcg : public solver {
+	solver_pcg() { add_solver(this); }
+	~solver_pcg() { remove_solver(this); }
+	virtual size_t solve(matr * T, const extvec * V, extvec *& X) {
+		size_t iters;
+		X = PCGDiag(T, V, V->size()*SOLVER_MAX_ITER, tol, X, iters, FLT_MAX);
+		return iters;
+	};
+	virtual const char * get_short_name() const { return "pcg"; };
+	virtual const char * get_long_name() const { return "Diagonal-preconditioned CG (prototype)"; };
+};
+
 //! interface class for SSOR method
 struct solver_ssor : public solver {
 	solver_ssor() {

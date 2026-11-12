@@ -109,6 +109,9 @@ extvec *      J(matr * A, const extvec * b, int max_it, REAL tol, extvec *& X, s
 //! implementation of Jacobi-Conjugate Gradients method
 extvec *    JCG(matr * A, const extvec * b, int max_it, REAL tol, extvec *& X, size_t & iters, REAL undef_value = FLT_MAX);
 
+//! diagonal-preconditioned Conjugate Gradients (prototype)
+extvec * PCGDiag(matr * A, const extvec * b, int max_it, REAL tol, extvec *& X, size_t & iters, REAL undef_value = FLT_MAX);
+
 //! implementation of SSOR method
 extvec *   SSOR(matr * A, const extvec * b, int max_it, REAL tol, extvec *& X, size_t & iters, REAL undef_value = FLT_MAX, REAL omega = REAL(1.6));
 

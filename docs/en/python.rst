@@ -541,6 +541,14 @@ scale/tiepoint tags; a CRS or COG request raises a clear ImportError rather
 than silently dropping the georeference.
 
 
+Solver benchmark and prototype
+------------------------------
+
+``surfit.benchmark_solvers(build, solvers=(...))`` times fresh task builds and
+solves for each solver.  ``set_solver("pcg")`` selects the diagonal-
+preconditioned CG prototype.  On the 512x512 benchmark it was slower than
+``cg``; it is a measurement tool, not the new default.
+
 Strict rules
 ------------
 

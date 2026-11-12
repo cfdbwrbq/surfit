@@ -46,6 +46,7 @@ static solver_cg	solver_1;
 static solver_jacobi	solver_2;
 static solver_jcg	solver_3;
 static solver_ssor	solver_4;
+static solver_pcg	solver_5;
 
 bool add_solver(solver * slvr) {
 	std::vector<solver *>::iterator it;

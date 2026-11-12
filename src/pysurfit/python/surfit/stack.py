@@ -178,6 +178,9 @@ class SurfaceStack:
     def layer_names(self):
         return [name for name, _ in self._layers]
 
+    def _uses_memmap(self):
+        return any(isinstance(value, np.memmap) for value in self._values)
+
     def save(self, directory):
         """Persist the solved stack as .npy layers plus a JSON manifest."""
         import copy
@@ -200,7 +203,7 @@ class SurfaceStack:
             "layers": [],
             "timings": dict(self._timings),
             "provenance": copy.deepcopy(self._provenance),
-            "report": self.report(),
+            "report": self.report(streaming=self._uses_memmap()),
         }
         for index, ((name, _), values) in enumerate(
                 zip(self._layers, self._values)):
@@ -444,7 +447,7 @@ class SurfaceStack:
             raise ValueError("min_thickness must be finite or None")
         if min_coverage is not None and not 0.0 <= min_coverage <= 1.0:
             raise ValueError("min_coverage must be between 0 and 1")
-        report = self.report()
+        report = self.report(streaming=self._uses_memmap())
         violations = []
         if report["crossings"] > max_crossings:
             violations.append({
@@ -502,8 +505,104 @@ class SurfaceStack:
             raise StackValidationError(validation)
         return validation
 
-    def report(self):
-        """JSON-ready crossings, thickness and pinch-out summary."""
+    def _streaming_report(self, chunk_rows=None):
+        """Build the report in bounded row chunks.
+
+        Min/max/crossings/pinch-outs are exact.  The median comes from a
+        4096-bin histogram over the observed thickness range, so it is
+        deterministic but approximate; ``median_exact`` is false.
+        """
+        if not self._values:
+            raise RuntimeError("solve() the stack first")
+        count_y, count_x = self._values[0].shape
+        if chunk_rows is None:
+            chunk_rows = max(1, 4000000 // max(1, count_x * 8))
+        chunk_rows = min(int(chunk_rows), count_y)
+        report = {"name": self._name, "layers": [], "crossings": 0,
+                  "thickness": [], "seconds": self._timings.get("seconds"),
+                  "streaming": True, "chunk_rows": chunk_rows}
+        for index, ((name, _), values) in enumerate(
+                zip(self._layers, self._values)):
+            defined_count = 0
+            for start in range(0, count_y, chunk_rows):
+                stop = min(start + chunk_rows, count_y)
+                defined_count += int(_defined(values[start:stop]).sum())
+            item = {
+                "name": name,
+                "defined": defined_count,
+                "total": int(count_y * count_x),
+                "coverage": (float(defined_count) / float(count_y * count_x)
+                             if count_y * count_x else 0.0),
+            }
+            report["layers"].append(item)
+            if index == len(self._values) - 1:
+                continue
+            below = self._values[index + 1]
+            both_count = 0
+            crossings = 0
+            pinchouts = 0
+            minimum = None
+            maximum = None
+            for start in range(0, count_y, chunk_rows):
+                stop = min(start + chunk_rows, count_y)
+                upper_chunk = values[start:stop]
+                lower_chunk = below[start:stop]
+                both = _defined(upper_chunk) & _defined(lower_chunk)
+                if not both.any():
+                    continue
+                thickness = upper_chunk[both] - lower_chunk[both]
+                both_count += int(both.sum())
+                crossings += int((thickness < 0).sum())
+                pinchouts += int((thickness <= 0).sum())
+                chunk_min = float(thickness.min())
+                chunk_max = float(thickness.max())
+                minimum = chunk_min if minimum is None else min(minimum,
+                                                                 chunk_min)
+                maximum = chunk_max if maximum is None else max(maximum,
+                                                                 chunk_max)
+            median = None
+            median_exact = True
+            if both_count:
+                if minimum == maximum:
+                    median = minimum
+                else:
+                    edges = np.linspace(minimum, maximum, 4097)
+                    histogram = np.zeros(4096, dtype=np.int64)
+                    for start in range(0, count_y, chunk_rows):
+                        stop = min(start + chunk_rows, count_y)
+                        upper_chunk = values[start:stop]
+                        lower_chunk = below[start:stop]
+                        both = _defined(upper_chunk) & _defined(lower_chunk)
+                        if both.any():
+                            thickness = upper_chunk[both] - lower_chunk[both]
+                            histogram += np.histogram(thickness, bins=edges)[0]
+                    cumulative = np.cumsum(histogram)
+                    position = (both_count + 1) // 2
+                    bin_index = min(int(np.searchsorted(cumulative, position)),
+                                    histogram.size - 1)
+                    median = float((edges[bin_index] +
+                                    edges[bin_index + 1]) / 2.0)
+                    median_exact = False
+            item["thickness"] = {
+                "min": minimum,
+                "max": maximum,
+                "median": median,
+                "crossings": crossings,
+                "pinchouts": pinchouts,
+                "median_exact": median_exact,
+            }
+            report["crossings"] += crossings
+            report["thickness"].append(item["thickness"])
+        return report
+
+    def report(self, streaming=False):
+        """JSON-ready crossings, thickness and pinch-out summary.
+
+        ``streaming=True`` uses row chunks and a histogram median; it is the
+        intended mode for memory-mapped stacks.
+        """
+        if streaming:
+            return self._streaming_report()
         if not self._values:
             raise RuntimeError("solve() the stack first")
         report = {"name": self._name, "layers": [], "crossings": 0,

@@ -300,6 +300,8 @@ returns typed violations; ``strict=True`` raises ``StackValidationError``.
   ``set_layer_provenance(name, sources=..., params=..., metadata=...)``
 is written into the manifest with the engine version; ``provenance(name)``
 returns a copy.
+  ``report(streaming=True)`` walks memory maps in row chunks; its
+histogram median is marked ``median_exact=False``.
   ``solve(memmap=True, memmap_dir=...)`` stores values on disk;
 ``load(..., mmap=True)`` returns read-only memmaps.
   ``surfit.benchmark_stack({...}, repeats=3)` compares direct, sequential

@@ -39,24 +39,21 @@ reproducible exchange format.
 | 3.4.0 release, wheels and docs archive | done |
 | stack validation gate with typed violations | done |
 | per-layer provenance and engine version in the manifest | done |
+| streaming report over memory-mapped layers | done |
 
 ## Next
 
-### 1. Streaming stack report
-
-Compute crossings, thickness and coverage in chunks over memory-mapped layers.
-
-### 2. Uncertainty in the stack
+### 1. Uncertainty in the stack
 
 Per-layer calibrated intervals, coverage in the report and interval-aware
 relation checks.
 
-### 3. Residual spatial diagnostics
+### 2. Residual spatial diagnostics
 
 Moran's I, residual variogram, error versus distance-to-data and per-group
 bias.
 
-### 4. Release
+### 3. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

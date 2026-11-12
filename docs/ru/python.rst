@@ -583,6 +583,20 @@ extent/step. Используйте его, когда несколько пов
 В каталоге лежат ``layers/*.npy`` и ``manifest.json`` с именами, порядком,
 extent, timings и отчётом. Загрузка восстанавливает значения, толщину и отчёт;
 исходные Session она не пересоздаёт.
+Streaming report
+~~~~~~~~~~~~~~~~
+
+``report(streaming=True)`` идёт по строкам-чанкам и не строит полный массив
+толщины::
+
+    report = stack.report(streaming=True)
+    report["streaming"], report["chunk_rows"]
+
+Min/max/crossings/pinch-outs и coverage точные. Медиана считается по
+4096-бинной гистограмме: детерминированная, но приблизительная; у толщины
+``median_exact=False``. ``save()`` и ``validate()`` включают этот режим
+автоматически для memory-mapped слоёв.
+
 Provenance
 ~~~~~~~~~~
 

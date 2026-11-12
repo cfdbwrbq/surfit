@@ -176,7 +176,15 @@ def main():
         mapped.solve(memmap=True,
                      memmap_dir=os.path.join(directory, "values"))
         assert isinstance(mapped.values("top"), np.memmap)
-        assert mapped.report()["crossings"] == 0
+        exact = mapped.report()
+        streamed = mapped.report(streaming=True)
+        assert streamed["streaming"] is True
+        assert streamed["crossings"] == exact["crossings"]
+        assert streamed["layers"][0]["defined"] == exact["layers"][0]["defined"]
+        assert streamed["thickness"][0]["min"] == exact["thickness"][0]["min"]
+        assert abs(streamed["thickness"][0]["median"] -
+                   exact["thickness"][0]["median"]) < 0.01
+        assert mapped.validate()["ok"]
         mapped.save(os.path.join(directory, "saved"))
         loaded = surfit.SurfaceStack.load(
             os.path.join(directory, "saved"), mmap=True)

@@ -586,6 +586,20 @@ A solved stack can be persisted without a private binary format::
 The directory contains ``layers/*.npy`` and ``manifest.json`` with names,
 order, extent, timings and the report.  Loading restores values, thickness and
 the report; it does not recreate the original Sessions.
+Streaming report
+~~~~~~~~~~~~~~~~
+
+``report(streaming=True)`` walks row chunks and does not build a full
+thickness array::
+
+    report = stack.report(streaming=True)
+    report["streaming"], report["chunk_rows"]
+
+Min/max/crossings/pinch-outs and coverage are exact.  The median comes from a
+4096-bin histogram and is deterministic but approximate; the thickness item
+sets ``median_exact=False``.  ``save()`` and ``validate()`` use this mode
+automatically when layer values are memory maps.
+
 Provenance
 ~~~~~~~~~~
 

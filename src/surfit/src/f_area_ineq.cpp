@@ -219,15 +219,23 @@ void f_area_ineq::drop_private_data() {
 
 
 int f_area_ineq::compute_violations() const {
-	if (method_X == NULL || area_mask == NULL)
+	if (method_X == NULL || method_grid == NULL || area == NULL)
 		return -1;
 	int count = 0;
-	for (size_t i = 0; i < area_mask->size(); i++) {
-		if (!area_mask->get(i))
-			continue;
-		REAL x_value = (*method_X)(i);
-		if ((leq && x_value > value) || (!leq && x_value < value))
-			count++;
+	for (size_t j = 0; j < method_grid->getCountY(); j++) {
+		for (size_t i = 0; i < method_grid->getCountX(); i++) {
+			REAL x, y;
+			method_grid->getCoordNode(i, j, x, y);
+			bool in_area = area->in_region(x, y);
+			if (inside == false)
+				in_area = !in_area;
+			if (in_area == false)
+				continue;
+			size_t pos = i + j * method_grid->getCountX();
+			REAL x_value = (*method_X)(pos);
+			if ((leq && x_value > value) || (!leq && x_value < value))
+				count++;
+		}
 	}
 	return count;
 };

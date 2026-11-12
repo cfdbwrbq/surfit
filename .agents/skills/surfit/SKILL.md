@@ -148,9 +148,10 @@ flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
 
 task.add_dip_points(x, y, dip, azimuth, name="dip")
 task.gradient("dip")                 # soft local dZ/dx, dZ/dy constraint
-task.slope_max(5.0)                  # penalty condition, before completer
-task.curvature_max(0.5)              # second-difference penalty
-# absolute level still comes from points/areas/completer
+task.slope_max(5.0)                  # hard penalty condition, before completer
+task.curvature_max(0.5)              # hard second-difference penalty
+# absolute level still comes from points/areas/completer; add before the
+# functional the condition should attach to, normally completer
 
 from surfit.spatial_diagnostics import morans_i, residual_variogram
 from surfit.spatial_diagnostics import distance_to_data, error_by_distance
@@ -194,7 +195,7 @@ headless check, inspect `task.values()` and `defined_mask`, not the HTML.
 vol = surfit.volume_between(upper, lower, extent, mask=mask)
 stack_vol = surfit.stack_volume(stack, "top", "bottom")
 section = stack.section(path_x, path_y, samples=200)
-task.rule_report()                    # ordered rules, not residual per rule
+task.rule_report()                    # order, conditions, residual/violations
 trend = surfit.regression_trend(features, z)
 surfit.add_regression_residuals(task, x, y, z, features)
 surfit.add_geodataframe(task, gdf, kind="points")
@@ -208,7 +209,11 @@ surfit.run_recipe("task.json")
 
 `volume_percentiles` needs coherent realizations; never sum per-cell interval
 bounds. Optional geopandas/xarray/zarr are imported lazily; CRS mismatch is an
-error. Rule report shows order/conditions, not per-rule penalty residuals.
+error. `rule_report` exposes a residual for conditional rules and violations
+for recognized inequality rules; non-penalty data rules carry `None`.
+
+`SurfaceEnsemble` makes ensemble arithmetic coherent across realization index;
+`run_recipe` / `surfit run` execute JSON/YAML task recipes.
 
 ## Quality, validation and support
 
@@ -295,7 +300,9 @@ For raster exchange use `surfit.read_geotiff(path)` and
 `surfit.save_geotiff_stack(directory, {name: array}, extent, crs=...)`.
 `save_geotiff_bands` writes one multi-band file; `cog=True` writes COG via
 GDAL; without GDAL, `tifffile` handles pixels/tags but a CRS request raises.
-North-up/cell-centre conventions are explicit; rotated rasters are rejected.
+North-up/cell-centre conventions are explicit. Rotated/west-up rasters are
+warped onto a regular grid by GDAL; `target_extent` selects that grid, and the
+result flags `rotated`, `resampled` and `resampling`. Writing is north-up.
 
 For grouped validation:
 
@@ -348,6 +355,14 @@ residuals, not training residuals; call it a calibrated interval, not a
 posterior.
   ``interval_coverage`` / ``coverage_by_group`` report empirical coverage;
 ``group_conformal_quantiles`` gives group-specific widths.
+
+## Performance notes
+
+The solver already uses the `sstuff` thread pool for matvec, axpy/xpay and
+scalar products.  OpenMP was profiled and not adopted: on 8 vCPU the 512² and
+1024² cases reached only 2.65× and 2.19×, CPU utilisation was ~328%, and
+assembly was 25–31% of the time.  Do not add a second thread pool without a new
+profile; see `docs/en/development.rst`.
 
 ## Files and examples
 

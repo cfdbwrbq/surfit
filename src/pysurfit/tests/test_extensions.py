@@ -79,6 +79,8 @@ def main():
     inequality = [item for item in violation_rules
                   if item["name"] == "f_ineq"]
     assert inequality and inequality[0]["violations"] > 0
+    assert inequality[0]["residual"] is not None
+    assert inequality[0]["residual"] > 0
     conflict.close()
 
     x = np.array([0.0, 1.0, 2.0, 3.0])

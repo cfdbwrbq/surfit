@@ -90,6 +90,12 @@ public:
 	//! captured number of violating cells/points; -1 if unknown
 	int get_violations() const { return diagnostic_violations; };
 
+	//! capture the residual of the last conditional linear system
+	void set_diagnostic_residual(REAL value) { diagnostic_residual = value; };
+
+	//! residual of the last conditional linear system; NaN if unavailable
+	REAL get_diagnostic_residual() const { return diagnostic_residual; };
+
 
 	//! sets functional type
 	void setType(int itype);
@@ -169,6 +175,9 @@ protected:
 
 	//! captured violation count
 	int diagnostic_violations;
+
+	//! captured residual of the conditional linear system
+	REAL diagnostic_residual;
 
 	//! returns number of \ref data refered to this functional only
 	virtual int this_get_data_count() const = 0;

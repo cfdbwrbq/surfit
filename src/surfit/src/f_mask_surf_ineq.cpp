@@ -218,5 +218,27 @@ void f_mask_surf_ineq::drop_private_data() {
 
 
 
+int f_mask_surf_ineq::compute_violations() const {
+	if (method_X == NULL || method_grid == NULL || mask == NULL || fnc == NULL)
+		return -1;
+	int count = 0;
+	for (size_t j = 0; j < method_grid->getCountY(); j++) {
+		for (size_t i = 0; i < method_grid->getCountX(); i++) {
+			REAL x, y;
+			method_grid->getCoordNode(i, j, x, y);
+			if (mask->getValue(x, y) == false)
+				continue;
+			REAL target = fnc->getInterpValue(x, y);
+			if (target == fnc->undef_value)
+				continue;
+			size_t pos = i + j * method_grid->getCountX();
+			REAL x_value = (*method_X)(pos);
+			if ((leq && x_value > target) || (!leq && x_value < target))
+				count++;
+		}
+	}
+	return count;
+};
+
 }; // namespace surfit;
 

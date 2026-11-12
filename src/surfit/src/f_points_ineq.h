@@ -53,6 +53,7 @@ public:
 				       bitvec * mask_undefined,
 				       bool i_am_cond);
 		
+	int violation_count() const { return compute_violations(); };
 	bool solvable_without_cond(const bitvec * mask_solved, 
 				   const bitvec * mask_undefined,
 				   const extvec * X);
@@ -101,6 +102,7 @@ class SURFIT_EXPORT f_points_ineq_user : public functional
 
 	bool make_matrix_and_vector(matr *& matrix, extvec *& v, bitvec * mask_solved, bitvec * mask_undefined);
 
+	int violation_count() const { return compute_violations(); };
 	bool solvable_without_cond(const bitvec * mask_solved, 
 				   const bitvec * mask_undefined,
 				   const extvec * X);
@@ -115,6 +117,8 @@ class SURFIT_EXPORT f_points_ineq_user : public functional
 	virtual d_points * get_points() = 0;
 	
 protected:
+
+	int compute_violations() const;
 
 	int this_get_data_count() const = 0;
 	const data * this_get_data(int pos) const = 0;

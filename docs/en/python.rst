@@ -576,8 +576,10 @@ small helper on top.
 
 ``stack.section`` samples layers and calibrated intervals along a polyline.
 ``rule_report`` lists the ordered rule sequence and attached conditions.
-Recognized inequality rules also carry a ``violations`` count captured at the
-end of the solve; ``-1`` means the diagnostic is not available for that rule.
+Conditional rules carry ``residual`` (the norm of their last penalty system)
+and recognized inequality rules also carry a ``violations`` count captured at
+the end of the solve; ``None``/``-1`` means the diagnostic is not available for
+that rule.
 
 ``add_geodataframe`` is an optional GeoPandas adapter: Point/LineString/Polygon
 coordinates, optional Z and weights.  CRS mismatch is an error, not a silent

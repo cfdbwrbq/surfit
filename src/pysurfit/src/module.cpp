@@ -18,6 +18,7 @@
 #include <cstdint>
 
 #include <cfloat>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -219,6 +220,9 @@ py::list functionals_info() {
 		record["pos"] = item->get_pos();
 		record["conditions"] = item->cond_size();
 		record["violations"] = item->get_violations();
+		REAL residual = item->get_diagnostic_residual();
+		record["residual"] = std::isfinite(residual) ? py::cast(residual)
+		                                            : py::none();
 		record["manager"] = item->getManagerName();
 		result.append(record);
 	}

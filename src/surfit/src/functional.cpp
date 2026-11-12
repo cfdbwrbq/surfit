@@ -32,6 +32,7 @@
 #include "grid_user.h"
 
 #include <string.h>
+#include <limits>
 #include <stdarg.h>
 #include <assert.h>
 
@@ -46,6 +47,7 @@ functional::functional(const char * newname, int itype) {
 	type = itype;
 	pos = INT_MAX;
 	diagnostic_violations = -1;
+	diagnostic_residual = std::numeric_limits<REAL>::quiet_NaN();
 };
 
 functional::~functional() {
@@ -232,8 +234,20 @@ bool functional::cond_make_matrix_and_vector(matr *& matrix, extvec *& v, bitvec
 		extvec * P_v = NULL;
 		res = cond->make_matrix_and_vector(P_matr,P_v,mask_solved,mask_undefined) && res;
 
-		if (P_matr == NULL)
+		if (P_matr == NULL) {
+			cond->set_diagnostic_residual(0.0);
 			continue;
+		}
+
+		extvec * AX = create_extvec(matrix_size);
+		P_matr->mult(method_X, AX);
+		REAL residual_norm = 0;
+		for (j = 0; j < matrix_size; j++) {
+			REAL difference = (*AX)(j) - (P_v ? (*P_v)(j) : 0.0);
+			residual_norm += difference * difference;
+		}
+		AX->release();
+		cond->set_diagnostic_residual(sqrt(residual_norm));
 
 		matrices->push_back(P_matr);
 		weights->push_back(1);

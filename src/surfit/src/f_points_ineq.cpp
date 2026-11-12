@@ -378,5 +378,11 @@ int f_points_ineq::compute_violations() const {
 	return count;
 };
 
+int f_points_ineq_user::compute_violations() const {
+	if (f_pnts_ineq == NULL)
+		return -1;
+	return f_pnts_ineq->violation_count();
+};
+
 }; // namespace surfit;
 

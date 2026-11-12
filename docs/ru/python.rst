@@ -621,6 +621,30 @@ Dask не обещается. ``regression_trend`` подгоняет тренд
 любая scikit-learn-совместимая модель), возвращает остатки, а
 ``add_regression_residuals`` регистрирует их для residual-задачи surfit.
 
+Когерентные ансамбли и рецепты
+------------------------------
+
+``SurfaceEnsemble`` хранит последовательность реализаций и делает арифметику
+когерентной::
+
+    ensemble = surfit.SurfaceEnsemble(
+        [{"top": first}, {"top": second}], extent=extent)
+    difference = ensemble_a - ensemble_b
+    percentiles = difference.percentiles((10, 50, 90))
+
+Объёмы и изохоры считаются по реализациям, а не сложением per-cell границ
+интервалов. ``SurfaceEnsemble.from_stacks([...])`` строит ансамбль из решённых
+слоёв с одинаковым порядком.
+
+Задачу можно описать декларативно::
+
+    surfit run recipe.json
+    surfit run recipe.json --summary --json
+
+В рецепте есть ``name``, ``grid``, ``data`` (points/curves/areas/contours или
+``.npy``-поверхность), упорядоченные ``rules`` и ``output``. JSON работает
+всегда; YAML требует PyYAML. Runner тонкий и вызывает обычные методы Session.
+
 Слоистые поверхности
 --------------------
 

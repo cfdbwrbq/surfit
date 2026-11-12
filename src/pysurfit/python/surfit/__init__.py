@@ -740,6 +740,8 @@ from surfit.sections import stack_section  # noqa: E402
 from surfit.geo import add_geodataframe  # noqa: E402
 from surfit.regression import (  # noqa: E402
     add_regression_residuals, regression_trend)
+from surfit.ensemble import SurfaceEnsemble  # noqa: E402
+from surfit.recipe import recipe_summary, run_recipe  # noqa: E402
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402

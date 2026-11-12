@@ -31,6 +31,9 @@ per-file-ignores =
     src/pysurfit/python/surfit/geo.py: WPS111,WPS210,WPS211,WPS221,WPS231,WPS232,WPS238,WPS478,WPS504
     src/pysurfit/python/surfit/xarray_export.py: WPS111,WPS210,WPS221,WPS226,WPS336,WPS441
     src/pysurfit/python/surfit/regression.py: WPS110,WPS111,WPS210,WPS211,WPS221,WPS231,WPS238
+    src/pysurfit/python/surfit/ensemble.py: WPS110,WPS111,WPS210,WPS214,WPS221,WPS338,WPS358,WPS441,WPS459
+    src/pysurfit/python/surfit/recipe.py: WPS110,WPS210,WPS223,WPS226,WPS229,WPS231,WPS232,WPS238
+    src/pysurfit/python/surfit/cli.py: WPS210,WPS363,WPS421
     src/pysurfit/python/surfit/padding.py: WPS110,WPS111,WPS210,WPS221,WPS226,WPS358
     src/pysurfit/python/surfit/resolution.py: WPS110,WPS111,WPS210,WPS221,WPS226,WPS231,WPS358,WPS432,WPS504
     src/pysurfit/python/surfit/smoothing.py: WPS110,WPS111,WPS211,WPS226,WPS430

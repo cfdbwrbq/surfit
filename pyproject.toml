@@ -22,6 +22,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
 ]
 
+[project.scripts]
+surfit = "surfit.cli:main"
+
 [project.optional-dependencies]
 # surfit.progress() draws a live progress bar from the engine's log messages.
 progress = ["tqdm>=4.20"]

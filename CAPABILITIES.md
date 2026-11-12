@@ -143,7 +143,9 @@
 - CRS-проверка без тихого перепроецирования;
 - xarray `Dataset` и Zarr export (опционально);
 - regression-тренд + residual wrapper (OLS или sklearn-модель);
-- `add_regression_residuals`.
+- `add_regression_residuals`;
+- `SurfaceEnsemble` — когерентная арифметика, проценты, объёмы, изохоры;
+- `run_recipe` / `surfit run` — JSON/YAML-рецепты задач.
 
 ### Слоистые поверхности
 

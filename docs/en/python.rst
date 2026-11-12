@@ -623,6 +623,30 @@ exports; Dask is not promised.  ``regression_trend`` fits a trend (OLS by
 default, or any scikit-learn-compatible model), returns residuals and
 ``add_regression_residuals`` registers them for a residual surfit task.
 
+Coherent ensembles and recipes
+------------------------------
+
+``SurfaceEnsemble`` stores one sequence of realizations and makes arithmetic
+coherent::
+
+    ensemble = surfit.SurfaceEnsemble(
+        [{"top": first}, {"top": second}], extent=extent)
+    difference = ensemble_a - ensemble_b
+    percentiles = difference.percentiles((10, 50, 90))
+
+Volumes and isochores are per realization, not sums of per-cell interval
+bounds.  ``SurfaceEnsemble.from_stacks([...])`` builds an ensemble from solved
+layers with the same order.
+
+A task can also be described declaratively::
+
+    surfit run recipe.json
+    surfit run recipe.json --summary --json
+
+The recipe has ``name``, ``grid``, ``data`` (points/curves/areas/contours or a
+``.npy`` surface), ordered ``rules`` and ``output``.  JSON always works; YAML
+needs PyYAML.  The runner is thin and calls normal Session methods.
+
 Layered surfaces
 ----------------
 

@@ -166,6 +166,9 @@ run benchmark "$PYTHON" "$TESTS/test_benchmark.py"
 step "extension utilities"
 run extensions "$PYTHON" "$TESTS/test_extensions.py"
 
+step "ensembles and recipes"
+run ensembles "$PYTHON" "$TESTS/test_ensemble_recipe.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

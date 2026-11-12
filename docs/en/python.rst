@@ -552,6 +552,39 @@ The callback is responsible for clipping/selecting data; a tile must have at
 least eight nodes per side because the engine's first phase is 8x8.
 
 
+Volumes, sections and integrations
+----------------------------------
+
+Extra utilities sit around the stack; they do not add a solver::
+
+    surfit.volume_between(upper, lower, extent, mask=None, contact=None)
+    surfit.volume_percentiles(volumes, levels=(10, 50, 90))
+    surfit.volume_ensemble(upper_fields, lower_fields, extent)
+    surfit.stack_volume(stack, "top", "bottom")
+
+    section = stack.section([0, 1], [0, 0], samples=200)
+
+    task.rule_report()        # ordered rules, types and conditions
+    surfit.regression_trend(features, z, model=None)
+    surfit.add_regression_residuals(task, x, y, z, features)
+    surfit.add_geodataframe(task, gdf, kind="points")
+
+``volume_between`` is deterministic.  P10/P50/P90 require coherent
+realizations: per-cell interval bounds must not be summed into a volume range.
+``volume_ensemble`` accepts those realizations; ``volume_percentiles`` is the
+small helper on top.
+
+``stack.section`` samples layers and calibrated intervals along a polyline.
+``rule_report`` lists the ordered rule sequence and attached conditions; it is
+a priority/order diagnostic, not a residual for every rule.
+
+``add_geodataframe`` is an optional GeoPandas adapter: Point/LineString/Polygon
+coordinates, optional Z and weights.  CRS mismatch is an error, not a silent
+reprojection.  ``SurfaceStack.to_xarray()`` and ``to_zarr()`` are optional eager
+exports; Dask is not promised.  ``regression_trend`` fits a trend (OLS by
+default, or any scikit-learn-compatible model), returns residuals and
+``add_regression_residuals`` registers them for a residual surfit task.
+
 Layered surfaces
 ----------------
 

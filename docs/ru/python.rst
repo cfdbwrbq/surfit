@@ -549,6 +549,39 @@ Callback отвечает за выбор/обрезку данных; у тай
 восьми узлов на сторону, потому что первая фаза движка — 8x8.
 
 
+Объёмы, разрезы и интеграции
+----------------------------
+
+Дополнительные утилиты вокруг stack; нового solver’а они не добавляют::
+
+    surfit.volume_between(upper, lower, extent, mask=None, contact=None)
+    surfit.volume_percentiles(volumes, levels=(10, 50, 90))
+    surfit.volume_ensemble(upper_fields, lower_fields, extent)
+    surfit.stack_volume(stack, "top", "bottom")
+
+    section = stack.section([0, 1], [0, 0], samples=200)
+
+    task.rule_report()        # порядок правил, типы и conditions
+    surfit.regression_trend(features, z, model=None)
+    surfit.add_regression_residuals(task, x, y, z, features)
+    surfit.add_geodataframe(task, gdf, kind="points")
+
+``volume_between`` детерминированный. P10/P50/P90 требуют когерентных
+реализаций: складывать per-cell границы интервалов в диапазон объёма нельзя.
+``volume_ensemble`` принимает такие реализации; ``volume_percentiles`` —
+маленький helper поверх них.
+
+``stack.section`` сэмплирует слои и калиброванные интервалы вдоль ломаной.
+``rule_report`` показывает порядок правил и условия; это диагностика
+приоритета, а не residual каждого правила.
+
+``add_geodataframe`` — опциональный GeoPandas-адаптер: Point/LineString/
+Polygon, Z и веса. Несовпадение CRS — ошибка, а не тихое перепроецирование.
+``SurfaceStack.to_xarray()`` и ``to_zarr()`` — опциональный eager-экспорт;
+Dask не обещается. ``regression_trend`` подгоняет тренд (OLS по умолчанию или
+любая scikit-learn-совместимая модель), возвращает остатки, а
+``add_regression_residuals`` регистрирует их для residual-задачи surfit.
+
 Слоистые поверхности
 --------------------
 

@@ -510,6 +510,11 @@ class Session:
         finally:
             init_threads(previous)
 
+    def rule_report(self):
+        """Ordered gridding rules, their types and attached conditions."""
+        rules = _core.functionals_info()
+        return {"count": len(rules), "rules": rules}
+
     def save(self, path, name=_ANY):
         """Saves a surface to a surfit data file."""
         return surf_save(path, name)
@@ -709,6 +714,12 @@ from surfit.diagnostics import (  # noqa: E402
 from surfit.spatial_diagnostics import (  # noqa: E402
     distance_to_data, error_by_distance, error_by_group, morans_i,
     residual_variogram)
+from surfit.volumetrics import (  # noqa: E402
+    volume_between, volume_ensemble, volume_percentiles, stack_volume)
+from surfit.sections import stack_section  # noqa: E402
+from surfit.geo import add_geodataframe  # noqa: E402
+from surfit.regression import (  # noqa: E402
+    add_regression_residuals, regression_trend)
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402

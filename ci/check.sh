@@ -157,6 +157,9 @@ run calibration "$PYTHON" "$TESTS/test_calibration.py"
 step "stack benchmark summary"
 run benchmark "$PYTHON" "$TESTS/test_benchmark.py"
 
+step "extension utilities"
+run extensions "$PYTHON" "$TESTS/test_extensions.py"
+
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 

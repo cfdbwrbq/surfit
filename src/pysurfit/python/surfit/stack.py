@@ -284,9 +284,34 @@ class SurfaceStack:
 
     def layer_names(self):
         return [name for name, _ in self._layers]
+    def extent(self):
+        """Copy of the stack extent (min/max/step/counts)."""
+        if self._extent is None:
+            raise RuntimeError("solve() the stack first")
+        return dict(self._extent)
+
 
     def _uses_memmap(self):
         return any(isinstance(value, np.memmap) for value in self._values)
+
+    def to_xarray(self):
+        """Eager xarray Dataset with layers and calibrated intervals."""
+        from surfit.xarray_export import to_xarray as _to_xarray
+
+        return _to_xarray(self)
+
+    def to_zarr(self, path, mode="w", **kwargs):
+        """Write the eager Dataset to Zarr (xarray/zarr are optional)."""
+        from surfit.xarray_export import to_zarr as _to_zarr
+
+        return _to_zarr(self, path, mode=mode, **kwargs)
+
+    def section(self, path_x, path_y, samples=200, method="bilinear"):
+        """Sample all layers and intervals along a polyline."""
+        from surfit.sections import stack_section
+
+        return stack_section(self, path_x, path_y, samples=samples,
+                             method=method)
 
     def save(self, directory):
         """Persist the solved stack as .npy layers plus a JSON manifest."""

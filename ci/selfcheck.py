@@ -125,7 +125,9 @@ def check_api():
         "calibrated_interval", "benchmark_stack", "interval_coverage",
         "coverage_by_group", "group_conformal_quantiles", "morans_i",
         "residual_variogram", "distance_to_data", "error_by_distance",
-        "error_by_group",
+        "error_by_group", "volume_between", "volume_ensemble",
+        "volume_percentiles", "stack_volume", "stack_section",
+        "add_geodataframe", "regression_trend", "add_regression_residuals",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

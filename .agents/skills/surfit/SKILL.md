@@ -182,6 +182,23 @@ from surfit.tiled import solve_point_tiles, solve_tiled
 `viewer()` is a 2-D filled contour map; `save_viewer(path)` writes it. For a
 headless check, inspect `task.values()` and `defined_mask`, not the HTML.
 
+## Volumes, sections and integrations
+
+```python
+vol = surfit.volume_between(upper, lower, extent, mask=mask)
+stack_vol = surfit.stack_volume(stack, "top", "bottom")
+section = stack.section(path_x, path_y, samples=200)
+task.rule_report()                    # ordered rules, not residual per rule
+trend = surfit.regression_trend(features, z)
+surfit.add_regression_residuals(task, x, y, z, features)
+surfit.add_geodataframe(task, gdf, kind="points")
+stack.to_xarray(); stack.to_zarr("stack.zarr")
+```
+
+`volume_percentiles` needs coherent realizations; never sum per-cell interval
+bounds. Optional geopandas/xarray/zarr are imported lazily; CRS mismatch is an
+error. Rule report shows order/conditions, not per-rule penalty residuals.
+
 ## Quality, validation and support
 
 These are diagnostics, not a covariance model.  They answer different

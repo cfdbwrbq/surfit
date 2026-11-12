@@ -66,6 +66,7 @@
 #include "hist_tcl.h"
 #include "surf_tcl.h"
 #include "cmofs.h"
+#include "functional.h"
 #include "variables_tcl.h"
 #include "variables.h"
 #include "surf.h"
@@ -206,6 +207,23 @@ std::string surf_name_at(size_t pos) {
 }
 
 /*! Copies a surface into a (count_y, count_x) array of doubles. */
+py::list functionals_info() {
+	py::list result;
+	if (surfit::functionals == NULL)
+		return result;
+	for (size_t index = 0; index < surfit::functionals->size(); index++) {
+		surfit::functional * item = (*surfit::functionals)[index];
+		py::dict record;
+		record["name"] = item->getName() ? item->getName() : "";
+		record["type"] = item->getType();
+		record["pos"] = item->get_pos();
+		record["conditions"] = item->cond_size();
+		record["manager"] = item->getManagerName();
+		result.append(record);
+	}
+	return result;
+}
+
 py::array_t<double> surf_values(size_t pos) {
 	d_surf * srf = surf_at(pos);
 	size_t count_x = srf->getCountX();
@@ -1154,6 +1172,9 @@ PYBIND11_MODULE(_surfit, m) {
 	      "surface values as a (count_y, count_x) float64 array");
 	m.def("surf_extent", &surf_extent, py::arg("pos"),
 	      "node counts and extent of a surface, as a dict");
+	m.def("functionals_info", &functionals_info,
+	      "ordered gridding-rule sequence with names, types and conditions");
+
 	m.def("add_points_array", [](py::array_t<double, py::array::c_style |
 	                              py::array::forcecast> x,
 	                              py::array_t<double, py::array::c_style |

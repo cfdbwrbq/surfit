@@ -154,6 +154,8 @@ Testing
      - split-conformal quantile and calibrated interval
    * - ``python3 src/pysurfit/tests/test_benchmark.py``
      - direct/sequential/parallel stack timings are returned (no speed gate)
+   * - ``python3 src/pysurfit/tests/test_extensions.py``
+     - volumes, sections, rule report, regression and optional integrations
    * - ``python3 src/pysurfit/tests/test_geotiff.py``
      - GeoTIFF values, reader, multi-band, COG and fallback paths
    * - ``python3 src/pysurfit/tests/test_strict.py``

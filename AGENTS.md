@@ -27,4 +27,5 @@ suite, and record the comparison in the handoff notes.
 
 ## Plans
 
-Deferred direction and the agent-first notes are in [PLANS.md](PLANS.md).
+Deferred direction and the agent-first notes are kept locally, outside the
+tracked repository.

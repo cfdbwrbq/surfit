@@ -190,4 +190,5 @@
 - `docs/en/how_it_works.rst` — CMOFS, penalty-loop и solvers;
 - `docs/en/commands.rst` — все команды;
 - `examples/python/` — запускаемые примеры;
-- `ROADMAP.md` — дальнейшие планы.
+- `docs/` — полная документация;
+- `examples/python/` — запускаемые примеры.

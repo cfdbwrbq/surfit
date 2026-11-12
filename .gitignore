@@ -42,3 +42,15 @@ dist/
 
 # Sphinx output
 docs/_build/
+
+# Local working notes and plans (kept outside the package)
+PLANS.md
+ROADMAP.md
+SURFACE_STACK_PLAN.md
+STACK_VALIDATION_PLAN.md
+COMPETITIVE_ANALYSIS.md
+AUDIT_STATE.md
+SILENT_EXCEPTIONS.md
+
+# Generated working data
+grid.dat

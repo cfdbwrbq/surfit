@@ -620,6 +620,21 @@ It reports wall time only; the numbers depend on the data, cores and build
 options, so they are not a CI performance assertion.  Builders must create a
 fresh Session on every call.
 
+Validation gate
+~~~~~~~~~~~~~~~~
+
+``stack.validate`` turns the report into a policy check::
+
+    result = stack.validate(
+        max_crossings=0, min_thickness=1.0, min_coverage=0.9)
+    result["ok"], result["violations"]
+
+    stack.validate(..., strict=True)   # raises StackValidationError
+
+Each violation has a ``code`` (``crossings``, ``thickness``, ``coverage``),
+the layer when relevant, the observed value and the threshold.  This is a
+check over the report, not an automatic repair.
+
 Serial pool mode
 ----------------
 

@@ -45,13 +45,49 @@ def main():
     assert all(item["defined"] == item["total"] for item in report["layers"])
     assert all(item["thickness"]["min"] >= 0
                for item in report["layers"][:-1])
+    assert all(item["coverage"] == 1.0 for item in report["layers"])
+    validation = stack.validate(min_thickness=0.9, min_coverage=1.0)
+    assert validation["ok"]
+    assert validation["violations"] == []
+    stack.validate(min_thickness=0.9, strict=True)
+    weak = stack.validate(min_thickness=10.0)
+    assert not weak["ok"]
+    assert weak["violations"][0]["code"] == "thickness"
     stack.close()
+
+    with surfit.SurfaceStack("thresholds") as thresholds:
+        thresholds.add_layer("top", lambda: layer(10.0))
+        thresholds.add_layer("bottom", lambda: layer(4.0))
+        thresholds.solve()
+        for bad in (-1, 1.5):
+            try:
+                thresholds.validate(max_crossings=bad)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("bad max_crossings did not raise")
+        for bad in (-0.1, 1.1):
+            try:
+                thresholds.validate(min_coverage=bad)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("bad min_coverage did not raise")
 
     crossed = surfit.SurfaceStack("crossed")
     crossed.add_layer("top", lambda: layer(5.0))
     crossed.add_layer("bottom", lambda: layer(10.0))
     crossed.solve()
     assert crossed.report()["crossings"] > 0
+    invalid = crossed.validate()
+    assert not invalid["ok"]
+    assert invalid["violations"][0]["code"] == "crossings"
+    try:
+        crossed.validate(strict=True)
+    except surfit.StackValidationError as error:
+        assert error.validation["violations"][0]["code"] == "crossings"
+    else:
+        raise AssertionError("strict validation did not raise")
     crossed.close()
 
     parallel = surfit.SurfaceStack("parallel")

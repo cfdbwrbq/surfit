@@ -4,6 +4,8 @@
 
 The product roadmap is in [ROADMAP.md](ROADMAP.md); the design detail is in
 [SURFACE_STACK_PLAN.md](SURFACE_STACK_PLAN.md).
+ The validation gate is specified in
+[STACK_VALIDATION_PLAN.md](STACK_VALIDATION_PLAN.md).
 
 
 The generalisation plan from one surface to an ordered surface stack is in

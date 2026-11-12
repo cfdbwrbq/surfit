@@ -36,10 +36,31 @@ reproducible exchange format.
 | memory-mapped stack values and `load(..., mmap=True)` | done |
 | native array constructors (no temporary file) | done |
 | multi-band GeoTIFF, COG, optional tifffile fallback | done |
+| 3.4.0 release, wheels and docs archive | done |
+| stack validation gate with typed violations | done |
 
 ## Next
 
-### 1. Release
+### 1. Provenance and config in the manifest
+
+Record source hashes, solver parameters and CRS per layer so a saved stack is
+auditable and reproducible, not only loadable.
+
+### 2. Streaming stack report
+
+Compute crossings, thickness and coverage in chunks over memory-mapped layers.
+
+### 3. Uncertainty in the stack
+
+Per-layer calibrated intervals, coverage in the report and interval-aware
+relation checks.
+
+### 4. Residual spatial diagnostics
+
+Moran's I, residual variogram, error versus distance-to-data and per-group
+bias.
+
+### 5. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

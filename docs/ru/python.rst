@@ -617,6 +617,21 @@ stack и параллельный stack на builder’ах вызывающег
 это не CI-критерий производительности. Builder должен создавать новую Session
 на каждый вызов.
 
+Validation gate
+~~~~~~~~~~~~~~~~
+
+``stack.validate`` превращает отчёт в policy-check::
+
+    result = stack.validate(
+        max_crossings=0, min_thickness=1.0, min_coverage=0.9)
+    result["ok"], result["violations"]
+
+    stack.validate(..., strict=True)   # raises StackValidationError
+
+У каждого нарушения есть ``code`` (``crossings``, ``thickness``, ``coverage``),
+слой, наблюдаемое значение и порог. Это проверка отчёта, а не автоматический
+ремонт.
+
 Serial-режим pool
 -----------------
 

@@ -33,6 +33,15 @@ def _same_extent(first, second):
                for key in keys)
 
 
+class StackValidationError(ValueError):
+    """Raised by ``SurfaceStack.validate(strict=True)``."""
+
+    def __init__(self, validation):
+        self.validation = validation
+        messages = [item["message"] for item in validation["violations"]]
+        super().__init__("stack validation failed: " + "; ".join(messages))
+
+
 class SurfaceRelation:
     """A condition passed to a layer builder for an inter-surface relation."""
 
@@ -386,6 +395,79 @@ class SurfaceStack:
                 return value
         raise KeyError("unknown layer %r" % (name,))
 
+    def validate(self, max_crossings=0, min_thickness=None,
+                 min_coverage=None, strict=False):
+        """Check the solved stack against explicit thresholds.
+
+        Returns ``{"ok", "violations", "report", "thresholds"}``.  With
+        ``strict=True`` a violation raises :class:`StackValidationError`; the
+        exception carries the same result.  This is a policy check over the
+        report, not a solver repair.
+        """
+        if not isinstance(max_crossings, int) or max_crossings < 0:
+            raise ValueError("max_crossings must be a non-negative integer")
+        if min_thickness is not None and not np.isfinite(min_thickness):
+            raise ValueError("min_thickness must be finite or None")
+        if min_coverage is not None and not 0.0 <= min_coverage <= 1.0:
+            raise ValueError("min_coverage must be between 0 and 1")
+        report = self.report()
+        violations = []
+        if report["crossings"] > max_crossings:
+            violations.append({
+                "code": "crossings",
+                "value": int(report["crossings"]),
+                "limit": int(max_crossings),
+                "message": "crossings %d exceed %d"
+                           % (report["crossings"], max_crossings),
+            })
+        for item in report["layers"]:
+            if min_coverage is not None and item["coverage"] < min_coverage:
+                violations.append({
+                    "code": "coverage",
+                    "layer": item["name"],
+                    "value": item["coverage"],
+                    "limit": float(min_coverage),
+                    "message": "layer %r coverage %.3f is below %.3f"
+                               % (item["name"], item["coverage"],
+                                  min_coverage),
+                })
+            if min_thickness is None or "thickness" not in item:
+                continue
+            value = item["thickness"]["min"]
+            if value is None:
+                violations.append({
+                    "code": "thickness",
+                    "layer": item["name"],
+                    "value": None,
+                    "limit": float(min_thickness),
+                    "message": "layer %r has no finite thickness"
+                               % (item["name"],),
+                })
+            elif value < min_thickness:
+                violations.append({
+                    "code": "thickness",
+                    "layer": item["name"],
+                    "value": float(value),
+                    "limit": float(min_thickness),
+                    "message": "layer %r thickness %.3f is below %.3f"
+                               % (item["name"], value, min_thickness),
+                })
+        validation = {
+            "ok": not violations,
+            "violations": violations,
+            "report": report,
+            "thresholds": {
+                "max_crossings": int(max_crossings),
+                "min_thickness": (None if min_thickness is None
+                                  else float(min_thickness)),
+                "min_coverage": (None if min_coverage is None
+                                 else float(min_coverage)),
+            },
+        }
+        if strict and violations:
+            raise StackValidationError(validation)
+        return validation
+
     def report(self):
         """JSON-ready crossings, thickness and pinch-out summary."""
         if not self._values:
@@ -399,6 +481,8 @@ class SurfaceStack:
                 "name": name,
                 "defined": int(defined.sum()),
                 "total": int(defined.size),
+                "coverage": (float(defined.sum()) / float(defined.size)
+                             if defined.size else 0.0),
             }
             report["layers"].append(item)
             if index == len(self._values) - 1:

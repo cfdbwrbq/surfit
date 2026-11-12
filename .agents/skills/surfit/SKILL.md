@@ -295,6 +295,8 @@ the builder must call ``relations.apply(task)`` before its next functional.
 projection; ``report()["seconds"]`` records wall time.
   ``stack.save(dir)`` / ``SurfaceStack.load(dir)`` persist layers as
 ``.npy`` plus ``manifest.json``; loading restores values/report, not Sessions.
+  ``stack.validate(max_crossings=0, min_thickness=..., min_coverage=...)``
+returns typed violations; ``strict=True`` raises ``StackValidationError``.
   ``solve(memmap=True, memmap_dir=...)`` stores values on disk;
 ``load(..., mmap=True)`` returns read-only memmaps.
   ``surfit.benchmark_stack({...}, repeats=3)` compares direct, sequential

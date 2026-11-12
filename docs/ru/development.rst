@@ -148,8 +148,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_array_ingest.py``
      - точки, кривые, площади и контуры регистрируются из numpy-массивов
    * - ``python3 src/pysurfit/tests/test_stack.py``
-     - упорядоченные слои делят сетку; crossings, толщина и pinch-outs
-       попадают в отчёт
+     - упорядоченные слои делят сетку; crossings, толщина, pinch-outs и
+       validation gate проверяются
    * - ``python3 src/pysurfit/tests/test_calibration.py``
      - split-conformal квантиль и калиброванный интервал
    * - ``python3 src/pysurfit/tests/test_benchmark.py``

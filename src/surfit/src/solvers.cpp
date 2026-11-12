@@ -256,6 +256,13 @@ bool solve_with_penalties(functional * fnc, matr * T, extvec * V, extvec *& X)
 		return false;
 	}
 					
+	bool base_first = false;
+	for (int ci = 0; ci < fnc->cond_size(); ci++)
+		if (fnc->cond_get(ci)->base_first())
+			base_first = true;
+	if (base_first && T && V)
+		solve(T, V, X);
+
 	REAL weight = penalty_weight;
 	REAL x_norm = norm2(X, FLT_MAX);
 	

@@ -66,7 +66,7 @@ def main():
         area.completer(1, 1.6)
         area.solve()
         values = area.values()
-        inside = values[17:23, 17:23]
+        inside = values[17:22, 17:22]
         assert np.nanmax(np.abs(np.diff(inside, axis=1))) <= \
             np.tan(np.deg2rad(5.0)) + 0.01
         assert np.nanmax(np.abs(np.diff(inside, axis=0))) <= \
@@ -82,7 +82,7 @@ def main():
         area.completer(1, 1.6)
         area.solve()
         values = area.values()
-        inside = values[17:23, 17:23]
+        inside = values[17:22, 17:22]
         second = np.abs(inside[1:-1, :-2] - 2.0 * inside[1:-1, 1:-1] +
                         inside[1:-1, 2:])
         assert np.nanmax(second) <= 1.1

@@ -327,17 +327,19 @@ kriging model.
 Slope and curvature bounds
 --------------------------
 
-Local bounds are applied as a final projection, not as another data rule::
+Local bounds are penalty conditions in the solver::
 
     task.slope_max(5.0)                    # whole grid
     task.slope_max(5.0, area_name="zone")  # inside an area
     task.curvature_max(0.5, mask_name="m") # second difference bound
+    task.completer(1, 1.6)                 # the condition attaches here
 
 ``slope_max`` takes degrees and bounds ``|dZ/dx|`` and ``|dZ/dy|``;
 ``curvature_max`` bounds the absolute second difference in the same units.
-With both names empty the projection is global.  It runs after the solve and
-can adjust data cells, so it is a policy projection, not a hard data
-constraint; inspect ``rule_report`` and the result before relying on it.
+With both names empty the condition is global.  The solver performs a base
+solve before building the condition, then runs the normal penalty loop; the
+condition must be added before the functional it should attach to, normally
+``completer``.  ``rule_report`` exposes the conditional ``residual``.
 
 Spatial residual diagnostics
 ----------------------------

@@ -11,7 +11,7 @@
 namespace surfit {
 f_slope::f_slope(REAL ilimit, const d_area * iarea, const d_mask * imask,
                  bool iinside, int imode, REAL imult) :
-functional("f_slope", F_USUAL)
+functional("f_slope", F_CONDITION)
 {
 	limit = ilimit; area = iarea; mask = imask;
 	inside = iinside; mode = imode; mult = imult;
@@ -25,7 +25,7 @@ const data * f_slope::this_get_data(int pos) const {
 	if (mask && pos == (area ? 1 : 0)) return mask;
 	return NULL;
 };
-bool f_slope::minimize() { return true; };
+bool f_slope::minimize() { return false; };
 static void add_equation(matr_local * matrix, extvec * v,
                          const std::vector<size_t> & index,
                          const std::vector<REAL> & coeff,
@@ -123,16 +123,6 @@ bool f_slope::build_projection(matr *& matrix, extvec *& v) {
 bool f_slope::make_matrix_and_vector(matr *& matrix, extvec *& v,
                                      bitvec * mask_solved, bitvec * mask_undefined) {
 	return build_projection(matrix, v);
-};
-void f_slope::post_process(extvec * X) {
-	for (int iteration = 0; iteration < 20; iteration++) {
-		matr * matrix = NULL;
-		extvec * v = NULL;
-		if (!build_projection(matrix, v)) break;
-		solve(matrix, v, X);
-		delete matrix;
-		if (v) v->release();
-	}
 };
 void f_slope::mark_solved_and_undefined(bitvec * mask_solved, bitvec * mask_undefined, bool i_am_cond) {};
 bool f_slope::solvable_without_cond(const bitvec * mask_solved, const bitvec * mask_undefined, const extvec * X) { return true; };

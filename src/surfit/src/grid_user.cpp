@@ -481,8 +481,6 @@ void grid_finish(bool & method_ok) {
 
 void grid_release() {
 
-	for (size_t pi = 0; pi < functionals->size(); pi++)
-		(*functionals)[pi]->post_process(method_X);
 	size_t i;
 	for (i = 0; i < method_X->size(); i++) {
 		if (method_mask_solved->get(i) == false)

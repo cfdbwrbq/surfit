@@ -93,6 +93,9 @@ public:
 	//! optional final projection on the solved vector
 	virtual void post_process(extvec * X) {};
 
+	//! condition should see a base solve before its penalty is built
+	virtual bool base_first() const { return false; };
+
 	//! capture the residual of the last conditional linear system
 	void set_diagnostic_residual(REAL value) { diagnostic_residual = value; };
 

@@ -21,7 +21,7 @@ public:
 	                               bitvec * mask_undefined, bool i_am_cond);
 	bool solvable_without_cond(const bitvec * mask_solved,
 	                           const bitvec * mask_undefined, const extvec * X);
-	void post_process(extvec * X);
+	bool base_first() const { return true; };
 protected:
 	int this_get_data_count() const;
 	const data * this_get_data(int pos) const;

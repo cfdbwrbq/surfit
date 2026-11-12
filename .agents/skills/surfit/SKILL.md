@@ -148,8 +148,8 @@ flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
 
 task.add_dip_points(x, y, dip, azimuth, name="dip")
 task.gradient("dip")                 # soft local dZ/dx, dZ/dy constraint
-task.slope_max(5.0)                  # final projection, can adjust data cells
-task.curvature_max(0.5)              # second-difference bound
+task.slope_max(5.0)                  # penalty condition, before completer
+task.curvature_max(0.5)              # second-difference penalty
 # absolute level still comes from points/areas/completer
 
 from surfit.spatial_diagnostics import morans_i, residual_variogram

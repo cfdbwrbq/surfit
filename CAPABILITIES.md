@@ -138,7 +138,8 @@
 - `rule_report()` — порядок правил, типы, conditions, residual и violations там, где они известны;
 - `add_dip_points` / `add_gradient_points` — локальные производные;
 - `gradient()` — soft-условие на dZ/dx и dZ/dy;
-- `slope_max()` и `curvature_max()` — финальная проекция локальных границ (глобально или внутри area/mask);
+- `slope_max()` и `curvature_max()` — penalty-условия локальных границ (глобально или внутри area/mask);
+- условия добавляются до `completer`, solver делает base solve для их построения;
 - GeoPandas/Shapely адаптер (опционально);
 - CRS-проверка без тихого перепроецирования;
 - xarray `Dataset` и Zarr export (опционально);
@@ -201,7 +202,7 @@
 - нет mesh/CAD export;
 - нет ML/property prediction;
 - нет GUI/map composition;
-- slope/curvature bounds — post-solve projection, а не жёсткое data-условие; может менять data-ячейки;
+- slope/curvature bounds — penalty-условия, не post-solve проекция;
 - rule report показывает residual для conditional-правил и violations для известных inequality-правил; для non-penalty data-правил residual = None;
 - P10/P50/P90 нельзя получить сложением per-cell интервалов;
 - GeoPandas, xarray, Zarr и sklearn — опциональны;

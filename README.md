@@ -83,13 +83,17 @@ Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); select them with
 
 - [English documentation](https://cfdbwrbq.github.io/surfit/en/)
 - [Russian documentation](https://cfdbwrbq.github.io/surfit/ru/)
+- [Release docs archive](https://github.com/cfdbwrbq/surfit/releases)
 - [Capabilities, English](CAPABILITIES.en.md)
 - [Capabilities, Russian](CAPABILITIES.md)
 - [Python guide](docs/en/python.rst)
 - [How the solver works](docs/en/how_it_works.rst)
 
 The docs are built with Sphinx from `docs/en` and `docs/ru`; the two trees are
-checked for structural parity by `docs/check_docs.py`.
+checked for structural parity by `docs/check_docs.py`.  GitHub Pages deploys
+the built trees from `.github/workflows/docs.yml`; if the Pages link is not
+live, enable **Settings → Pages → GitHub Actions** once, then rerun the
+workflow.
 
 ## Interoperability
 

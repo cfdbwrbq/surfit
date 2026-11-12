@@ -124,6 +124,8 @@ Testing
    * - ``python3 src/pysurfit/tests/test_variogram.py``
      - spherical fit, experimental/directional variogram and the anisotropy
        suggestion
+   * - ``python3 src/pysurfit/tests/test_spatial_diagnostics.py``
+     - Moran's I, residual variogram and error by distance/group
    * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
      - block bootstrap samples complete blocks; block labels and auto labels
        agree

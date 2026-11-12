@@ -123,7 +123,9 @@ def check_api():
         "read_geotiff", "save_geotiff_stack", "save_geotiff_bands",
         "conformal_quantile",
         "calibrated_interval", "benchmark_stack", "interval_coverage",
-        "coverage_by_group", "group_conformal_quantiles",
+        "coverage_by_group", "group_conformal_quantiles", "morans_i",
+        "residual_variogram", "distance_to_data", "error_by_distance",
+        "error_by_group",
     )
     missing = [name for name in required if not hasattr(module, name)]
     if missing:

@@ -99,6 +99,9 @@ run voronoi "$PYTHON" "$TESTS/test_voronoi_weights.py"
 step "variogram diagnostics"
 run variogram "$PYTHON" "$TESTS/test_variogram.py"
 
+step "spatial residual diagnostics"
+run spatial-diagnostics "$PYTHON" "$TESTS/test_spatial_diagnostics.py"
+
 step "block bootstrap"
 run block-bootstrap "$PYTHON" "$TESTS/test_block_bootstrap.py"
 

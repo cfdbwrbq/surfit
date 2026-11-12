@@ -308,6 +308,23 @@ and long/short range ratio for the existing rule::
 These are diagnostics and starting values, not kriging and not a covariance
 model.  The engine still solves one surface.
 
+Spatial residual diagnostics
+----------------------------
+
+Global RMSE hides structure.  These helpers make it visible::
+
+    surfit.morans_i(values, mask=None)       # rook grid autocorrelation
+    surfit.residual_variogram(x, y, residuals, bins=16)
+    distance = surfit.distance_to_data(x, y, data_x, data_y)
+    surfit.error_by_distance(distance, residuals, bins=10)
+    surfit.error_by_group(residuals, groups)
+
+``morans_i`` is a regular-grid diagnostic with four-neighbour weights;
+``residual_variogram`` is the experimental variogram of residuals;
+``error_by_distance`` reports bias/MAE/RMSE per distance band; and
+``error_by_group`` does the same per group.  These are diagnostics, not a
+covariance model or a second solver.
+
 Uncertainty by ensemble
 -----------------------
 

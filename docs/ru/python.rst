@@ -304,6 +304,23 @@ SHA-256 в quality report.
 Это диагностика и стартовые значения, а не кригинг и не ковариационная
 модель. Движок по-прежнему решает одну поверхность.
 
+Spatial residual diagnostics
+----------------------------
+
+Глобальный RMSE скрывает структуру. Эти функции делают её видимой::
+
+    surfit.morans_i(values, mask=None)       # rook-автокорреляция сетки
+    surfit.residual_variogram(x, y, residuals, bins=16)
+    distance = surfit.distance_to_data(x, y, data_x, data_y)
+    surfit.error_by_distance(distance, residuals, bins=10)
+    surfit.error_by_group(residuals, groups)
+
+``morans_i`` — диагностика регулярной сетки с четырьмя соседями;
+``residual_variogram`` — экспериментальная вариограмма остатков;
+``error_by_distance`` даёт bias/MAE/RMSE по полосам расстояния;
+``error_by_group`` — то же по группам. Это диагностика, а не covariance model
+и не второй solver.
+
 Неопределённость ансамблем
 ---------------------------
 

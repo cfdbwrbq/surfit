@@ -126,6 +126,8 @@ pybind11 выбран вместо нацеливания SWIG на Python по�
    * - ``python3 src/pysurfit/tests/test_variogram.py``
      - сферическая подгонка, экспериментальная/направленная вариограмма и
        подсказка анизотропии
+   * - ``python3 src/pysurfit/tests/test_spatial_diagnostics.py``
+     - Moran's I, вариограмма остатков и ошибка по расстоянию/группе
    * - ``python3 src/pysurfit/tests/test_block_bootstrap.py``
      - блочный bootstrap выбирает целые блоки; метки блоков и авто-метки
        согласованы

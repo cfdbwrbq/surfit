@@ -146,6 +146,10 @@ stats = task.residuals(x, y, z, weights=sigma_inv)  # observed - nearest node
 flags, stats = task.outliers(x, y, z, weights=sigma_inv, threshold=3.5)
 # flags are suggestions; zero their weights and re-solve
 
+from surfit.spatial_diagnostics import morans_i, residual_variogram
+from surfit.spatial_diagnostics import distance_to_data, error_by_distance
+# global RMSE hides structure; these expose autocorrelation and distance bias
+
 from surfit.diagnostics import robust_weights
 # IRLS: rebuild the task with robust_weights(residuals) and solve again;
 # the engine's inner solve is still least squares.

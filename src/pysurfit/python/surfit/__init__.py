@@ -706,6 +706,9 @@ from surfit.diagnostics import (  # noqa: E402
     coverage_by_group, diagnostic_points, diagnostics_to_geojson, ensemble,
     group_conformal_quantiles, interval_coverage, outlier_mask,
     point_residuals, quality_report)
+from surfit.spatial_diagnostics import (  # noqa: E402
+    distance_to_data, error_by_distance, error_by_group, morans_i,
+    residual_variogram)
 from surfit.geotiff import (  # noqa: E402
     read_geotiff, save_geotiff, save_geotiff_bands, save_geotiff_stack)
 from surfit.cross_validation import (  # noqa: E402

@@ -41,15 +41,11 @@ reproducible exchange format.
 | per-layer provenance and engine version in the manifest | done |
 | streaming report over memory-mapped layers | done |
 | per-layer calibrated intervals and relation conflicts | done |
+| Moran's I, residual variogram and error by distance/group | done |
 
 ## Next
 
-### 1. Residual spatial diagnostics
-
-Moran's I, residual variogram, error versus distance-to-data and per-group
-bias.
-
-### 2. Release
+### 1. Release
 
 After coverage and persistence are stable, cut a minor release; keep the
 versioning honest about the new public API.

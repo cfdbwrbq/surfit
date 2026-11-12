@@ -1,5 +1,7 @@
 # surfit
 
+[English](README.md) | [中文](README.zh.md)
+
 **Regular-grid interpolation and approximation from scattered data, under
 gridding rules.**
 

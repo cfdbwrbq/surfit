@@ -199,6 +199,7 @@ trend = surfit.regression_trend(features, z)
 surfit.add_regression_residuals(task, x, y, z, features)
 surfit.add_geodataframe(task, gdf, kind="points")
 stack.to_xarray(); stack.to_zarr("stack.zarr")
+surfit.benchmark_solvers(build, solvers=("cg", "jcg", "ssor"))
 ensemble = surfit.SurfaceEnsemble.from_stacks([stack_a, stack_b])
 difference = ensemble - other_ensemble
 surfit.run_recipe("task.json")

@@ -163,6 +163,9 @@ run calibration "$PYTHON" "$TESTS/test_calibration.py"
 step "stack benchmark summary"
 run benchmark "$PYTHON" "$TESTS/test_benchmark.py"
 
+step "solver benchmark helper"
+run solver-benchmark "$PYTHON" "$TESTS/test_solver_benchmark.py"
+
 step "extension utilities"
 run extensions "$PYTHON" "$TESTS/test_extensions.py"
 

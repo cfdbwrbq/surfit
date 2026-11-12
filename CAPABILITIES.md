@@ -1,5 +1,7 @@
 # Возможности surfit
 
+English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
+
 ## Ядро
 
 ### Что решает

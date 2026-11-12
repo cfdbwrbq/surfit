@@ -32,7 +32,10 @@ geoparquet = ["pyarrow>=8", "shapely>=2"]
 mesh = ["pyvista>=0.40"]
 
 [project.urls]
-Homepage = "http://surfit.sourceforge.net"
+Homepage = "https://github.com/cfdbwrbq/surfit"
+Documentation = "https://cfdbwrbq.github.io/surfit/"
+Source = "https://github.com/cfdbwrbq/surfit"
+Issues = "https://github.com/cfdbwrbq/surfit/issues"
 
 [tool.scikit-build]
 minimum-version = "0.8"

@@ -72,7 +72,7 @@ html_theme_options = {
     "logo_width": 28,
     "logo_height": 28,
     "logo_alt": _SURFIT,
-    "repository_url": "https://github.com/mdmitr/surfit",
+    "repository_url": "https://github.com/cfdbwrbq/surfit",
     "repository_name": _SURFIT,
     "current_version": release,
     "header_links": HEADER_LINKS[_LANG_EN],

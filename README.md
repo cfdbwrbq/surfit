@@ -1,150 +1,117 @@
 # surfit
 
-surfit is a computer program which enables to calculate regular grid from 
-various data (scattered points, curves, surfaces, etc), conditions 
-and inequalities by setting called "gridding rules".
+**Regular-grid interpolation and approximation from scattered data, under
+gridding rules.**
 
-It interpolates and approximates scattered points, contours, surfaces and areas;
-it can take fault lines, trend surfaces, anisotropy and inequalities into
-account, and it supports a range of data formats.
+[![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
+[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
+[![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
-A one-page, human-readable capability list is in
-[CAPABILITIES.md](CAPABILITIES.md).
+![A surface built from five polygonal areas](docs/_static/map-area-3d.svg)
 
-## How this port was made
+surfit builds a regular 2.5D grid from points, curves, contours, areas,
+surfaces, trends and masks.  It is not just an interpolator: rules and
+inequalities are applied in a defined order, with an explicit penalty loop,
+and the result can be validated, stacked, sliced, exported and checked.
 
-The original surfit engine and its Tcl front end were written by M. V.
-Dmitrievsky and V. N. Kutrunov between 2002 and 2015.
+The C++ engine (2002–2015) is driven by a Python package and by the original
+Tcl front end.  Both use the same solver and the tests compare them
+byte-for-byte.
 
-The 2026 Python port — pybind11 bindings, the test harness, the build scripts
-and the documentation — was produced with an **AI coding agent under human
-direction and review**. The maintainer is responsible for the code and for its
-correctness.
+## Install
 
-The port is checked against the original: 49 Tcl examples produce byte-identical
-data files, 504 command steps run on both front ends, and `ci/check.sh` runs the
-full suite. AI-assisted code can still contain errors; the software is provided
-under GPL-2, without warranty.
-
-See [AI_DISCLOSURE.md](AI_DISCLOSURE.md) for the full statement.
-
-## Python
-
-The engine is available as a Python package. It drives the original C++ core,
-so results are identical to those of the Tcl front end, and grids cross the
-boundary as numpy arrays in both directions.
-
-Runnable versions of both snippets below are in [`examples/python/`](examples/python).
+Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
+[release](https://github.com/cfdbwrbq/surfit/releases).  Pick the wheel for
+your interpreter, for example CPython 3.12:
 
 ```bash
-pip install .                     # needs cmake and a C++ compiler
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.2/surfit-3.7.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
+
+From source, with CMake and a C++ compiler:
+
+```bash
+pip install .
+```
+
+Optional extras:
+
+```bash
+pip install ".[geoparquet]"   # pyarrow + shapely
+pip install ".[mesh]"         # PyVista
+```
+
+## Quick start
 
 ```python
 import surfit
 import numpy as np
 
-task = surfit.Session(map_name="map_area", tol=5.01187e-06)
+x = np.array([0.0, 1.0, 0.0, 1.0, 0.5])
+y = np.array([0.0, 0.0, 1.0, 1.0, 0.5])
+z = np.array([1.0, 2.0, 3.0, 4.0, 2.5])
 
-for name in ("area1", "area2", "area3", "area4", "area5"):
-    task.read_areas("data/%s.txt" % name, name)
-
-task.grid(-12, 12, 0.2, -12, 12, 0.2)
-
-task.area(10, "area1")        # the surface equals 10 inside area1
-task.area(30, "area3")
-task.area("undef", "area5")   # leave area5 undefined
-task.completer(1, 1.6)        # tend to a constant or a plane
-task.area_add(20, 0.07, "area2")   # approximate, with a weight
-task.area_add(40, 0.07, "area4")
-
-task.solve()
-task.save("area.dat")             # surfit native data file
-
-grid = task.values()              # numpy (count_y, count_x), float64
-print(grid.shape, surfit.defined_mask(grid).sum())
-```
-
-Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); `surfit.defined_mask()`
-selects the defined ones.
-
-### Quality, not just a grid
-
-The result is one surface, but the workflow around it is explicit: residuals,
-spatial cross-validation, experimental variograms and anisotropy hints,
-per-node support, typed point diagnostics, a PSF measurement, declustering and
-a provenance report with input hashes.  Sessions are thread-local, so
-independent tasks can solve in parallel.
-
-```python
-report = task.report(x, y, z, sources=["wells.txt"])
-cv = surfit.cross_validate(build, x, y, z, mode="block", block=10.0)
-fit = surfit.experimental_variogram(x, y, z)
-```
-
-The runnable end-to-end example is
-[`examples/python/quality_workflow.py`](examples/python/quality_workflow.py).
-
-### numpy in, numpy out
-
-```python
-import surfit
-import numpy as np
-
-# A regional trend, handed to the engine as an array: 40 x 50 nodes,
-# 25 units apart, covering x 0..1225 and y 0..975.
-trend = np.linspace(100.0, 120.0, 40 * 50).reshape(40, 50)
-
-task = surfit.Session(map_name="result")
-task.add_surface(trend, start_x=0.0, step_x=25.0, start_y=0.0, step_y=25.0,
-                 name="regional")
-task.read_points("wells.txt", "wells")
-
-task.grid(0, 1225, 25, 0, 975, 25)
-task.points("wells")              # honour the measurements
-task.surface("regional")          # and follow the regional trend
-task.completer(1, 2)
+task = surfit.Session(map_name="demo", tol=1e-7)
+task.add_points(x, y, z, name="wells")
+task.grid(0, 1, 0.05, 0, 1, 0.05)
+task.points("wells")
+task.completer(1, 1.6)
 task.solve()
 
-result = task.values()            # the surface created last, i.e. the result
+grid = task.values()          # (count_y, count_x), row 0 is min_y
+print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 ```
 
-### Interoperability
+Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); select them with
+`surfit.defined_mask(grid)`.
 
-Regular grids and `SurfaceStack` layers can be triangulated and written as
-glTF, OBJ or STL; `to_pyvista()` is optional.  GeoParquet points/curves/areas
-can be read and written without GDAL when `pyarrow` and `shapely` are
-installed.  Task recipes run with `surfit run recipe.json`.  See
-[CAPABILITIES.md](CAPABILITIES.md) for the full list and the recorded
-limitations (no FlatGeobuf writer, no GCV, exterior-only polygons).
+## What makes it different
 
-### File formats
+- **Rules, not just a variogram.** Points, curves, contours, areas, surfaces,
+  trends, masks, inequalities and `completer` are applied in a defined order.
+- **An explicit solver.** CMOFS: sequential minimisation, a penalty loop and a
+  8×8 multilevel ladder; `cg`, `jcg`, `rf`, `jacobi` and `ssor`.
+- **Quality workflow.** Residuals, spatial cross-validation, block bootstrap,
+  variograms, per-node support, declustering, typed diagnostics and provenance.
+- **Layered surfaces.** `SurfaceStack` with DAG relations, thickness,
+  pinch-outs, persistence, uncertainty intervals and cross-sections.
+- **Interoperability.** GeoTIFF (including rotated input), GeoParquet, xarray,
+  Zarr, shapefile/BLN/Surfer/GMT/Grass/ArcGIS, and glTF/OBJ/STL mesh export.
+- **Reproducibility.** JSON/YAML recipes and `surfit run recipe.json`.
 
-The shapefile / BLN / Surfer / GMT / Grass / ArcGIS / xyz / jpg / bmp loaders and
-savers of the `surfit_io` plugin are exposed under their Tcl names:
+## Documentation
+
+- [English documentation](https://cfdbwrbq.github.io/surfit/en/)
+- [Russian documentation](https://cfdbwrbq.github.io/surfit/ru/)
+- [Capabilities, English](CAPABILITIES.en.md)
+- [Capabilities, Russian](CAPABILITIES.md)
+- [Python guide](docs/en/python.rst)
+- [How the solver works](docs/en/how_it_works.rst)
+
+The docs are built with Sphinx from `docs/en` and `docs/ru`; the two trees are
+checked for structural parity by `docs/check_docs.py`.
+
+## Interoperability
 
 ```python
-surfit.area_load_shp("zones.shp", "zones")
-surfit.cntr_load_shp("isolines.shp", "iso")
-surfit.surf_load_grd("surface.grd", "top")
-surfit.surf_save_grd("smoothed.grd", "top")
+# GeoParquet points, curves or areas, without GDAL
+surfit.add_geoparquet(task, "points.parquet", kind="points")
+
+# 3D visualisation, without a required dependency
+extent = {"min_x": 0, "min_y": 0, "step_x": 0.05, "step_y": 0.05}
+mesh = surfit.grid_mesh(task.values(), extent)
+surfit.export_gltf("surface.gltf", mesh)
+
+# stack layers as one glTF/OBJ, or PyVista when installed
+stack.export_gltf("stack.gltf")
+stack.to_pyvista()
 ```
 
-Every command of the Tcl front end is available under the same name, so the
-scripts in `examples/` translate one call to one call. `src/pysurfit/tests/`
-contains a runner that does exactly that and compares the output byte for byte.
+Limitations are explicit: GeoParquet uses polygon exteriors; FlatGeobuf is not
+included because the Python package has no writer; mesh export is
+visualisation-only, not CAD; GCV is not implemented.
 
-### More than one task
-
-Each `Session` owns its state, so several tasks can share a process.  The
-engine's globals are thread-local: two Sessions in two threads can solve in
-parallel, and calls on one Session are serialized by that Session's own lock.
-A Session can also be created in one thread and used in another; every call
-stores the task snapshot back so the next thread sees the latest grid and
-settings.  Module-level functions use the calling thread's library state, so
-parallel work belongs in Sessions.
-
-## Building
+## Build and test
 
 ```bash
 mkdir -p build && cd build
@@ -153,67 +120,28 @@ make -j"$(nproc)"
 export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
 ```
 
-Requirements: `cmake` >= 3.10 and a C++ compiler. The engine itself has no
-Tcl dependency. `zlib`, `libjpeg` and `netcdf` are optional and enable the globe
-module and the JPEG/netCDF formats.
+```bash
+# Fast self-check: docs, skills, Python surface
+python3 ci/selfcheck.py
 
-The original examples use a Tcl front end, which is off by default; it needs
-`tcl-dev` and SWIG:
+# Full gate: examples, parity, docs, WPS, wheel smoke test
+ci/check.sh --full
+```
+
+The Tcl front end is optional:
 
 ```bash
 cmake -DSURFIT_BUILD_TCL=ON ../src
 make -j"$(nproc)"
-cd examples/surfit/tests
-tclsh area.tcl
+cd examples/surfit/tests && tclsh area.tcl
 ```
 
-## Code style
+## Project
 
-[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
-
-The Python package and the documentation tooling are checked with
-[wemake-python-styleguide](https://wemake-python-styleguide.readthedocs.io/):
-
-```bash
-pip install -r requirements-dev.txt
-python3 -m flake8 --config .flake8 src/pysurfit/python docs
-```
-
-Tests and examples are excluded (they are scripts with literal numbers and
-`print`), and `.flake8` documents the package's deliberate exceptions: the
-dynamic re-export facade, the public `Session` API and the psql/tempfile error
-handling.
-
-## Tests
-
-```bash
-# the original Tcl regression suite
-./run_baseline.sh
-
-# the same scripts driven through the Python bindings, compared byte for byte
-python3 src/pysurfit/tests/run_tcl_suite.py
-python3 src/pysurfit/tests/run_tcl_suite.py --sequential examples/surfit/realworld
-```
-
-## Documentation
-
-The full documentation lives in `docs/` and is built with Sphinx in English and
-Russian, English first:
-
-```bash
-pip install -r docs/requirements.txt
-docs/build.sh                 # -> docs/_build/html/index.html
-```
-
-`docs/check_docs.py` verifies that the two language trees have the same pages,
-sections and toctrees; run it after editing either one. The older `doc/`
-directory holds the original Doxygen sources.
-
-## License
-
-GNU General Public License, version 2. See [LICENSE](LICENSE).
-
-The triangulation code is [CDT](https://github.com/artem-ogre/CDT) (Constrained
-Delaunay Triangulation) by Artem Amirkhanov, licensed under MPL-2.0 and vendored
-in `src/surfit/src/third_party/cdt/`. Its files keep the MPL-2.0 notices; unlike
-Triangle, it has no commercial-use restriction.
+- Original engine and Tcl front end: M. V. Dmitrievsky and V. N. Kutrunov,
+  2002–2015.
+- The 2026 Python port, packaging, tests and documentation were produced with
+  an AI coding agent under human direction and review.  The maintainer is
+  responsible for the result.
+- License: GNU GPL-2. See [LICENSE](LICENSE) and [AI_DISCLOSURE.md](AI_DISCLOSURE.md).
+- Vendored [CDT](https://github.com/artem-ogre/CDT) triangulation is MPL-2.0.

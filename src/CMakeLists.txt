@@ -32,6 +32,7 @@ set(SURFIT_LIBDIR "${SURFIT_LIBDIR}" CACHE STRING
 # speaks to stdio and to the log hook.  Tcl is needed only by the front end and
 # by the plugins that wrap themselves as Tcl commands.
 if (SURFIT_BUILD_TCL)
+	message(DEPRECATION "SURFIT_BUILD_TCL is deprecated; 3.7.x is the last Tcl-capable line and 3.8 removes it")
 	find_package(TCL REQUIRED)
 	find_package(SWIG REQUIRED)
 	INCLUDE(${SWIG_USE_FILE})

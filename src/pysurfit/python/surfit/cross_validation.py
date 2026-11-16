@@ -148,7 +148,7 @@ def _metrics(residuals, weights):
 
 
 def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
-                   block=None, seed=0, extent=None, groups=None):
+                   block=None, seed=0, extent=None, groups=None, n_jobs=1):
     """Run spatial cross-validation and return held-out summary metrics.
 
     ``build(train_indices, train_weights)`` must return a solved task,
@@ -159,7 +159,9 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
 
     The result is JSON-ready: per-fold RMSE, bias, MAE and weighted MSE, plus
     the same metrics over all held-out points.  These are point errors under
-    the fold design, not a posterior or a map of uncertainty.
+    the fold design, not a posterior or a map of uncertainty.  ``n_jobs`` fans
+    independent folds out to a thread pool; ``build`` must create a separate
+    Session per call and must not share mutable state.
     """
     x, y = _points(x, y)
     z = np.asarray(z, dtype=float).ravel()
@@ -177,13 +179,12 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
                              seed=seed, groups=groups)
     if folds is None:
         folds = int(labels.max()) + 1
-    fold_details = []
-    all_residuals = []
-    all_weights = []
-    all_groups = []
+    if n_jobs < 1:
+        raise ValueError("n_jobs must be positive")
     if groups is not None:
         groups = np.asarray(groups).ravel()
-    for number in range(folds):
+
+    def run_fold(number):
         train = np.flatnonzero(labels != number)
         test = np.flatnonzero(labels == number)
         if train.size == 0 or test.size == 0:
@@ -196,14 +197,24 @@ def cross_validate(build, x, y, z, weights=None, folds=4, mode="random",
         stats = point_residuals(values, result_extent, x[test], y[test],
                                 z[test], weights[test])
         used_weights = weights[test][stats["used"]]
-        all_residuals.append(stats["residuals"])
-        all_weights.append(used_weights)
-        if groups is not None:
-            all_groups.append(groups[test][stats["used"]])
         details = _metrics(stats["residuals"], used_weights)
         details.update({"fold": number, "n_train": int(train.size),
                         "n_test": int(test.size)})
-        fold_details.append(details)
+        group_values = None
+        if groups is not None:
+            group_values = groups[test][stats["used"]]
+        return stats["residuals"], used_weights, group_values, details
+
+    if n_jobs == 1:
+        results = [run_fold(number) for number in range(folds)]
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=n_jobs) as pool:
+            results = list(pool.map(run_fold, range(folds)))
+    fold_details = [item[3] for item in results]
+    all_residuals = [item[0] for item in results]
+    all_weights = [item[1] for item in results]
+    all_groups = [item[2] for item in results if item[2] is not None]
 
     residuals = np.concatenate(all_residuals) if all_residuals else np.array([])
     used_weights = np.concatenate(all_weights) if all_weights else np.array([])

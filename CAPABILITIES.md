@@ -216,6 +216,7 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - GeoParquet — опционально (pyarrow + shapely);
 - FlatGeobuf не включён: у Python-пакета нет writer, read-only API не делаем;
 - GCV не реализован; есть holdout L-curve prototype, spatial CV — baseline;
+- Tcl-фронтенд устарел: 3.7.x — последняя линия с Tcl, 3.8 его удаляет;
 - `voronoi_weights` — 2D; 3D Voronoi declustering не входит в ядро;
 - variable grid, spatially varying anisotropy, drainage, C++ contouring,
   stochastic simulation, lazy Dask, incremental/coupled solves — отложены;

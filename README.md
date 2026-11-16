@@ -140,6 +140,12 @@ make -j"$(nproc)"
 cd examples/surfit/tests && tclsh area.tcl
 ```
 
+## Tcl front end
+
+The original Tcl front end is deprecated.  **3.7.x is the last Tcl-capable
+line**; surfit 3.8 removes the Tcl module, SWIG bindings, Tcl examples and the
+Tcl build options.  The Python package and wheels are unaffected.
+
 ## Project
 
 - Original engine and Tcl front end: M. V. Dmitrievsky and V. N. Kutrunov,

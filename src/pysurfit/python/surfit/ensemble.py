@@ -43,6 +43,29 @@ class SurfaceEnsemble:
             realizations.append({name: stack.values(name) for name in names})
         return cls(realizations, extent=stacks[0].extent(), name=stacks[0]._name)
 
+    @classmethod
+    def from_builders(cls, builders, workers=None, name=None):
+        """Build independent SurfaceStacks (optionally in threads)."""
+        builders = list(builders)
+        if not builders:
+            raise ValueError("at least one builder is required")
+        if workers is not None and workers < 1:
+            raise ValueError("workers must be positive")
+
+        def run(builder):
+            return builder()
+
+        if workers == 1 or (workers is None and len(builders) == 1):
+            stacks = [run(builder) for builder in builders]
+        else:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                stacks = list(pool.map(run, builders))
+        result = cls.from_stacks(stacks)
+        if name is not None:
+            result.name = name
+        return result
+
     @property
     def size(self):
         return next(iter(self._layers.values())).shape[0]

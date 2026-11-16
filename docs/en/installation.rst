@@ -14,7 +14,8 @@ implemented locally, and logging speaks to stdio and to a hook.
 
 The Tcl *front end* is optional and off by default. Building it additionally
 needs the Tcl development headers (``tcl-dev`` on Debian and Ubuntu) and SWIG;
-see `Build options`_.
+see `Build options`_.  **The Tcl front end is deprecated**: 3.7.x is the last
+Tcl-capable line, and surfit 3.8 removes it.
 
 These are optional and enable extra features:
 

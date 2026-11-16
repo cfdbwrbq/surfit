@@ -349,7 +349,7 @@ def ensemble(fields):
 
 
 def bootstrap_uncertainty(build, count, replicates=100, seed=0, blocks=None,
-                          block_size=None, x=None, y=None):
+                          block_size=None, x=None, y=None, n_jobs=1):
     """Resample point indices and collect the resulting surfaces.
 
     ``build(sample)`` must return a solved task or a surface array.  By default
@@ -358,7 +358,8 @@ def bootstrap_uncertainty(build, count, replicates=100, seed=0, blocks=None,
     bootstrap preserves the dependence that i.i.d. resampling breaks.
 
     The model is fixed; only the sampled data vary.  The result is ensemble
-    spread, not a posterior.
+    spread, not a posterior.  ``n_jobs`` runs independent replicates in a
+    thread pool; ``build`` must create a separate Session per call.
     """
     if count <= 0:
         raise ValueError("count must be positive")
@@ -382,18 +383,29 @@ def bootstrap_uncertainty(build, count, replicates=100, seed=0, blocks=None,
             raise ValueError("blocks must contain at least one point")
     else:
         groups = None
+    if n_jobs < 1:
+        raise ValueError("n_jobs must be positive")
     rng = np.random.default_rng(seed)
-    fields = []
-    for iteration in range(replicates):
+    samples = []
+    for _ in range(replicates):
         if groups is None:
-            sample = rng.integers(0, count, count)
+            samples.append(rng.integers(0, count, count))
         else:
             selected = rng.integers(0, len(groups), len(groups))
-            sample = np.concatenate([groups[index] for index in selected])
+            samples.append(np.concatenate([groups[index] for index in selected]))
+
+    def run_sample(sample):
         result = build(sample)
         if hasattr(result, "values"):
             result = result.values()
-        fields.append(np.asarray(result, dtype=float))
+        return np.asarray(result, dtype=float)
+
+    if n_jobs == 1:
+        fields = [run_sample(sample) for sample in samples]
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=n_jobs) as pool:
+            fields = list(pool.map(run_sample, samples))
     result = ensemble(fields)
     result["sampling"] = "block" if groups is not None else "iid"
     result["blocks"] = len(groups) if groups is not None else None

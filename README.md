@@ -20,16 +20,30 @@ The C++ engine (2002–2015) is driven by a Python package and by the original
 Tcl front end.  Both use the same solver and the tests compare them
 byte-for-byte.
 
-## Review notes
+## Why surfit
+
+**Mathematics without illusions.**
+
+A C++ 2.5D gridding engine for teams that need the map, the uncertainty and the
+limits — not just a colourful surface.
+
+- **Rules, not a black box.** Points, curves, contours, areas, trends, faults,
+  masks and inequalities are explicit, ordered and inspectable.
+- **Reproducible by construction.** One engine, one set of tests, byte-level
+  regression checks and a released wheel for every supported Python.
+- **Uncertainty with a meaning.** Spatial CV, block bootstrap, conformal
+  intervals and coherent ensembles; no invented posterior.
+- **Honest edges.** `tol` is a solver tolerance, GCV is not claimed, Tcl is
+  deprecated, and the known limits are in the docs.
 
 > “A scientific instrument with an engineering conscience.”
 >
-> — Alice (Yandex), translated from the Russian review
+> — Alice (Yandex), translated review
 
 > “Mathematics without illusions: a fast C++ core for 2.5D gridding with
 > byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
 >
-> — Google (free), translated from the Russian review
+> — independent review, not Gemini
 
 These are review notes, not vendor endorsements.
 

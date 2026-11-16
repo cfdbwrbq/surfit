@@ -78,6 +78,9 @@ run parity "$PYTHON" "$TESTS/test_parity.py"
 step "injection-recovery on analytic fields"
 run synthetic "$PYTHON" "$TESTS/test_synthetic.py"
 
+step "physics and invariance"
+run physics "$PYTHON" "$TESTS/test_physics.py"
+
 step "per-point weights"
 run weights "$PYTHON" "$TESTS/test_weights.py"
 

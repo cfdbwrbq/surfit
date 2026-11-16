@@ -23,8 +23,8 @@ Features
   per-node support, PSF measurement, typed point diagnostics and provenance.
 * Many data formats: the native surfit data file, Surfer grids, GMT, Grass,
   ArcGIS, xyz, shapefile, BLN, JPEG and BMP.
-* Two front ends over the same engine: the original Tcl commands and a Python
-  package with numpy in and out.
+* Python package with numpy in and out.  The original Tcl front end is
+  deprecated and removed in 3.8.
 
 ---
 
@@ -69,7 +69,7 @@ What the terms mean and how the engine works:
 Reference
 ---------
 
-Data types, commands, file formats, the Tcl front end:
+Data types, commands, file formats, and the deprecated Tcl front end:
 
 .. toctree::
    :maxdepth: 2
@@ -77,6 +77,7 @@ Data types, commands, file formats, the Tcl front end:
    data_types
    commands
    formats
+   migration
    tcl
 
 Background

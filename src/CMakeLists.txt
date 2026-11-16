@@ -16,7 +16,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # extension finds it through $ORIGIN.  The globe and freeflow libraries are
 # part of both front ends.
 
-option(SURFIT_BUILD_TCL "Build the Tcl front end (module, CLI, Tcl plugins)" OFF)
+option(SURFIT_BUILD_TCL "Build the deprecated Tcl front end (removed in 3.8)" OFF)
 option(SURFIT_BUILD_PYTHON "Build the Python bindings" ON)
 option(SURFIT_PYTHON_WHEEL "Install for a Python wheel, inside the package" OFF)
 

@@ -26,8 +26,8 @@ surfit
   точек и provenance.
 * Множество форматов: собственный файл surfit, сетки Surfer, GMT, Grass,
   ArcGIS, xyz, shapefile, BLN, JPEG и BMP.
-* Два фронтенда над одним движком: исходные команды Tcl и пакет Python
-  с numpy на входе и выходе.
+* Python-пакет с numpy на входе и выходе. Исходный Tcl-фронтенд устарел
+  и удаляется в 3.8.
 
 ---
 
@@ -72,7 +72,7 @@ surfit
 Справочник
 ----------
 
-Типы данных, команды, форматы файлов, фронтенд Tcl:
+Типы данных, команды, форматы файлов и устаревший фронтенд Tcl:
 
 .. toctree::
    :maxdepth: 2
@@ -80,6 +80,7 @@ surfit
    data_types
    commands
    formats
+   migration
    tcl
 
 Дополнительно

@@ -16,9 +16,8 @@ surfaces, trends and masks.  Rules and inequalities are applied in a defined
 order with a penalty loop; the result can be validated, stacked, sliced,
 exported and checked.
 
-The C++ engine (2002–2015) is driven by a Python package and by the original
-Tcl front end.  Both use the same solver and the tests compare them
-byte-for-byte.
+The C++ engine (2002–2015) is driven by a Python package.  The original Tcl
+front end is deprecated; 3.7.x is its last line.
 
 ## Why surfit
 

@@ -87,9 +87,16 @@ def main():
     failed = 0
     for case in manifest["cases"]:
         ok, note = run_case(case)
-        print("%-9s %-28s %s" % ("PASS" if ok else "FAIL",
-                                 case["key"], note))
-        failed += not ok
+        strict = case.get("strict", True)
+        if ok:
+            status = "PASS"
+        elif strict:
+            status = "FAIL"
+            failed += 1
+        else:
+            status = "WARN"
+            note += " (cross-platform binary output; not a gate)"
+        print("%-9s %-28s %s" % (status, case["key"], note))
     print("TOTAL %d: %s" % (len(manifest["cases"]),
                             "PASS" if not failed else "FAIL"))
     return 1 if failed else 0

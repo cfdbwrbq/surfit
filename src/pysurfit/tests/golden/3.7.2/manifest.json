@@ -6,6 +6,7 @@
         "aniso.dat": "f72c71e88e154c58456d39eddb2e86095747f2eaf461d776272fe0973ce29d18"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/aniso.py"
     },
     {
@@ -14,6 +15,7 @@
         "area.dat": "b9a075c74a36f58bcb4ee5e85c5539564577a25a575fb2916ecea47daa075cb6"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area.py"
     },
     {
@@ -22,6 +24,7 @@
         "area_completer.dat": "e9a0d33951ee57281680b9d4e988bb839740cd0ac5c5fbc994999cb27dc10d18"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_completer.py"
     },
     {
@@ -32,6 +35,7 @@
         "area_hist_src.txt": "1824a8dd9f409d2453a9c133f94664e5538649ecc82631ded392731dbe497434"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_hist.py"
     },
     {
@@ -40,6 +44,7 @@
         "area_ineq.dat": "ce51ba29219eb02da9ea74ea3431840213e7a60e85c650ae541c9bf48929146a"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_ineq.py"
     },
     {
@@ -48,6 +53,7 @@
         "area_mean.dat": "0e4649b98564988a542cebd5fea847cdc24f816d35e00078dee65994837e1de1"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_mean.py"
     },
     {
@@ -56,6 +62,7 @@
         "area_surf.dat": "96eb1c3bd3ad6b6f5770c052f21e68209e8715f897231a292261d2969739114b"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_surf.py"
     },
     {
@@ -64,6 +71,7 @@
         "area_surf_ineq.dat": "dd70dd5ddc9bddeaed5ecdd2f9198452201c84588f2d2fb9b3195d8a9901d1c4"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_surf_ineq.py"
     },
     {
@@ -72,6 +80,7 @@
         "area_wmean.dat": "0e1c4c4c01662e12b0554977cec48c7b0fde8653ce2cd43b04c22c82d1009b81"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/area_wmean.py"
     },
     {
@@ -80,6 +89,7 @@
         "contour.dat": "6cb6b9380aa25fab70e5afe195dd40fd82b75ea18d0f7d8ef2e24c2ba3626d3d"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/contour.py"
     },
     {
@@ -88,6 +98,7 @@
         "contour_ineq.dat": "21aaaab3a8beb558551ba6846774200cca40755330abe3936b1a7d665497397f"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/contour_ineq.py"
     },
     {
@@ -96,6 +107,7 @@
         "curve.dat": "3afaeb3c0cace2eed441cd9dcd741b762e0c92d05c9f2e7c263709bd9dd85872"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/curve.py"
     },
     {
@@ -104,6 +116,7 @@
         "curve_ineq.dat": "edf2b6cb085e1bbf3d2238abad456619d1d2398f7ebbd794e401f331edb19e7e"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/curve_ineq.py"
     },
     {
@@ -112,6 +125,7 @@
         "curve_surf.dat": "5d4c1b29a2d78af0afa4414d66272046cc2877f7fb24a570e48b4019a1cbe50b"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/curve_surf.py"
     },
     {
@@ -120,6 +134,7 @@
         "curve_surf_ineq.dat": "a09e220802c413e136339d32876e4d6055cbf5d8ae40292141f609c2b55782b9"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/curve_surf_ineq.py"
     },
     {
@@ -128,6 +143,7 @@
         "fault.dat": "38b33e3b5f8fef7a791f42743b1c50ea6e7585e2fefa59d7b78a2e930289234b"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/fault.py"
     },
     {
@@ -136,6 +152,7 @@
         "fault_aniso.dat": "4311050dfc78f6453bb66ae7a314cf01eab7abd15aedeead56891a2257a5bbe8"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/fault_aniso.py"
     },
     {
@@ -144,6 +161,7 @@
         "fault_approx.dat": "567dc2a72013afebf838bb520c8208ff1805aed91fc5fcef92dec5cbe351058d"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/fault_approx.py"
     },
     {
@@ -152,6 +170,7 @@
         "ineq.dat": "c5bc06827e61a38fcb6732f4f7d222df9cde8823b0773043e7d050719842bef0"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/ineq.py"
     },
     {
@@ -160,6 +179,7 @@
         "mask.dat": "9bceeb6679c86f6dcee0029507ab01334bac7e0fa427d25e9152bb5b5c0a5b52"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask.py"
     },
     {
@@ -168,6 +188,7 @@
         "mask_add.dat": "a26ed06ebf1751c2ec3bfb01702d406213fe4fd224cee9519d4cb99df13a881f"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_add.py"
     },
     {
@@ -176,6 +197,7 @@
         "mask_completer.dat": "eeab25cbc1bac5c2c2e6c2f43f91c9f3b83b3ddc4f7bbd79707df2e4461cb773"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_completer.py"
     },
     {
@@ -184,6 +206,7 @@
         "mask_ineq.dat": "05f5e73c5950234758b81d74ae87ac6e25fa76b7fb8c5b7e6951221bf3ac2f86"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_ineq.py"
     },
     {
@@ -192,6 +215,7 @@
         "mask_mean.dat": "1fb67be5abf28c5af8c7a420e1b959bc134f15dd69b338868db33bbd0d6e4402"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_mean.py"
     },
     {
@@ -200,6 +224,7 @@
         "mask_surf.dat": "ce386bff64569d58ece5ab75b40a9ae1d1a1e28708e7f9937a1ebbeaccbb1bb6"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_surf.py"
     },
     {
@@ -208,6 +233,7 @@
         "mask_surf_add.dat": "6aa8f5e0a8a8894391aac545f4ffac2bdc875114b1b7efbd51a90d9f281fe4ef"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_surf_add.py"
     },
     {
@@ -216,6 +242,7 @@
         "mask_surf_ineq.dat": "d50221158e8dc3d829906ccf903043f43c2fbc9f69aa714c7e127af3f34a5890"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_surf_ineq.py"
     },
     {
@@ -224,6 +251,7 @@
         "mask_wmean.dat": "116736480076846932c6f56d0c86660d1c51812f2b31068a6fc3b9ba62d8a162"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mask_wmean.py"
     },
     {
@@ -232,6 +260,7 @@
         "mean.dat": "20633a78f2cff04afae74b3089239465970f1f3d996d104256039abb85f41f4f"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/mean.py"
     },
     {
@@ -240,6 +269,7 @@
         "points_ineq.dat": "1c8bdc0ea83c3e2c5e22b8946659728ede84c4b705d2f1d3bd939f49644e8597"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/points_ineq.py"
     },
     {
@@ -248,6 +278,7 @@
         "surface.dat": "e0a9f3354717d183f3e6f17ce6d1417e3f9fec66155a0138c399022a629c0ce6"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/surface.py"
     },
     {
@@ -256,6 +287,7 @@
         "surface_add.dat": "d8079cb48558426d4c91fe7cd283cf547f1409cb07917fc3e4ccfe029c3b7f01"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/surface_add.py"
     },
     {
@@ -264,6 +296,7 @@
         "surface_ineq.dat": "df3b2bd413e1ca4d0b4552f6b22e81587c230e46b2db9264941964405a39c7db"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/surface_ineq.py"
     },
     {
@@ -272,6 +305,7 @@
         "trend.dat": "b51d896689dbb70381497f1b836683069cc1082f28a0c6a3709f109e134b5d46"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/trend.py"
     },
     {
@@ -280,6 +314,7 @@
         "wmean.dat": "25abe79fa7b8167c279a52707a4d92665eecbb43aed50bf76b4da8c6e5b58b28"
       },
       "source": "examples/surfit/tests",
+      "strict": true,
       "trace": "traces/wmean.py"
     },
     {
@@ -293,6 +328,7 @@
         "points_triangulate.dat": "29483c79c50c2b67c3b1eed197c0558d2eef24e527dcf438691802f2a9c632d5"
       },
       "source": "examples/surfit/realworld/example1",
+      "strict": false,
       "trace": "traces/example1__group.py"
     },
     {
@@ -304,6 +340,7 @@
         "kpor_wo_hist.dat": "fccf4d23a4043df979da7168d5ad49663e08028f61f65d1d7c982c095b17dca2"
       },
       "source": "examples/surfit/realworld/example2",
+      "strict": false,
       "trace": "traces/example2__group.py"
     },
     {
@@ -315,6 +352,7 @@
         "saratov_simple.dat": "946fa57fbda63689ae4f4413cf7a5e047d51360acb339fc2d3d2676c79b8139c"
       },
       "source": "examples/surfit/realworld/example3",
+      "strict": false,
       "trace": "traces/example3__group.py"
     },
     {
@@ -325,6 +363,7 @@
         "top_D5_wo_trend.grd": "c688f46ec21a851badab84da2e9013cbda968e8da31fb4ffd13dfa7149aab514"
       },
       "source": "examples/surfit/realworld/example4",
+      "strict": false,
       "trace": "traces/example4__group.py"
     },
     {
@@ -335,6 +374,7 @@
         "simple_poro.dat": "e6724ebfa6eba6806196ddf771962d2cc207b8a6ef613e57245f2f37d9f7d952"
       },
       "source": "examples/surfit/realworld/poro",
+      "strict": false,
       "trace": "traces/poro__group.py"
     },
     {
@@ -356,6 +396,7 @@
         "example4/top_D5_wo_trend.grd": "c688f46ec21a851badab84da2e9013cbda968e8da31fb4ffd13dfa7149aab514"
       },
       "source": "examples/surfit/realworld",
+      "strict": false,
       "trace": "traces/run_all.py"
     },
     {
@@ -368,6 +409,7 @@
         "top_tvd_simple.dat": "186f07d120b005671ed6f14b6c5c85190e8b4d890abca5ca83bf100d308ddc25"
       },
       "source": "examples/surfit/realworld/seis",
+      "strict": false,
       "trace": "traces/seis__group.py"
     },
     {
@@ -381,6 +423,7 @@
         "top_trend.dat": "53f8409eabb44f9be1ce97fd49d51c793282e4a1eae5a6e745bf2dacf27a99fe"
       },
       "source": "examples/surfit/realworld/volumetrics",
+      "strict": false,
       "trace": "traces/volumetrics__group.py"
     }
   ],

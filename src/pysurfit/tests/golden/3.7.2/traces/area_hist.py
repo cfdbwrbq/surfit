@@ -1,0 +1,30 @@
+# Generated from Tcl by run_tcl_suite.py --write-python.
+# The original front end is no longer needed to run this script.
+import os
+import surfit
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+surfit.clear_data()
+surfit.set_map_name('map_area_hist')
+surfit.set_tol(1e-07)
+surfit.area_read('data/area1.txt', 'area1')
+surfit.area_read('data/area2.txt', 'area2')
+surfit.area_read('data/area3.txt', 'area3')
+surfit.area_read('data/area4.txt', 'area4')
+surfit.area_read('data/area5.txt', 'area5')
+surfit.area_read('data/area6.txt', 'area6')
+surfit.hist_read('data/eq10.txt', 10, 40)
+surfit.hist_write('area_hist_src.txt')
+surfit.grid_get(-12, 12, 0.2, -12, 12, 0.2)
+surfit.area(10, 'area1')
+surfit.area(30, 'area3')
+surfit.area('undef', 'area5')
+surfit.hist('*')
+surfit.completer(0, 1)
+surfit.area_add(20, 0.07, 'area2')
+surfit.area_add(40, 0.07, 'area4')
+surfit.surfit()
+surfit.surf_save('area_hist.dat', 'map_area_hist')
+surfit.hist_del()
+surfit.hist_from_surf('*', 10)
+surfit.hist_write('area_hist_result.txt')

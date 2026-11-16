@@ -432,6 +432,15 @@ Some proposed extensions are not implemented:
   before another attempt.
 
 
+Golden Python traces
+~~~~~~~~~~~~~~~~~~~~
+
+``src/pysurfit/tests/golden/3.7.2`` contains one generated Python trace per Tcl
+group and a SHA-256 manifest of the files that group produces.  The traces were
+generated from the 3.7.2 Tcl run; ``run_golden.py`` runs them without tclsh or
+SWIG and compares output hashes.  The large Tcl reference directories are not
+stored in the repository.
+
 Known issues
 ------------
 

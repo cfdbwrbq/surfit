@@ -69,6 +69,9 @@ run selfcheck "$PYTHON" "$HERE/ci/selfcheck.py"
 step "the 35 test scripts, Tcl and Python side by side"
 run tests "$PYTHON" "$TESTS/run_tcl_suite.py"
 
+step "Python golden traces for 3.7.2"
+run golden "$PYTHON" "$TESTS/run_golden.py"
+
 step "every Python example, against its Tcl original"
 run examples "$PYTHON" "$TESTS/test_examples.py"
 

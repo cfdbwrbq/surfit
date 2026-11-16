@@ -59,6 +59,7 @@ TRACED_VARIABLES = {
     "map_name": "set_map_name",
     "tol": "set_tol",
 }
+TRACE = []
 # Backslash sequences Tcl substitutes inside "..." and in bare words.
 ESCAPES = {
     "a": "\a", "b": "\b", "f": "\f", "n": "\n", "r": "\r",
@@ -154,6 +155,7 @@ def call(command, args, warnings, line_number):
                       % (command, tuple(args), line_number, error))
     if isinstance(result, list) and result and not any(result):
         warnings.append("line %d: %s%r matched nothing" % (line_number, command, tuple(args)))
+    TRACE.append((command, list(args)))
 
 
 def execute(script, variables, warnings, depth=0):
@@ -181,7 +183,9 @@ def execute(script, variables, warnings, depth=0):
                 variables[name] = text
                 setter = TRACED_VARIABLES.get(name)
                 if setter is not None:
-                    getattr(surfit, setter)(to_value(text))
+                    value = to_value(text)
+                    getattr(surfit, setter)(value)
+                    TRACE.append((setter, [value]))
             continue
         if command == "source":
             execute(os.path.join(os.getcwd(), tokens[1]), variables, warnings,
@@ -189,6 +193,7 @@ def execute(script, variables, warnings, depth=0):
             continue
         if command == "cd":
             os.chdir(tokens[1])
+            TRACE.append(("__cd__", [tokens[1]]))
             continue
 
         args = [to_value(substitute(token, variables)) for token in tokens[1:]]
@@ -248,6 +253,38 @@ def produced_files(directory, source_dir):
                         continue
             found[relative] = content
     return found
+
+
+def write_python_trace(scripts, target):
+    """Write one reviewable Python script for a Tcl group (no Tcl at runtime)."""
+    global TRACE
+    TRACE = []
+    root = os.getcwd()
+    with tempfile.TemporaryDirectory() as workdir:
+        copy_into(scripts[0], workdir)
+        os.chdir(workdir)
+        try:
+            for script in scripts:
+                execute(script, {}, [])
+        finally:
+            os.chdir(root)
+    lines = [
+        "# Generated from Tcl by run_tcl_suite.py --write-python.",
+        "# The original front end is no longer needed to run this script.",
+        "import os",
+        "import surfit",
+        "os.chdir(os.path.dirname(os.path.abspath(__file__)))",
+        "",
+    ]
+    for command, args in TRACE:
+        if command == "__cd__":
+            lines.append("os.chdir(%r)" % (args[0],))
+        else:
+            values = ", ".join(repr(value) for value in args)
+            lines.append("surfit.%s(%s)" % (command, values))
+    with open(target, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
+    return len(TRACE)
 
 
 def execute_python(script, workdir):
@@ -396,6 +433,7 @@ def main(argv):
     sequential = "--sequential" in argv
 
     mode, reference_root = "live", None
+    write_dir = None
     remaining = []
     index = 0
     while index < len(argv):
@@ -405,12 +443,25 @@ def main(argv):
             reference_root = argv[index + 1]
             index += 2
             continue
+        if item == "--write-python":
+            write_dir = os.path.abspath(argv[index + 1])
+            index += 2
+            continue
         if item != "--sequential":
             remaining.append(item)
         index += 1
 
     scripts = collect(remaining)
     groups = group_by_directory(scripts) if sequential else [[s] for s in scripts]
+
+    if write_dir is not None:
+        os.makedirs(write_dir, exist_ok=True)
+        for group in groups:
+            key = group_key(group)
+            target = os.path.join(write_dir, key + ".py")
+            count = write_python_trace(group, target)
+            print("WROTE    %-34s %d calls -> %s" % (key, count, target))
+        return 0
 
     counts = {}
     for group in groups:

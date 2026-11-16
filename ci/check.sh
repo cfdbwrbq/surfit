@@ -9,6 +9,8 @@
 #                          twenty minutes)
 #   ci/check.sh --full     the same, plus the 29 realworld pipelines (an hour
 #                          more), for the nightly run
+#   ci/check.sh --no-tcl   build without Tcl and skip the Tcl parity steps;
+#                          runs the Python golden traces instead
 #
 # Everything happens in build-ci/, so a development build is left alone:
 # the documentation, when sphinx is installed, is built into build-ci/docs-html.
@@ -25,9 +27,11 @@ PYTHON=${PYTHON:-python3}
 TESTS="$HERE/src/pysurfit/tests"
 
 FULL=0
+TCL=1
 for argument in "$@"; do
     case $argument in
         --full) FULL=1 ;;
+        --no-tcl) TCL=0 ;;
         *) echo "unknown argument: $argument" >&2; exit 2 ;;
     esac
 done
@@ -52,7 +56,7 @@ run() {
 }
 
 step "configure and build"
-cmake_args="-S $HERE/src -B $BUILD -DCMAKE_BUILD_TYPE=Release -DSURFIT_BUILD_TCL=ON"
+cmake_args="-S $HERE/src -B $BUILD -DCMAKE_BUILD_TYPE=Release -DSURFIT_BUILD_TCL=$TCL"
 if [ -n "${PYBIND11_DIR:-}" ]; then
     cmake_args="$cmake_args -Dpybind11_DIR=$PYBIND11_DIR"
 fi
@@ -66,17 +70,23 @@ export SURFIT_BIN
 step "project selfcheck"
 run selfcheck "$PYTHON" "$HERE/ci/selfcheck.py"
 
+if [ "$TCL" = "1" ]; then
 step "the 35 test scripts, Tcl and Python side by side"
 run tests "$PYTHON" "$TESTS/run_tcl_suite.py"
+fi
 
 step "Python golden traces for 3.7.2"
 run golden "$PYTHON" "$TESTS/run_golden.py"
 
+if [ "$TCL" = "1" ]; then
 step "every Python example, against its Tcl original"
 run examples "$PYTHON" "$TESTS/test_examples.py"
+fi
 
+if [ "$TCL" = "1" ]; then
 step "parity and numpy round trip"
 run parity "$PYTHON" "$TESTS/test_parity.py"
+fi
 
 step "injection-recovery on analytic fields"
 run synthetic "$PYTHON" "$TESTS/test_synthetic.py"
@@ -199,8 +209,10 @@ run lcurve "$PYTHON" "$TESTS/test_lcurve.py"
 step "tiled curves, contours and areas"
 run tiled-geometry "$PYTHON" "$TESTS/test_tiled_geometry.py"
 
+if [ "$TCL" = "1" ]; then
 step "name matching against Tcl"
 run string-match "$PYTHON" "$TESTS/check_stringmatch.py"
+fi
 
 step "wemake-python-styleguide"
 if "$PYTHON" -m flake8 --version >/dev/null 2>&1; then
@@ -228,14 +240,18 @@ run threadlocal "$PYTHON" "$TESTS/test_threadlocal_state.py"
 step "serial sstuff pool mode"
 run serial "$PYTHON" "$TESTS/test_serial.py"
 
+if [ "$TCL" = "1" ]; then
 step "the object and settings commands, against Tcl"
 run commands "$PYTHON" "$TESTS/test_commands.py"
+fi
 
 step "the psql point reader, without a database"
 run postgis "$PYTHON" "$TESTS/test_postgis.py"
 
+if [ "$TCL" = "1" ]; then
 step "every command, against Tcl"
 run all-commands "$PYTHON" "$TESTS/test_all_commands.py"
+fi
 
 step "the viewer"
 run viewer "$PYTHON" "$TESTS/test_viewer.py"
@@ -280,7 +296,7 @@ else
     FAILED="$FAILED wheel-build"
 fi
 
-if [ "$FULL" = "1" ]; then
+if [ "$FULL" = "1" ] && [ "$TCL" = "1" ]; then
     step "the 29 realworld pipelines, Tcl and Python side by side"
     run realworld "$PYTHON" "$TESTS/run_tcl_suite.py" --sequential \
         "$HERE/examples/surfit/realworld"

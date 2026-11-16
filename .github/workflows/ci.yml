@@ -60,3 +60,54 @@ jobs:
               tail -50 "$log"
             fi
           done
+
+  no-tcl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libjpeg-dev libnetcdf-dev
+
+      - name: python packages
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy tqdm pybind11 scikit-build-core
+          python -m pip install -r docs/requirements.txt
+          python -m pip install -r requirements-dev.txt
+          # Optional-dependency cell: GeoParquet and the scientific stack.
+          python -m pip install pyarrow shapely geopandas xarray zarr \
+            scikit-learn
+
+      - name: node packages
+        run: |
+          mkdir -p js-test
+          cd js-test && npm install --no-audit --no-fund d3 jsdom
+
+      - name: check without Tcl
+        env:
+          PYTHON: python
+        run: ci/check.sh --no-tcl
+
+      - name: optional integrations
+        env:
+          SURFIT_BIN: ${{ github.workspace }}/build-ci/bin
+        run: python src/pysurfit/tests/test_optional_integrations.py
+
+      - name: keep the build log
+        if: failure()
+        run: |
+          for log in build-ci/wheel.log build-ci/CMakeFiles/CMakeOutput.log; do
+            if [ -f "$log" ]; then
+              echo "--- $log ---"
+              tail -50 "$log"
+            fi
+          done

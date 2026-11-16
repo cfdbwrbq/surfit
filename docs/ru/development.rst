@@ -359,6 +359,33 @@ OpenMP не взяли потому что:
 операции, распараллелить сборку, и только потом один OpenMP-путь для
 измеренного последовательного hotspot. SSOR остаётся последовательным.
 
+Parallel CV and bootstrap benchmark
+-----------------------------------
+
+На 8 vCPU, 240 случайных точек, сетка 128×128, четыре CV-fold и восемь
+bootstrap-репликат:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 16 16 16
+
+   * - операция
+     - 1 worker
+     - 2 workers
+     - 4 workers
+   * - ``cross_validate``
+     - 1.276 s
+     - 0.848 s
+     - 0.783 s
+   * - ``bootstrap_uncertainty``
+     - 7.326 s
+     - 6.061 s
+     - 6.091 s
+
+CV масштабируется, потому что folds — независимые solve. Bootstrap почти не
+ускоряется: доминируют граница C++-вызова и Python-состояние. ``n_jobs`` —
+API для независимых Session, не обещание линейного ускорения.
+
 Galerkin V-cycle prototype
 --------------------------
 

@@ -630,6 +630,19 @@ Dask не обещается. ``regression_trend`` подгоняет тренд
 любая scikit-learn-совместимая модель), возвращает остатки, а
 ``add_regression_residuals`` регистрирует их для residual-задачи surfit.
 
+Параллельные folds и ансамбли
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Независимые folds и bootstrap-репликаты можно запускать в пуле потоков::
+
+    cross_validate(build, x, y, z, folds=5, n_jobs=4)
+    bootstrap_uncertainty(build, len(x), replicates=100, n_jobs=4)
+    SurfaceEnsemble.from_builders(builders, workers=4)
+
+Каждый callback обязан создавать собственную ``Session``. Результат совпадает
+с последовательным; ускорение зависит от границы C++/Python и не гарантируется.
+Измеренные числа — в development guide.
+
 Когерентные ансамбли и рецепты
 ------------------------------
 

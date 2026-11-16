@@ -354,6 +354,33 @@ If this area is revisited, the order is: reduce ``do_jobs``/batching, parallel
 assembly, then a single OpenMP path only for the measured serial hotspot.  SSOR
 stays sequential.
 
+Parallel CV and bootstrap benchmark
+-----------------------------------
+
+On 8 vCPU, 240 random points, a 128×128 grid, four CV folds and eight bootstrap
+replicates:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 16 16 16
+
+   * - operation
+     - 1 worker
+     - 2 workers
+     - 4 workers
+   * - ``cross_validate``
+     - 1.276 s
+     - 0.848 s
+     - 0.783 s
+   * - ``bootstrap_uncertainty``
+     - 7.326 s
+     - 6.061 s
+     - 6.091 s
+
+CV scales because folds are independent solves.  Bootstrap is close to flat:
+the C++ call boundary and Python-side state dominate.  ``n_jobs`` is an
+API for independent Sessions, not a promise of linear speedup.
+
 Galerkin V-cycle prototype
 --------------------------
 

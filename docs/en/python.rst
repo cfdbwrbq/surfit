@@ -633,6 +633,19 @@ exports; Dask is not promised.  ``regression_trend`` fits a trend (OLS by
 default, or any scikit-learn-compatible model), returns residuals and
 ``add_regression_residuals`` registers them for a residual surfit task.
 
+Parallel folds and ensembles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Independent folds and bootstrap replicates can run in a thread pool::
+
+    cross_validate(build, x, y, z, folds=5, n_jobs=4)
+    bootstrap_uncertainty(build, len(x), replicates=100, n_jobs=4)
+    SurfaceEnsemble.from_builders(builders, workers=4)
+
+Each callback must create its own ``Session``.  The result is identical to the
+serial path; the speedup depends on the C++/Python boundary and is not
+guaranteed.  See the measured numbers in the development guide.
+
 Coherent ensembles and recipes
 ------------------------------
 

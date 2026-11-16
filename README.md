@@ -20,6 +20,19 @@ The C++ engine (2002–2015) is driven by a Python package and by the original
 Tcl front end.  Both use the same solver and the tests compare them
 byte-for-byte.
 
+## Review notes
+
+> “A scientific instrument with an engineering conscience.”
+>
+> — Alice (Yandex), translated from the Russian review
+
+> “Mathematics without illusions: a fast C++ core for 2.5D gridding with
+> byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
+>
+> — Google (free), translated from the Russian review
+
+These are review notes, not vendor endorsements.
+
 ## Install
 
 Linux x86_64 wheels (CPython 3.9–3.13) are attached to each

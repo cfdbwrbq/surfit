@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: build with the project manylinux image
-        run: ./build-manylinux.sh
+        run: ci/build-manylinux.sh
         env:
           REPO: ${{ github.workspace }}
 

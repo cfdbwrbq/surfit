@@ -8,6 +8,7 @@ the large Tcl reference directories stay outside the repository.
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -21,9 +22,17 @@ BIN = os.environ.get("SURFIT_BIN",
                      os.path.join(os.path.dirname(ROOT), "build-cpp", "bin"))
 
 
+_VERSION = re.compile(rb"surfit-[0-9]+\.[0-9]+\.[0-9]+")
+
+
+def _normalize(data):
+    """Ignore the release string in native .dat headers."""
+    return _VERSION.sub(b"surfit-VERSION", data)
+
+
 def _digest(path):
     with open(path, "rb") as handle:
-        return hashlib.sha256(handle.read()).hexdigest()
+        return hashlib.sha256(_normalize(handle.read())).hexdigest()
 
 
 def _copy_source(source, directory):

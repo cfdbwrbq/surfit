@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
+    paths-ignore:
+      - ".github/workflows/**"
+      - "ci/build-manylinux.sh"
 
 permissions:
   contents: read

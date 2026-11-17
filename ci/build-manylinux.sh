@@ -2,11 +2,11 @@
 # Build manylinux wheels in the official pypa image, without NetCDF/curl.
 #
 # Default: manylinux2014 (glibc 2.17), CPython 3.9-3.13 (3.8 is gone from the image).
-#   sudo /home/gisolog/dev/surfit/build-manylinux.sh
+#   sudo ci/build-manylinux.sh
 #
 # Override the image for manylinux_2_28:
 #   IMAGE=quay.io/pypa/manylinux_2_28_x86_64 PLAT=manylinux_2_28_x86_64 \
-#     OUT=manylinux_2_28 sudo -E /home/gisolog/dev/surfit/build-manylinux.sh
+#     OUT=manylinux_2_28 sudo -E ci/build-manylinux.sh
 set -euo pipefail
 
 REPO="${REPO:-$(cd "$(dirname "$0")/.." && pwd)}"

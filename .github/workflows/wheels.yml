@@ -19,6 +19,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_BUILD_LINUX: "python -m pip install pybind11 scikit-build-core"
+          CIBW_ENVIRONMENT_LINUX: "SKBUILD_CMAKE_DEFINE=SURFIT_PYTHON_WHEEL=ON"
           CIBW_TEST_SKIP: "*"
 
       - uses: actions/upload-artifact@v4

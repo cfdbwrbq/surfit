@@ -138,7 +138,8 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - `volume_ensemble`, `volume_percentiles`;
 - разрезы `SurfaceStack` по ломаной;
 - интервалы и слои в разрезе;
-- `rule_report()` — порядок правил, типы, conditions, residual и violations там, где они известны;
+- `rule_report()` — порядок правил, типы, conditions, residual,
+  `residual_history`, `penalty_iterations` и violations там, где они известны;
 - `add_dip_points` / `add_gradient_points` — локальные производные;
 - `gradient()` — soft-условие на dZ/dx и dZ/dy;
 - `slope_max()` и `curvature_max()` — penalty-условия локальных границ (глобально или внутри area/mask);
@@ -148,7 +149,9 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - xarray `Dataset` и Zarr export (опционально);
 - regression-тренд + residual wrapper (OLS или sklearn-модель);
 - `add_regression_residuals`;
+- `variogram_weights` — redundancy-веса точек по fitted-вариограмме (не kriging);
 - `SurfaceEnsemble` — когерентная арифметика, проценты, объёмы, изохоры;
+- `n_jobs` / `workers` — параллельные CV, bootstrap и сборка ансамблей;
 - `run_recipe` / `surfit run` — JSON/YAML-рецепты задач;
 - `grid_mesh` / `export_gltf` / `export_obj` / `export_stl` — 3D-экспорт;
 - `stack.to_pyvista()` — опциональный PyVista/VTK;

@@ -56,8 +56,9 @@ numpy `(count_y, count_x)` array; `defined_mask`; `add_surface`;
 `strict=True` for empty rule matches; `serial=True` for one worker;
 `progress()` and `viewer()`.
 
-All Tcl commands are also module functions and `Session` methods; the regression
-runner compares Tcl and Python byte-for-byte.
+All Tcl commands are also module functions and `Session` methods.  The Tcl front
+end is deprecated: 3.7.x is its last line and 3.8 removes it.  A Python golden
+runner covers the 3.7.2 outputs without tclsh or SWIG.
 
 ### Quality and validation
 
@@ -87,7 +88,8 @@ cross-sections with intervals and layers, `rule_report`, dip/azimuth and
 gradient points, hard slope/curvature penalty conditions, GeoPandas/Shapely
 (optional), CRS checks without silent reprojection, xarray Dataset and Zarr
 (optional), regression trend + residual wrapper, coherent `SurfaceEnsemble`
-arithmetic, JSON/YAML recipes and `surfit run`.
+arithmetic, `n_jobs` parallel CV/bootstrap/ensemble builds, `variogram_weights`,
+JSON/YAML recipes and `surfit run`.
 
 ### SurfaceStack
 
@@ -123,8 +125,10 @@ report; independent `Session` objects.
 The hot matvec uses the existing `sstuff` thread pool.  OpenMP was measured and
 not adopted: 2.65× on 512² and 2.19× on 1024² at 8 workers, ~328% CPU,
 assembly 25–31% of the time.  `pcg` is a diagonal-preconditioned prototype and
-is slower than `cg` on the 512² benchmark.  Details and measurements are in
-`docs/en/development.rst`.
+is slower than `cg` on the 512² benchmark.  A standalone Galerkin V-cycle
+(`poisson_vcycle`) is a feasibility prototype, not an integrated solver.
+`benchmark_solvers` compares `cg/jcg/ssor/jacobi/rf`.  Details and measurements
+are in `docs/en/development.rst`.
 
 ## Limitations
 
@@ -132,8 +136,9 @@ is slower than `cg` on the 512² benchmark.  Details and measurements are in
 - no ML/property prediction, no GUI/map composition;
 - slope/curvature are penalty conditions, not hard projections; mask bounds are
   exercised but tested numerically on an area;
-- `rule_report` shows conditional residuals and recognized inequality
-  violations; non-penalty data rules show `None`;
+- `rule_report` shows conditional residuals, recent residual history,
+  penalty iteration counts and recognized inequality violations; non-penalty
+  data rules show `None`;
 - P10/P50/P90 cannot be obtained by adding per-cell interval bounds;
 - GeoPandas, xarray, Zarr, scikit-learn, GDAL, SciPy, pyproj, tifffile,
   PyVista, pyarrow and shapely are optional;

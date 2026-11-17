@@ -103,6 +103,9 @@ run weights "$PYTHON" "$TESTS/test_weights.py"
 step "residual diagnostics"
 run diagnostics "$PYTHON" "$TESTS/test_diagnostics.py"
 
+step "penalty residual diagnostics"
+run penalty "$PYTHON" "$TESTS/test_penalty_diagnostics.py"
+
 step "failed file autoload diagnostics"
 run file-errors "$PYTHON" "$TESTS/test_file_errors.py"
 
@@ -117,6 +120,9 @@ run voronoi "$PYTHON" "$TESTS/test_voronoi_weights.py"
 
 step "variogram diagnostics"
 run variogram "$PYTHON" "$TESTS/test_variogram.py"
+
+step "variogram redundancy weights"
+run variogram-weights "$PYTHON" "$TESTS/test_variogram_weights.py"
 
 step "spatial residual diagnostics"
 run spatial-diagnostics "$PYTHON" "$TESTS/test_spatial_diagnostics.py"

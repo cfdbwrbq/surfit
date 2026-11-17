@@ -48,6 +48,7 @@ functional::functional(const char * newname, int itype) {
 	pos = INT_MAX;
 	diagnostic_violations = -1;
 	diagnostic_residual = std::numeric_limits<REAL>::quiet_NaN();
+	diagnostic_penalty_iterations = 0;
 };
 
 functional::~functional() {

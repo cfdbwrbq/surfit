@@ -305,6 +305,16 @@ and long/short range ratio for the existing rule::
     direction = surfit.anisotropy(x, y, z, angles=(0, 45, 90, 135))
     task.completer(1, 2, alpha=direction["angle"], w=direction["ratio"])
 
+``variogram_weights(x, y, z, ...)`` turns the fitted model into redundancy
+weights for declustering: a point surrounded by correlated neighbours gets a
+smaller weight, an isolated point a larger one.  The weights have mean one and
+can be passed to ``add_points``.  This is a variogram-based heuristic, not
+kriging.  It builds a dense N×N distance matrix, so use it for point sets, not
+millions of samples::
+
+    weights = surfit.variogram_weights(x, y, z, model="spherical")
+    task.add_points(x, y, z, weights=weights, name="wells")
+
 These are diagnostics and starting values, not kriging and not a covariance
 model.  The engine still solves one surface.
 

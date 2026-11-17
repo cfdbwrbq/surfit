@@ -751,7 +751,7 @@ from surfit.geotiff import (  # noqa: E402
 from surfit.cross_validation import (  # noqa: E402
     block_labels, cross_validate, fold_assignment)
 from surfit.variogram import (  # noqa: E402
-    anisotropy, experimental_variogram, fit_variogram)
+    anisotropy, experimental_variogram, fit_variogram, variogram_weights)
 from surfit.provenance import file_sha256, source_hashes  # noqa: E402
 from surfit.sampling import (  # noqa: E402
     decluster, decluster_points, voronoi_weights)

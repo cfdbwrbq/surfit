@@ -423,6 +423,9 @@ bool solve_with_penalties(functional * fnc, matr * T, extvec * V, extvec *& X)
 	sec -= minutes*60;
 
 	loglevel = prev_loglevel;
+	fnc->set_diagnostic_penalty_iterations(penalty_iter_counter);
+	for (int ci = 0; ci < fnc->cond_size(); ci++)
+		fnc->cond_get(ci)->set_diagnostic_penalty_iterations(penalty_iter_counter);
 	log_printf(" %s: %d iterations, penalty: %d iterations, %d min %G sec\n", get_current_solver_short_name(), iters, penalty_iter_counter, minutes, sec);
 	penalty_iter_counter = 0;
 	return true;

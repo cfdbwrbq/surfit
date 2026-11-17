@@ -227,6 +227,12 @@ py::list functionals_info() {
 		REAL residual = item->get_diagnostic_residual();
 		record["residual"] = std::isfinite(residual) ? py::cast(residual)
 		                                            : py::none();
+		record["penalty_iterations"] = item->get_diagnostic_penalty_iterations();
+		py::list history;
+		const std::vector<REAL> & residuals = item->get_diagnostic_residuals();
+		for (size_t ri = 0; ri < residuals.size(); ri++)
+			history.append(residuals[ri]);
+		record["residual_history"] = history;
 		record["manager"] = item->getManagerName();
 		result.append(record);
 	}

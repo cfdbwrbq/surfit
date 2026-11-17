@@ -335,7 +335,8 @@ Slope и curvature bounds
 Если оба имени пусты, условие глобальное. Solver делает base solve, затем
 строит condition и запускает обычный penalty-loop; условие нужно добавлять до
 functional, к которому оно привязывается, обычно до ``completer``.
-``rule_report`` показывает conditional ``residual``.
+``rule_report`` показывает conditional ``residual``, его последнюю
+``residual_history`` и число ``penalty_iterations``.
 
 Spatial residual diagnostics
 ----------------------------

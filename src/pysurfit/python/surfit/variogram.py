@@ -201,3 +201,38 @@ def anisotropy(x, y, z, angles=(0.0, 45.0, 90.0, 135.0), bins=12,
         "skipped": skipped,
         "model": model,
     }
+
+
+def variogram_weights(x, y, z, model="spherical", bins=20, max_lag=None,
+                      direction=None, tolerance=22.5):
+    """Weights from fitted variogram redundancy, normalised to mean one.
+
+    This is a declustering heuristic, not kriging: a point surrounded by highly
+    correlated neighbours receives a smaller weight than an isolated point.
+    The fitted covariance ``total_sill - gamma(distance)`` is summed over the
+    other points; the weight is ``1 / (1 + redundancy)``.
+    """
+    x = np.asarray(x, dtype=float).ravel()
+    y = np.asarray(y, dtype=float).ravel()
+    z = np.asarray(z, dtype=float).ravel()
+    if not (x.size == y.size == z.size):
+        raise ValueError("x, y and z must have the same length")
+    if x.size < 3:
+        raise ValueError("variogram_weights needs at least three points")
+    experimental = experimental_variogram(
+        x, y, z, bins=bins, max_lag=max_lag, direction=direction,
+        tolerance=tolerance)
+    fit = fit_variogram(experimental["lag"], experimental["gamma"],
+                        model=model)
+    distances = np.hypot(x[:, None] - x[None, :], y[:, None] - y[None, :])
+    np.fill_diagonal(distances, np.inf)
+    with np.errstate(invalid="ignore", over="ignore"):
+        covariance = fit["total_sill"] * _correlation(
+            fit["model"], distances, fit["range"])
+    covariance = np.maximum(covariance, 0.0)
+    redundancy = np.sum(covariance, axis=1)
+    weights = 1.0 / (1.0 + redundancy)
+    total = float(weights.sum())
+    if total <= 0:
+        raise ValueError("variogram weights are degenerate")
+    return weights * (weights.size / total)

@@ -21,6 +21,7 @@
 #define __surfit_functionals_included__
 
 #include <vector>
+#include <cmath>
 #include "vec.h"
 
 namespace surfit {
@@ -97,10 +98,29 @@ public:
 	virtual bool base_first() const { return false; };
 
 	//! capture the residual of the last conditional linear system
-	void set_diagnostic_residual(REAL value) { diagnostic_residual = value; };
+	void set_diagnostic_residual(REAL value) {
+		diagnostic_residual = value;
+		if (std::isfinite(value)) {
+			diagnostic_residuals.push_back(value);
+			if (diagnostic_residuals.size() > 64)
+				diagnostic_residuals.erase(diagnostic_residuals.begin());
+		}
+	};
 
 	//! residual of the last conditional linear system; NaN if unavailable
 	REAL get_diagnostic_residual() const { return diagnostic_residual; };
+
+	//! recent conditional residuals, oldest first
+	const std::vector<REAL> & get_diagnostic_residuals() const {
+		return diagnostic_residuals;
+	};
+
+	void set_diagnostic_penalty_iterations(size_t value) {
+		diagnostic_penalty_iterations = value;
+	};
+	size_t get_diagnostic_penalty_iterations() const {
+		return diagnostic_penalty_iterations;
+	};
 
 
 	//! sets functional type
@@ -184,6 +204,10 @@ protected:
 
 	//! captured residual of the conditional linear system
 	REAL diagnostic_residual;
+
+	//! recent conditional residuals and penalty iteration count
+	std::vector<REAL> diagnostic_residuals;
+	size_t diagnostic_penalty_iterations;
 
 	//! returns number of \ref data refered to this functional only
 	virtual int this_get_data_count() const = 0;

@@ -1,0 +1,25 @@
+name: wheels
+
+on:
+  workflow_dispatch:
+
+jobs:
+  manylinux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: build manylinux wheels
+        uses: pypa/cibuildwheel@v2.23.0
+        env:
+          CIBW_BUILD: "cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_BEFORE_BUILD_LINUX: "python -m pip install pybind11 scikit-build-core"
+          CIBW_TEST_SKIP: "*"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: surfit-manylinux
+          path: wheelhouse/*.whl

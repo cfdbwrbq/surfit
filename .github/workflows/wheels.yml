@@ -5,6 +5,9 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: read
+
 jobs:
   manylinux:
     runs-on: ubuntu-24.04
@@ -12,17 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: build manylinux wheels
-        uses: pypa/cibuildwheel@v2.23.0
+      - name: build with the project manylinux image
+        run: ./build-manylinux.sh
         env:
-          CIBW_BUILD: "cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64"
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_BUILD_LINUX: "python -m pip install pybind11 scikit-build-core"
-          CIBW_ENVIRONMENT_LINUX: "SKBUILD_CMAKE_DEFINE=SURFIT_PYTHON_WHEEL=ON"
-          CIBW_TEST_SKIP: "*"
+          REPO: ${{ github.workspace }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: surfit-manylinux
-          path: wheelhouse/*.whl
+          path: dist/manylinux2014/*.whl

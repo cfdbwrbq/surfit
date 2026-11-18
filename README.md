@@ -2,49 +2,61 @@
 
 [English](README.md) | [Русский](https://cfdbwrbq.github.io/surfit/ru/) | [中文](README.zh.md)
 
-**Regular-grid interpolation and approximation from scattered data, under
-gridding rules.**
+## Build a surface that keeps the geology
+
+**Faults stay faults. Wells stay tied. Bounds stay bounds. Layers stay ordered.**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
 [![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
-![A surface built from five polygonal areas](docs/_static/map-area-3d.svg)
+![A surface with four faults](docs/_static/map-faults.svg)
 
-surfit builds a regular 2.5D grid from points, curves, contours, areas,
-surfaces, trends and masks.  Rules and inequalities are applied in a defined
-order with a penalty loop; the result can be validated, stacked, sliced,
-exported and checked.
+*A surface built from points and four fault lines. The faults are explicit
+breaks in the grid, not smooth trends through the data.*
 
-The C++ engine (2002–2015) is driven by a Python package.  The original Tcl
-front end is deprecated; 3.7.x is its last line.
+## What you give it
 
-## Why surfit
+Wells, curves, contours, polygon boundaries, surfaces, trends, masks and fault
+lines.  You say what each one means:
 
-**Mathematics without illusions.**
+- this well is a measurement;
+- this fault is a break;
+- this polygon is a constant;
+- this bound must hold;
+- this area must stay smooth.
 
-A C++ 2.5D gridding engine for teams that need the map, the uncertainty and the
-limits — not just a colourful surface.
+## What you get
 
-- **Rules, not a black box.** Points, curves, contours, areas, trends, faults,
-  masks and inequalities are explicit, ordered and inspectable.
-- **Reproducible by construction.** One engine, one set of tests, byte-level
-  regression checks and a released wheel for every supported Python.
-- **Uncertainty with a meaning.** Spatial CV, block bootstrap, conformal
-  intervals and coherent ensembles; no invented posterior.
-- **Honest edges.** `tol` is a solver tolerance, GCV is not claimed, Tcl is
-  deprecated, and the known limits are in the docs.
+A regular surface on the grid you asked for.  Not a smoothed cloud: the rules
+remain visible in the result.
 
-> “A scientific instrument with an engineering conscience.”
->
-> — Alice (Yandex), translated review
+- **Faults.** The surface can jump across a fault line instead of averaging
+  through it.
+- **Data.** Wells and curves stay tied to their values; approximations carry
+  their own weight.
+- **Limits.** Values can be held above, below or between bounds inside
+  polygons and masks.
+- **Layers.** `SurfaceStack` checks thickness, ordering and pinch-outs across
+  several horizons.
+- **Uncertainty.** Cross-validation, bootstrap ensembles and calibrated
+  intervals describe what the data supports — and what it does not.
 
-> “Mathematics without illusions: a fast C++ core for 2.5D gridding with
-> byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
->
-> — independent review, not Gemini
+## Three things it refuses to smooth away
 
-These are review notes, not vendor endorsements.
+| ![Data and bounds](docs/_static/map-points-ineq.svg) | ![A two-layer section](docs/_static/stack-section.svg) | ![A 3-D constrained surface](docs/_static/map-area-3d.svg) |
+|---|---|---|
+| **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Layers.** Top and bottom horizons, thickness and pinch-outs stay ordered. | **Many rules, one surface.** Areas, trends and smoothing in one solve. |
+
+## What it will not do
+
+- It is a 2.5D surface engine, not a 3D voxel model.
+- It will not invent a geological interpretation: you still choose the faults,
+  bounds and rules.
+- It will not hide a bad input. Missing files, unmatched names and impossible
+  bounds are reported.
+- It does not claim GCV, kriging or a posterior.  The uncertainty tools say
+  what they measure.
 
 ## Install
 
@@ -53,7 +65,7 @@ Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
 your interpreter, for example CPython 3.12:
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.2/surfit-3.7.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 From source, with CMake and a C++ compiler:
@@ -69,7 +81,7 @@ pip install ".[geoparquet]"   # pyarrow + shapely
 pip install ".[mesh]"         # PyVista
 ```
 
-## Quick start
+## One task
 
 ```python
 import surfit
@@ -90,65 +102,32 @@ grid = task.values()          # (count_y, count_x), row 0 is min_y
 print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 ```
 
-Undefined nodes carry `surfit.UNDEF_VALUE` (`FLT_MAX`); select them with
-`surfit.defined_mask(grid)`.
-
-## Features
-
-- **Rules beyond a variogram.** Points, curves, contours, areas, surfaces,
-  trends, masks, inequalities and `completer` are applied in a defined order.
-- **Solver.** CMOFS: sequential minimisation, a penalty loop and a
-  8×8 multilevel ladder; `cg`, `jcg`, `rf`, `jacobi` and `ssor`.
-- **Quality workflow.** Residuals, spatial cross-validation, block bootstrap,
-  variograms, per-node support, declustering, typed diagnostics and provenance.
-- **Layered surfaces.** `SurfaceStack` with DAG relations, thickness,
-  pinch-outs, persistence, uncertainty intervals and cross-sections.
-- **Interoperability.** GeoTIFF (including rotated input), GeoParquet, xarray,
-  Zarr, shapefile/BLN/Surfer/GMT/Grass/ArcGIS, and glTF/OBJ/STL mesh export.
-- **Reproducibility.** JSON/YAML recipes and `surfit run recipe.json`.
+Faults, bounds and areas use the same task: read the data, add the rule, solve.
+The [Python guide](docs/en/python.rst) has a fault-aware example.
 
 ## Documentation
 
-- [English documentation](https://cfdbwrbq.github.io/surfit/en/)
-- [Russian documentation](https://cfdbwrbq.github.io/surfit/ru/)
-- [Release docs archive](https://github.com/cfdbwrbq/surfit/releases)
+- [English guide](https://cfdbwrbq.github.io/surfit/en/)
+- [Russian guide](https://cfdbwrbq.github.io/surfit/ru/)
 - [Capabilities, English](CAPABILITIES.en.md)
 - [Capabilities, Russian](CAPABILITIES.md)
-- [Python guide](docs/en/python.rst)
 - [How the solver works](docs/en/how_it_works.rst)
+- [Python examples](examples/python)
 
 The docs are built with Sphinx from `docs/en` and `docs/ru`; the two trees are
-checked for structural parity by `docs/check_docs.py`.  GitHub Pages deploys
-the built trees from `.github/workflows/docs.yml`.
+checked for structural parity by `docs/check_docs.py`.
 
-## Interoperability
+## Under the hood
 
-```python
-# GeoParquet points, curves or areas, without GDAL
-surfit.add_geoparquet(task, "points.parquet", kind="points")
+The C++ engine (2002–2015) is driven by a Python package.  It uses CMOFS:
+ordered functionals, a penalty loop for constraints, and an 8×8 multilevel
+ladder.  The solver is `cg`, `jcg`, `rf`, `jacobi` or `ssor`.
 
-# 3D visualisation, without a required dependency
-extent = {"min_x": 0, "min_y": 0, "step_x": 0.05, "step_y": 0.05}
-mesh = surfit.grid_mesh(task.values(), extent)
-surfit.export_gltf("surface.gltf", mesh)
-
-# stack layers as one glTF/OBJ, or PyVista when installed
-stack.export_gltf("stack.gltf")
-stack.to_pyvista()
-```
-
-Known limitations: GeoParquet uses polygon exteriors; FlatGeobuf is not
-included because the Python package has no writer; mesh export is
-visualisation-only, not CAD; GCV is not implemented.
-
-## Build and test
-
-```bash
-mkdir -p build && cd build
-cmake ../src
-make -j"$(nproc)"
-export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
-```
+The test suite compares the Python front end with the original Tcl outputs
+byte-for-byte, checks the 35 examples and the realworld pipelines, and runs a
+physics/invariance set: translation, rotation, linear fields, point order and
+degenerate inputs.  The Tcl front end is deprecated; 3.7.x is its last line and
+3.8 removes it.
 
 ```bash
 # Fast self-check: docs, skills, Python API
@@ -158,26 +137,21 @@ python3 ci/selfcheck.py
 ci/check.sh --full
 ```
 
-The Tcl front end is optional:
+## Review notes
 
-```bash
-cmake -DSURFIT_BUILD_TCL=ON ../src
-make -j"$(nproc)"
-cd examples/surfit/tests && tclsh area.tcl
-```
+> “A scientific instrument with an engineering conscience.”
+>
+> — Alice (Yandex), translated review
 
-## Tcl front end
+> “Mathematics without illusions: a fast C++ core for 2.5D gridding with
+> byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
+>
+> — independent review, not Gemini
 
-The original Tcl front end is deprecated.  **3.7.x is the last Tcl-capable
-line**; surfit 3.8 removes the Tcl module, SWIG bindings, Tcl examples and the
-Tcl build options.  The Python package and wheels are unaffected.
+These are review notes, not vendor endorsements.
 
-## Project
+## License
 
-- Original engine and Tcl front end: M. V. Dmitrievsky and V. N. Kutrunov,
-  2002–2015.
-- The 2026 Python port, packaging, tests and documentation were produced with
-  an AI coding agent under human direction and review.  The maintainer is
-  responsible for the result.
-- License: GNU GPL-2. See [LICENSE](LICENSE) and [AI_DISCLOSURE.md](AI_DISCLOSURE.md).
-- Vendored [CDT](https://github.com/artem-ogre/CDT) triangulation is MPL-2.0.
+GNU General Public License, version 2.  See [LICENSE](LICENSE) and
+[AI_DISCLOSURE.md](AI_DISCLOSURE.md).  The vendored CDT triangulation is
+MPL-2.0.

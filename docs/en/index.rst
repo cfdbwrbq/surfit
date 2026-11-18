@@ -28,9 +28,30 @@ Features
 
 ---
 
-.. image:: ../_static/cover.svg
-   :alt: A surface built from five polygonal areas
+.. image:: ../_static/map-faults.svg
+   :alt: A surface with four fault lines
    :width: 100%
+
+What the result can show
+------------------------
+
+.. figure:: ../_static/map-points-ineq.svg
+   :width: 46%
+   :alt: Points and inequality bounds
+
+   Data and limits: wells stay tied, bounds stay where they are.
+
+.. figure:: ../_static/stack-section.svg
+   :width: 46%
+   :alt: Section through a two-layer SurfaceStack
+
+   Layers: top and bottom horizons, thickness and pinch-outs.
+
+.. figure:: ../_static/map-area-3d.svg
+   :width: 46%
+   :alt: Three-dimensional view of a constrained surface
+
+   Many rules, one surface: areas, trends and smoothing.
 
 Getting started
 ---------------

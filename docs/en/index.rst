@@ -41,17 +41,11 @@ What the result can show
 
    Data and limits: wells stay tied, bounds stay where they are.
 
-.. figure:: ../_static/stack-section.svg
-   :width: 46%
-   :alt: Section through a two-layer SurfaceStack
+.. figure:: ../_static/author-surface.svg
+   :width: 70%
+   :alt: Faulted surface with wells
 
-   Layers: top and bottom horizons, thickness and pinch-outs.
-
-.. figure:: ../_static/map-area-3d.svg
-   :width: 46%
-   :alt: Three-dimensional view of a constrained surface
-
-   Many rules, one surface: areas, trends and smoothing.
+   Faults and wells: the surface steps across explicit fault lines.
 
 Getting started
 ---------------

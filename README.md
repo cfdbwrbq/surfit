@@ -44,9 +44,9 @@ remain visible in the result.
 
 ## Three things it refuses to smooth away
 
-| ![Data and bounds](docs/_static/map-points-ineq.svg) | ![A two-layer section](docs/_static/stack-section.svg) | ![A 3-D constrained surface](docs/_static/map-area-3d.svg) |
-|---|---|---|
-| **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Layers.** Top and bottom horizons, thickness and pinch-outs stay ordered. | **Many rules, one surface.** Areas, trends and smoothing in one solve. |
+| ![Data and bounds](docs/_static/map-points-ineq.svg) | ![A faulted surface](docs/_static/author-surface.svg) |
+|---|---|
+| **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Faults and wells.** The surface steps across explicit fault lines; the wells stay tied. |
 
 ## What it will not do
 

@@ -127,19 +127,6 @@ python3 ci/selfcheck.py
 ci/check.sh --full
 ```
 
-## 评审记录
-
-> “A scientific instrument with an engineering conscience.”
->
-> — Alice (Yandex), translated review
-
-> “Mathematics without illusions: a fast C++ core for 2.5D gridding with
-> byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
->
-> — independent review, not Gemini
-
-这些是评审记录，不是厂商背书。引文保留英文原文。
-
 ## 许可证
 
 GNU General Public License，第 2 版。见 [LICENSE](LICENSE) 和 [AI_DISCLOSURE.md](AI_DISCLOSURE.md)。

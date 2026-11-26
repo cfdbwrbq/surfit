@@ -132,7 +132,7 @@ These stay now and are the work of the 3.8 release, not of this cleanup:
 
 ```text
 git diff --check                       -> clean (no output)
-PYTHONPATH=/home/gisolog/dev/surfit/.docsdeps python3 docs/check_docs.py
+PYTHONPATH=$PROJECT/.docsdeps python3 docs/check_docs.py
                                        -> OK   15 pages, both trees in step (exit 0)
 ```
 
@@ -140,7 +140,7 @@ No file was removed under `docs/_static`, so the docs sources are unchanged;
 the build was still run to prove it:
 
 ```text
-PYTHONPATH=/home/gisolog/dev/surfit/.docsdeps docs/build.sh
+PYTHONPATH=$PROJECT/.docsdeps docs/build.sh
 -> both trees build, exit 0, no warnings
 ```
 
@@ -148,7 +148,7 @@ The project self-check also passes (it validates the skill links, both docs
 trees and the importable API):
 
 ```text
-SURFIT_BIN=build-ci/bin PYTHONPATH=/home/gisolog/dev/surfit/.docsdeps \
+SURFIT_BIN=build-ci/bin PYTHONPATH=$PROJECT/.docsdeps \
     python3 ci/selfcheck.py
 -> skills: 4 valid, links present
    OK   15 pages, both trees in step

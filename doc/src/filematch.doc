@@ -1,6 +1,0 @@
-/*! \page file File Name Expression Syntax
-
-Starting from version 3.0 surfit supports wildcards for filenames.
-It works like \ref str "string match" feature.
-
-*/

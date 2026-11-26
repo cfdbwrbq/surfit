@@ -1,28 +1,27 @@
 # surfit
 
-[English](README.md) | [Русский](https://cfdbwrbq.github.io/surfit/ru/) | **中文**
+[English](README.md) | [Русский](README.ru.md) | **中文**
 
-**在网格规则约束下，由离散数据构建规则网格的插值与近似。**
+## 让曲面忠于地质
+
+**断层不被抹平，井仍绑在实测值上，边界守得住，层序不乱。**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
 [![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
-![由五个多边形区域构建的表面](docs/_static/map-area-3d.svg)
+![带四条断层的曲面，十一条井，等轴测视图](docs/_static/author-surface.svg)
 
-surfit 从点、曲线、等值线、区域、曲面、趋势和掩膜构建规则 2.5D 网格。规则和
-不等式按明确顺序应用，并带有 penalty 循环；结果可以验证、分层、切片、导出和检查。
+*十一口井、四条断层、一套规则网格。断层是网格中真实的断开，不是穿过数据的平滑趋势；井始终绑在实测值上。等轴测视图，z 方向做了夸张以便阅读。*
 
-C++ 引擎（2002–2015）由 Python 包和原始 Tcl 前端驱动。两者使用同一求解器，
-测试会逐字节比较结果。
+surfit 从井、曲线、等值线、多边形、趋势面和断层线构建规则的 2.5D 曲面。你设定的规则会留在结果里。交叉验证、bootstrap 集成和校准区间说明：哪些地方有数据支撑，哪些地方没有。
 
 ## 安装
 
-每次 [Release](https://github.com/cfdbwrbq/surfit/releases) 都会附带 Linux
-x86_64 wheel（CPython 3.9–3.13）。选择对应解释器的 wheel，例如 CPython 3.12：
+每次 [release](https://github.com/cfdbwrbq/surfit/releases) 都附带 Linux x86_64 wheel（CPython 3.9–3.13）。选择对应解释器的 wheel，例如 CPython 3.12：
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.2/surfit-3.7.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 从源码安装需要 CMake 和 C++ 编译器：
@@ -59,70 +58,90 @@ grid = task.values()          # (count_y, count_x)，第 0 行是 min_y
 print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 ```
 
-未定义节点保存为 `surfit.UNDEF_VALUE`（`FLT_MAX`）；用 `surfit.defined_mask(grid)`
-选择已定义节点。
+未定义节点保存为 `surfit.UNDEF_VALUE`（`FLT_MAX`）；用 `surfit.defined_mask(grid)` 选出已求解的节点。
 
-## 功能
+断层、边界和区域都放在同一个任务里：读数据、加规则、求解。[Python 指南](docs/en/python.rst) 里有一个带断层的例子。
 
-- **规则。** 点、曲线、等值线、区域、曲面、趋势、掩膜、不等式和 `completer`
-  按顺序应用。
-- **求解器。** CMOFS：顺序最小化、penalty 循环、8×8 多级网格；
-  `cg`、`jcg`、`rf`、`jacobi`、`ssor`。
-- **质量检查。** 残差、空间交叉验证、block bootstrap、变差函数、节点支撑、
-  去丛聚、类型化诊断和 provenance。
-- **分层曲面。** `SurfaceStack`：DAG 关系、厚度、pinch-out、持久化、
-  不确定区间和剖面。
-- **互操作。** GeoTIFF（包括旋转栅格）、GeoParquet、xarray、Zarr、
-  shapefile/BLN/Surfer/GMT/Grass/ArcGIS，以及 glTF/OBJ/STL 网格导出。
-- **可复现。** JSON/YAML recipe 和 `surfit run recipe.json`。
+## 能力
+
+### 你给它什么
+
+井、曲线、等值线、多边形边界、曲面、趋势面、掩膜和断层线。每类数据代表什么，由你定义：
+
+- 这口井是一个实测点；
+- 这条线是断层；
+- 这个多边形内取常数；
+- 这个边界必须成立；
+- 这片区域要保持平滑。
+
+### 你得到什么
+
+在你指定的网格上得到规则曲面。它不是一团被抹平的点云：规则在结果里仍然看得见。
+
+- **断层。** 曲面可以在断层线两侧错断，而不是把断层平均掉。
+- **数据。** 井和曲线绑在实测值上；近似项各自带权重。
+- **边界。** 在多边形和掩膜内，值可以按上界、下界或区间被约束住。
+- **层序。** `SurfaceStack` 检查多层位的厚度、顺序和尖灭。
+- **不确定性。** 交叉验证、bootstrap 集成和校准区间说明数据支持什么、不支持什么。
+- **数据交换。** GeoTIFF（含旋转栅格）、GeoParquet；Surfer、GMT、Grass、ArcGIS、xyz、shapefile、BLN；glTF/OBJ/STL 用于查看；JSON/YAML recipe 让结果可复现。
+
+### 规则留在结果里
+
+| ![点和不等式边界](docs/_static/map-points-ineq.svg) | ![由五个多边形区域构成的 3D 曲面](docs/_static/map-area-3d.svg) |
+|---|---|
+| **数据与边界。** 井绑在实测值上，边界放在哪里就守在哪里。 | **多规则，一张面。** 五个多边形一次求解：两个取常数、两个按权重逼近，中间刻意保留 `undef`。 |
 
 ## 文档
 
-- [英文文档](https://cfdbwrbq.github.io/surfit/en/)
-- [俄文文档](https://cfdbwrbq.github.io/surfit/ru/)
-- [英文 capability 列表](CAPABILITIES.en.md)
+- [英文指南](https://cfdbwrbq.github.io/surfit/en/)
+- [俄文指南](https://cfdbwrbq.github.io/surfit/ru/)
+- [能力清单（英文）](CAPABILITIES.en.md)
+- [能力清单（俄文）](CAPABILITIES.md)
 - [Python 指南](docs/en/python.rst)
+- [求解器原理](docs/en/how_it_works.rst)
+- [Python 示例](examples/python)
 
-本页只是中文快速入口；完整、最新的技术细节以英文文档为准。
+文档由 Sphinx 从 `docs/en` 和 `docs/ru` 构建；两棵文档树的结构一致性由 `docs/check_docs.py` 检查。
 
-## 互操作
+中文文档尚未翻译，Python 指南与求解器原理指向英文页面。
 
-```python
-# 无需 GDAL 的 GeoParquet 点/曲线/区域
-surfit.add_geoparquet(task, "points.parquet", kind="points")
+## 它不会做什么
 
-# 3D 可视化，不强制 PyVista
-extent = {"min_x": 0, "min_y": 0, "step_x": 0.05, "step_y": 0.05}
-mesh = surfit.grid_mesh(task.values(), extent)
-surfit.export_gltf("surface.gltf", mesh)
+- 它是 2.5D 曲面引擎，不是 3D 体元模型，也不是 CAD 编辑器。
+- 它不会替你做地质解释：断层、边界和规则仍由你决定。
+- 它不会掩盖坏输入：文件缺失、名称对不上、边界矛盾都会报出来。
+- 它不声称 GCV、克里金或后验分布；不确定性工具只说明自己度量了什么。
+- GeoParquet 多边形只保留外环；3D 网格导出用于查看，不是 CAD。
 
-# 将 stack 图层导出为 glTF/OBJ，或使用 PyVista
-stack.export_gltf("stack.gltf")
-stack.to_pyvista()
-```
+## 实现细节
 
-已知限制：GeoParquet 只保留多边形外环；不包含 FlatGeobuf（Python 包没有
-writer）；网格导出只用于可视化，不是 CAD；GCV 未实现。
+引擎是 C++（2002–2015），由 Python 包和原始 Tcl 前端驱动。核心是 CMOFS：有序泛函、约束的惩罚项迭代，以及 8×8 多重网格逐级加密。求解器可选 `cg`、`jcg`、`rf`、`jacobi`、`ssor`；`tol` 是步长容差，不是保证的误差界。
 
-## 构建与测试
+测试套件把 Python 前端与原 Tcl 输出逐字节对比，运行 35 个 Tcl/Python 测试脚本、49 个 Python 示例和 29 条真实数据流水线，并做一组物理/不变量检查：平移、旋转、线性场、点序和退化输入。Tcl 前端已弃用；3.7.x 是最后一条支持线，3.8 会移除它。
 
 ```bash
-mkdir -p build && cd build
-cmake ../src
-make -j"$(nproc)"
-export LD_LIBRARY_PATH="$PWD/bin:$LD_LIBRARY_PATH"
+# 快速自检：文档、skills、Python API
+python3 ci/selfcheck.py
+
+# 完整门禁：示例、一致性、文档、WPS、wheel 冒烟测试
+ci/check.sh --full
 ```
 
-```bash
-python3 ci/selfcheck.py       # 快速检查
-ci/check.sh --full            # 完整门禁
-```
+## 评审记录
 
-## 项目
+> “A scientific instrument with an engineering conscience.”
+>
+> — Alice (Yandex), translated review
 
-- 原始引擎和 Tcl 前端：M. V. Dmitrievsky、V. N. Kutrunov，2002–2015。
-- 2026 Python 移植、打包、测试和文档由 AI 编码代理在人工指导下完成；
-  维护者对结果负责。
-- 许可证：GNU GPL-2。见 [LICENSE](LICENSE) 和
-  [AI_DISCLOSURE.md](AI_DISCLOSURE.md)。
-- 内置 CDT 三角剖分使用 MPL-2.0。
+> “Mathematics without illusions: a fast C++ core for 2.5D gridding with
+> byte-for-byte reproducibility, uncertainty estimation, and honest limits.”
+>
+> — independent review, not Gemini
+
+这些是评审记录，不是厂商背书。引文保留英文原文。
+
+## 许可证
+
+GNU General Public License，第 2 版。见 [LICENSE](LICENSE) 和 [AI_DISCLOSURE.md](AI_DISCLOSURE.md)。
+
+原始引擎和 Tcl 前端由 M. V. Dmitrievsky 与 V. N. Kutrunov 在 2002–2015 年编写；2026 年的 Python 移植由 AI 编码代理在人工指导下完成，维护者对结果负责。内置 CDT 三角剖分使用 MPL-2.0。

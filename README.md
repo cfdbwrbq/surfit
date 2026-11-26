@@ -1,6 +1,6 @@
 # surfit
 
-[English](README.md) | [Русский](https://cfdbwrbq.github.io/surfit/ru/) | [中文](README.zh.md)
+**English** | [Русский](README.ru.md) | [中文](README.zh.md)
 
 ## Build a surface that keeps the geology
 
@@ -10,59 +10,22 @@
 [![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
-![A surface with four faults](docs/_static/map-faults.svg)
+![A faulted surface with eleven wells and four fault lines, isometric view](docs/_static/author-surface.svg)
 
-*A surface built from points and four fault lines. The faults are explicit
-breaks in the grid, not smooth trends through the data.*
+*Eleven wells, four faults, one regular grid. The faults are explicit breaks in
+the grid, not a smoothed trend through the data; the wells stay tied to their
+measurements. Isometric view, z exaggerated for legibility.*
 
-## What you give it
-
-Wells, curves, contours, polygon boundaries, surfaces, trends, masks and fault
-lines.  You say what each one means:
-
-- this well is a measurement;
-- this fault is a break;
-- this polygon is a constant;
-- this bound must hold;
-- this area must stay smooth.
-
-## What you get
-
-A regular surface on the grid you asked for.  Not a smoothed cloud: the rules
-remain visible in the result.
-
-- **Faults.** The surface can jump across a fault line instead of averaging
-  through it.
-- **Data.** Wells and curves stay tied to their values; approximations carry
-  their own weight.
-- **Limits.** Values can be held above, below or between bounds inside
-  polygons and masks.
-- **Layers.** `SurfaceStack` checks thickness, ordering and pinch-outs across
-  several horizons.
-- **Uncertainty.** Cross-validation, bootstrap ensembles and calibrated
-  intervals describe what the data supports — and what it does not.
-
-## Three things it refuses to smooth away
-
-| ![Data and bounds](docs/_static/map-points-ineq.svg) | ![A faulted surface](docs/_static/author-surface.svg) |
-|---|---|
-| **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Faults and wells.** The surface steps across explicit fault lines; the wells stay tied. |
-
-## What it will not do
-
-- It is a 2.5D surface engine, not a 3D voxel model.
-- It will not invent a geological interpretation: you still choose the faults,
-  bounds and rules.
-- It will not hide a bad input. Missing files, unmatched names and impossible
-  bounds are reported.
-- It does not claim GCV, kriging or a posterior.  The uncertainty tools say
-  what they measure.
+surfit builds a regular 2.5D surface from wells, curves, contours, polygons,
+trends and faults. The rules you set stay visible in the result.
+Cross-validation, bootstrap ensembles and calibrated intervals show where the
+surface is supported by the data, and where it is not.
 
 ## Install
 
 Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
-[release](https://github.com/cfdbwrbq/surfit/releases).  Pick the wheel for
-your interpreter, for example CPython 3.12:
+[release](https://github.com/cfdbwrbq/surfit/releases). Pick the wheel for your
+interpreter, for example CPython 3.12:
 
 ```bash
 pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
@@ -81,7 +44,7 @@ pip install ".[geoparquet]"   # pyarrow + shapely
 pip install ".[mesh]"         # PyVista
 ```
 
-## One task
+## Quick start
 
 ```python
 import surfit
@@ -102,8 +65,49 @@ grid = task.values()          # (count_y, count_x), row 0 is min_y
 print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 ```
 
+Undefined nodes are stored as `surfit.UNDEF_VALUE` (`FLT_MAX`); use
+`surfit.defined_mask(grid)` to select the solved nodes.
+
 Faults, bounds and areas use the same task: read the data, add the rule, solve.
 The [Python guide](docs/en/python.rst) has a fault-aware example.
+
+## Capabilities
+
+### What you give it
+
+Wells, curves, contours, polygon boundaries, surfaces, trends, masks and fault
+lines. You say what each one means:
+
+- this well is a measurement;
+- this fault is a break;
+- this polygon is a constant;
+- this bound must hold;
+- this area must stay smooth.
+
+### What you get
+
+A regular surface on the grid you asked for. Not a smoothed cloud: the rules
+remain visible in the result.
+
+- **Faults.** The surface can jump across a fault line instead of averaging
+  through it.
+- **Data.** Wells and curves stay tied to their values; approximations carry
+  their own weight.
+- **Limits.** Values can be held above, below or between bounds inside
+  polygons and masks.
+- **Layers.** `SurfaceStack` checks thickness, ordering and pinch-outs across
+  several horizons.
+- **Uncertainty.** Cross-validation, bootstrap ensembles and calibrated
+  intervals describe what the data supports, and what it does not.
+- **Exchange.** GeoTIFF (including rotated grids) and GeoParquet; Surfer, GMT,
+  Grass, ArcGIS, xyz, shapefile and BLN; glTF/OBJ/STL for viewing; JSON/YAML
+  recipes for repeatable runs.
+
+### The rules stay visible
+
+| ![Points and inequality bounds](docs/_static/map-points-ineq.svg) | ![A 3-D surface built from five polygonal areas](docs/_static/map-area-3d.svg) |
+|---|---|
+| **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Many rules, one surface.** Five polygons in one solve: two constants, two weighted areas, and a hole that stays `undef` by design. |
 
 ## Documentation
 
@@ -111,23 +115,37 @@ The [Python guide](docs/en/python.rst) has a fault-aware example.
 - [Russian guide](https://cfdbwrbq.github.io/surfit/ru/)
 - [Capabilities, English](CAPABILITIES.en.md)
 - [Capabilities, Russian](CAPABILITIES.md)
+- [Python guide](docs/en/python.rst)
 - [How the solver works](docs/en/how_it_works.rst)
 - [Python examples](examples/python)
 
 The docs are built with Sphinx from `docs/en` and `docs/ru`; the two trees are
 checked for structural parity by `docs/check_docs.py`.
 
+## What it will not do
+
+- It is a 2.5D surface engine, not a 3D voxel model or a CAD editor.
+- It will not invent a geological interpretation: you still choose the faults,
+  bounds and rules.
+- It will not hide a bad input. Missing files, unmatched names and impossible
+  bounds are reported.
+- It does not claim GCV, kriging or a posterior. The uncertainty tools say what
+  they measure.
+- GeoParquet polygons keep the exterior ring only; 3D mesh export is for
+  viewing, not CAD.
+
 ## Under the hood
 
-The C++ engine (2002–2015) is driven by a Python package.  It uses CMOFS:
-ordered functionals, a penalty loop for constraints, and an 8×8 multilevel
-ladder.  The solver is `cg`, `jcg`, `rf`, `jacobi` or `ssor`.
+The C++ engine (2002–2015) is driven by a Python package and by the original
+Tcl front end. It uses CMOFS: ordered functionals, a penalty loop for
+constraints, and an 8×8 multilevel ladder. The solver is `cg`, `jcg`, `rf`,
+`jacobi` or `ssor`; `tol` is a step tolerance, not a guaranteed error bound.
 
 The test suite compares the Python front end with the original Tcl outputs
-byte-for-byte, checks the 35 examples and the realworld pipelines, and runs a
-physics/invariance set: translation, rotation, linear fields, point order and
-degenerate inputs.  The Tcl front end is deprecated; 3.7.x is its last line and
-3.8 removes it.
+byte-for-byte, runs 35 Tcl/Python test scripts, 49 Python examples and 29
+realworld pipelines, and includes a physics/invariance set: translation,
+rotation, linear fields, point order and degenerate inputs. The Tcl front end
+is deprecated; 3.7.x is its last line and 3.8 removes it.
 
 ```bash
 # Fast self-check: docs, skills, Python API
@@ -152,6 +170,10 @@ These are review notes, not vendor endorsements.
 
 ## License
 
-GNU General Public License, version 2.  See [LICENSE](LICENSE) and
-[AI_DISCLOSURE.md](AI_DISCLOSURE.md).  The vendored CDT triangulation is
-MPL-2.0.
+GNU General Public License, version 2. See [LICENSE](LICENSE) and
+[AI_DISCLOSURE.md](AI_DISCLOSURE.md).
+
+The original engine and Tcl front end are by M. V. Dmitrievsky and
+V. N. Kutrunov (2002–2015). The 2026 Python port was written by AI coding
+agents under human direction; the maintainer is responsible for the result.
+The vendored CDT triangulation is MPL-2.0.

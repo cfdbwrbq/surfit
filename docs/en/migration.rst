@@ -49,4 +49,4 @@ What stays
 
 - All data formats and numerical rules.
 - The Python names inherited from Tcl (``pnts_*``, ``area_*``, ``curv_*``).
-- The 3.7.2 tag as the last Tcl-capable release.
+- The 3.7.x line as the last Tcl-capable line.

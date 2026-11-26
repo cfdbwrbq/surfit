@@ -6,7 +6,7 @@ Tcl
    The Tcl front end is deprecated.  The 3.7.x line is the last Tcl-capable
    line; surfit 3.8 removes the Tcl module, the SWIG bindings, the Tcl
    examples and the Tcl build options.  Use the Python package, or stay on
-   3.7.2 if you still need Tcl.
+   3.7.x if you still need Tcl.
 
 
 The original front end is a Tcl module. Every command is a plain C++ function

@@ -54,7 +54,14 @@ account.
 [Open the workbench guide](workbench/README.md).
 
 The workbench lives in `workbench/` in the source repository; it is not a
-wheel dependency.
+wheel dependency. From a checkout:
+
+```bash
+git clone https://github.com/cfdbwrbq/surfit.git
+cd surfit/workbench
+./bootstrap.sh
+./run.sh
+```
 
 ![Workbench: source files, grid settings and the faulted 3D result](docs/_static/workbench.png)
 
@@ -64,7 +71,7 @@ and grid metrics on the right.*
 
 ### Python and JSON recipes — for agents
 
-**Agent-ready out of the box:** no browser automation and no hidden GUI state.
+**Agent-ready interface:** no browser automation and no hidden GUI state.
 Install the wheel, call the Python API, or run a declarative recipe:
 
 ```bash

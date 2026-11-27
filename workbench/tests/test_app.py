@@ -1,4 +1,4 @@
-"""Small end-to-end check for the studio API."""
+"""Small end-to-end check for the workbench API."""
 import os
 import sys
 import tempfile
@@ -257,7 +257,7 @@ def main():
     assert contour_state["status"] == "done", contour_state
     assert contour_state["metrics"]["points"] == 0
     assert contour_state["metrics"]["contours"] == 2
-    print("PASS: studio job, mesh, .dat, GeoJSON and contour-only")
+    print("PASS: workbench job, mesh, .dat, GeoJSON and contour-only")
 
 
 if __name__ == "__main__":

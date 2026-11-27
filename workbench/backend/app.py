@@ -30,10 +30,27 @@ import surfit  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
-WORK = Path(os.environ.get(
-    "SURFIT_STUDIO_WORK",
-    str(Path.home() / ".local" / "share" / "surfit-studio"),
-))
+NEW_WORK = Path.home() / ".local" / "share" / "surfit-workbench"
+LEGACY_WORK = Path.home() / ".local" / "share" / "surfit-studio"
+_configured_work = (os.environ.get("SURFIT_WORKBENCH_WORK")
+                    or os.environ.get("SURFIT_STUDIO_WORK"))
+WORK = Path(_configured_work) if _configured_work else NEW_WORK
+
+
+def _writable(path):
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        probe = path / ".write-test"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
+if not _configured_work and not WORK.exists() and LEGACY_WORK.exists():
+    if _writable(LEGACY_WORK):
+        WORK = LEGACY_WORK
 try:
     WORK.mkdir(parents=True, exist_ok=True)
     probe = WORK / ".write-test"
@@ -43,7 +60,7 @@ except OSError:
     # Sandboxes may mount HOME read-only; keep the app usable and say where
     # projects went rather than failing at import time.
     print("warning: %s is not writable; using a temporary work directory" % WORK)
-    WORK = Path(tempfile.gettempdir()) / "surfit-studio"
+    WORK = Path(tempfile.gettempdir()) / "surfit-workbench"
     WORK.mkdir(parents=True, exist_ok=True)
 PROJECTS = WORK / "projects"
 PROJECTS.mkdir(parents=True, exist_ok=True)
@@ -562,7 +579,7 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             raise ValueError("grid too large: %d x %d" % (nx, ny))
         step_x = (max_x - min_x) / (nx - 1)
         step_y = (max_y - min_y) / (ny - 1)
-        task = surfit.Session(map_name="studio", tol=tol, strict=True)
+        task = surfit.Session(map_name="workbench", tol=tol, strict=True)
         task.set_solver(solver)
         surface_dir = tempfile.TemporaryDirectory()
         surface_names = []

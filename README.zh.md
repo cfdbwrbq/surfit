@@ -44,7 +44,14 @@ Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` �
 
 [Workbench 指南](workbench/README.md)。
 
-Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。
+Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。从 checkout 运行：
+
+```bash
+git clone https://github.com/cfdbwrbq/surfit.git
+cd surfit/workbench
+./bootstrap.sh
+./run.sh
+```
 
 ![Workbench：源文件、网格设置和带断层的 3D 结果](docs/_static/workbench.png)
 
@@ -53,7 +60,7 @@ Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。
 
 ### Python 与 JSON recipe — 面向智能体
 
-**开箱即用的智能体接口：** 不需要浏览器自动化，也没有隐藏的 GUI 状态。
+**面向智能体的接口：** 不需要浏览器自动化，也没有隐藏的 GUI 状态。
 安装 wheel 后直接调用 Python API，或运行声明式 recipe：
 
 ```bash

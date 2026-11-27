@@ -54,6 +54,14 @@ Python API и CLI — интерфейс для агента; ядро на C++ 
 [Руководство workbench](workbench/README.md).
 
 Workbench живёт в `workbench/` исходного репозитория и не является зависимостью wheel.
+Из checkout:
+
+```bash
+git clone https://github.com/cfdbwrbq/surfit.git
+cd surfit/workbench
+./bootstrap.sh
+./run.sh
+```
 
 ![Workbench: исходные файлы, настройки сетки и 3D-результат с разломами](docs/_static/workbench.png)
 
@@ -63,7 +71,7 @@ quality report и метрики сетки.*
 
 ### Python и JSON-рецепты — для агента
 
-**Готов для ИИ-агента из коробки:** без автоматизации браузера и скрытого
+**Интерфейс для ИИ-агента:** без автоматизации браузера и скрытого
 состояния GUI. Установите wheel, вызывайте Python API или запускайте
 декларативный рецепт:
 

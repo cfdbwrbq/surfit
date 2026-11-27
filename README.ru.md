@@ -69,6 +69,7 @@ surfit run recipe.json --result-json result.json
 В результате будут форма, число defined/undefined, min, max и mean; ошибка
 вернёт `{"ok": false, "error": ...}` и ненулевой код возврата. Python API нужен,
 когда агенту требуются cross-validation, ансамбли или собственные правила.
+В репозитории есть skill для кодовых агентов: `.agents/skills/surfit/`.
 
 ## Установка
 
@@ -77,7 +78,7 @@ wheel-пакеты для Linux x86_64 (CPython 3.9–3.13). Выберите п
 например, для CPython 3.12:
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.5/surfit-3.7.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 Из исходников, с CMake и компилятором C++:

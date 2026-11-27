@@ -24,9 +24,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: install surfit and workbench deps
+        env:
+          WHEEL_VERSION: "3.7.5"
+          WHEEL_PLATFORM: "cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64"
         run: |
           python -m pip install --upgrade pip
-          python -m pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+          WHEEL="https://github.com/cfdbwrbq/surfit/releases/download/v${WHEEL_VERSION}/surfit-${WHEEL_VERSION}-${WHEEL_PLATFORM}.whl"
+          # The v3.7.5 asset appears during the release window; v3.7.4 is the
+          # last published fallback and has the same engine/API.
+          python -m pip install "$WHEEL" || python -m pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
           python -m pip install -r workbench/requirements.txt
       - name: API test
         working-directory: workbench

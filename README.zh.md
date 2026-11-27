@@ -59,13 +59,14 @@ surfit run recipe.json --result-json result.json
 结果包含形状、defined/undefined 数量、min、max 和 mean；失败时返回
 `{"ok": false, "error": ...}` 和非零退出码。需要交叉验证、集成或自定义规则时，
 使用 Python API。
+仓库包含面向编码智能体的使用 skill：`.agents/skills/surfit/`。
 
 ## 安装
 
 每次 [release](https://github.com/cfdbwrbq/surfit/releases) 都附带 Linux x86_64 wheel（CPython 3.9–3.13）。选择对应解释器的 wheel，例如 CPython 3.12：
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.5/surfit-3.7.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 从源码安装需要 CMake 和 C++ 编译器：

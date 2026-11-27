@@ -71,6 +71,8 @@ mean; failures return `{"ok": false, "error": ...}` and a non-zero exit code.
 Use the Python API when the agent needs cross-validation, ensembles or custom
 rules.
 
+A usage skill for coding agents is included at `.agents/skills/surfit/`.
+
 ## Install
 
 Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
@@ -78,7 +80,7 @@ Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
 interpreter, for example CPython 3.12:
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.5/surfit-3.7.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 From source, with CMake and a C++ compiler:

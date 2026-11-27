@@ -46,7 +46,8 @@ available before solving.  The result tab is the 3D surface; vertical exaggerati
 new result (roughly 30% of the longest horizontal extent, never below 1×).
 The slider is logarithmic; `Auto` recomputes it after manual changes.
 `Fullscreen` expands Result 3D to the whole screen; the same button or `Esc`
-exits.
+exits.  A default A/B cross-section is computed after every solve; on `Map &
+data`, drag either endpoint or the line itself to update the profile.
 
 ## Projects
 

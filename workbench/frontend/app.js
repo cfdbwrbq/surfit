@@ -13,6 +13,7 @@ let lastSection = null;
 let sourceData = null;
 let sectionEndpoints = null;
 const mapView = { zoom: 1, x: 0, y: 0 };
+let mapProjection = null;
 let mapDrawFrame = 0;
 let previewSeq = 0;
 let previewTimer = null;
@@ -935,8 +936,11 @@ function drawMap(sources) {
   const spanX = Math.max(bounds.maxX - bounds.minX, 1e-9);
   const spanY = Math.max(bounds.maxY - bounds.minY, 1e-9);
   const scale = Math.min((width - pad * 2) / spanX, (height - pad * 2) / spanY);
-  const tx = (x) => pad + (x - bounds.minX) * scale + ((width - pad * 2) - spanX * scale) / 2;
-  const ty = (y) => height - pad - (y - bounds.minY) * scale - ((height - pad * 2) - spanY * scale) / 2;
+  const offsetX = ((width - pad * 2) - spanX * scale) / 2;
+  const offsetY = ((height - pad * 2) - spanY * scale) / 2;
+  const tx = (x) => pad + offsetX + (x - bounds.minX) * scale;
+  const ty = (y) => height - pad - offsetY - (y - bounds.minY) * scale;
+  mapProjection = { bounds, pad, scale, offsetX, offsetY, width, height };
 
   ctx.save();
   ctx.beginPath();
@@ -992,14 +996,28 @@ function drawMap(sources) {
   }
 
   if (sectionEndpoints && data === lastMesh) {
+    const ax = tx(sectionEndpoints[0]), ay = ty(sectionEndpoints[1]);
+    const bx = tx(sectionEndpoints[2]), by = ty(sectionEndpoints[3]);
     ctx.beginPath();
-    ctx.moveTo(tx(sectionEndpoints[0]), ty(sectionEndpoints[1]));
-    ctx.lineTo(tx(sectionEndpoints[2]), ty(sectionEndpoints[3]));
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
     ctx.strokeStyle = "#1b6388";
-    ctx.lineWidth = 1.8 / mapView.zoom;
+    ctx.lineWidth = 2 / mapView.zoom;
     ctx.setLineDash([6 / mapView.zoom, 5 / mapView.zoom]);
     ctx.stroke();
     ctx.setLineDash([]);
+    for (const [x, y, label] of [[ax, ay, "A"], [bx, by, "B"]]) {
+      ctx.beginPath();
+      ctx.arc(x, y, 5 / mapView.zoom, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.strokeStyle = "#1b6388";
+      ctx.lineWidth = 2 / mapView.zoom;
+      ctx.stroke();
+      ctx.fillStyle = "#1b6388";
+      ctx.font = `${11 / mapView.zoom}px sans-serif`;
+      ctx.fillText(label, x + 8 / mapView.zoom, y - 7 / mapView.zoom);
+    }
   }
 
   for (const contour of data.contours || []) {
@@ -1191,21 +1209,123 @@ $("map-zoom-in").addEventListener("click", () => setMapZoom(mapView.zoom * 1.35)
 $("map-zoom-out").addEventListener("click", () => setMapZoom(mapView.zoom / 1.35));
 $("map-reset").addEventListener("click", resetMapView);
 
+function sectionScreenPoint(x, y) {
+  if (!mapProjection) return null;
+  const p = mapProjection;
+  const baseX = p.pad + p.offsetX + (x - p.bounds.minX) * p.scale;
+  const baseY = p.height - p.pad - p.offsetY - (y - p.bounds.minY) * p.scale;
+  return { x: baseX * mapView.zoom + mapView.x,
+           y: baseY * mapView.zoom + mapView.y };
+}
+
+function eventPoint(event) {
+  const rect = $("map").getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+function mapPoint(event) {
+  if (!mapProjection) return null;
+  const p = mapProjection;
+  const point = eventPoint(event);
+  const baseX = (point.x - mapView.x) / mapView.zoom;
+  const baseY = (point.y - mapView.y) / mapView.zoom;
+  return {
+    x: p.bounds.minX + (baseX - p.pad - p.offsetX) / p.scale,
+    y: p.bounds.minY + (p.height - p.pad - p.offsetY - baseY) / p.scale,
+  };
+}
+
+function distanceToSegment(px, py, x0, y0, x1, y1) {
+  const dx = x1 - x0, dy = y1 - y0;
+  const length = dx * dx + dy * dy;
+  if (!length) return Math.hypot(px - x0, py - y0);
+  let t = ((px - x0) * dx + (py - y0) * dy) / length;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x0 + t * dx), py - (y0 + t * dy));
+}
+
+function sectionHitAt(event) {
+  if (!sectionEndpoints || lastMesh !== sourceData || !mapProjection) return null;
+  const point = eventPoint(event);
+  const a = sectionScreenPoint(sectionEndpoints[0], sectionEndpoints[1]);
+  const b = sectionScreenPoint(sectionEndpoints[2], sectionEndpoints[3]);
+  if (!a || !b) return null;
+  if (Math.hypot(point.x - a.x, point.y - a.y) <= 12) return "a";
+  if (Math.hypot(point.x - b.x, point.y - b.y) <= 12) return "b";
+  if (distanceToSegment(point.x, point.y, a.x, a.y, b.x, b.y) <= 8) return "line";
+  return null;
+}
+
+function clampSectionPoint(point) {
+  const bounds = mapProjection?.bounds;
+  if (!bounds) return point;
+  return {
+    x: Math.max(bounds.minX, Math.min(bounds.maxX, point.x)),
+    y: Math.max(bounds.minY, Math.min(bounds.maxY, point.y)),
+  };
+}
+
+let sectionDrag = null;
 let mapDrag = null;
 $("map").addEventListener("pointerdown", (event) => {
+  const hit = sectionHitAt(event);
+  if (hit) {
+    const point = mapPoint(event);
+    sectionDrag = {
+      kind: hit,
+      start: point,
+      origin: sectionEndpoints.slice(),
+      x: point.x,
+      y: point.y,
+    };
+    $("map").setPointerCapture(event.pointerId);
+    event.preventDefault();
+    return;
+  }
   if (mapView.zoom <= 1) return;
   mapDrag = { startX: event.clientX, startY: event.clientY,
               originX: mapView.x, originY: mapView.y };
   $("map").setPointerCapture(event.pointerId);
 });
 $("map").addEventListener("pointermove", (event) => {
+  if (sectionDrag) {
+    const point = mapPoint(event);
+    if (!point) return;
+    const coords = sectionDrag.origin.slice();
+    if (sectionDrag.kind === "a" || sectionDrag.kind === "b") {
+      const index = sectionDrag.kind === "a" ? 0 : 2;
+      const fixed = clampSectionPoint(point);
+      coords[index] = fixed.x;
+      coords[index + 1] = fixed.y;
+    } else {
+      const bounds = mapProjection.bounds;
+      const xs = [sectionDrag.origin[0], sectionDrag.origin[2]];
+      const ys = [sectionDrag.origin[1], sectionDrag.origin[3]];
+      let dx = point.x - sectionDrag.start.x;
+      let dy = point.y - sectionDrag.start.y;
+      dx = Math.max(bounds.minX - Math.min(...xs),
+                    Math.min(bounds.maxX - Math.max(...xs), dx));
+      dy = Math.max(bounds.minY - Math.min(...ys),
+                    Math.min(bounds.maxY - Math.max(...ys), dy));
+      coords[0] = sectionDrag.origin[0] + dx;
+      coords[1] = sectionDrag.origin[1] + dy;
+      coords[2] = sectionDrag.origin[2] + dx;
+      coords[3] = sectionDrag.origin[3] + dy;
+    }
+    for (const [index, id] of ["sec-x0", "sec-y0", "sec-x1", "sec-y1"].entries()) {
+      $(id).value = coords[index].toFixed(3);
+    }
+    drawSection();
+    event.preventDefault();
+    return;
+  }
   if (!mapDrag) return;
   mapView.x = mapDrag.originX + event.clientX - mapDrag.startX;
   mapView.y = mapDrag.originY + event.clientY - mapDrag.startY;
   applyMapView();
 });
-$("map").addEventListener("pointerup", () => { mapDrag = null; });
-$("map").addEventListener("pointercancel", () => { mapDrag = null; });
+$("map").addEventListener("pointerup", () => { sectionDrag = null; mapDrag = null; });
+$("map").addEventListener("pointercancel", () => { sectionDrag = null; mapDrag = null; });
 $("map").addEventListener("wheel", (event) => {
   event.preventDefault();
   const host = $("map-pane").getBoundingClientRect();
@@ -1277,6 +1397,7 @@ function renderResult(data, mesh) {
   sectionEndpoints = null;
   lastSection = null;
   setupSection(mesh);
+  drawSection();
   drawMap(mesh);
   $("result-badge").hidden = false;
   showTab("result");

@@ -42,8 +42,9 @@ drop files -> assign role (points / contours / faults / areas)
 
 The map tab is a top-down preview of the source points, contours, faults and
 area polygons,
-available before solving.  The result tab is the 3D surface; the tabs stay
-available so you can compare the input and the result without re-running.
+available before solving.  The result tab is the 3D surface; vertical exaggeration is automatic for each
+new result (roughly 30% of the longest horizontal extent, never below 1×).
+The slider is logarithmic; `Auto` recomputes it after manual changes.
 
 ## Projects
 

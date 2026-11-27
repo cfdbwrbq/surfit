@@ -125,7 +125,9 @@ summary { cursor: pointer; }
 .dot.contour { background: var(--green); }
 .dot.fault { background: var(--accent); }
 .slider { display: flex; align-items: center; gap: 8px; margin: 0; background: rgba(255,255,255,.86); border-radius: 7px; padding: 7px 9px; font-size: 11px; }
-.slider input { width: 100px; margin: 0; padding: 0; }
+.slider input { width: 110px; margin: 0; padding: 0; }
+.slider output { min-width: 44px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.slider .small { padding: 2px 5px; font-size: 10px; }
 .result-hud .slider { margin-left: auto; }
 .metrics { position: absolute; left: 16px; right: 16px; bottom: 52px; display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 7px; }
 .metric { background: rgba(255,255,255,.88); border-radius: 7px; padding: 7px 9px; }

@@ -733,6 +733,41 @@ const group = new THREE.Group();
 scene.add(group);
 let exaggeration = 1;
 
+function autoExaggeration(mesh) {
+  const extent = mesh.extent || {};
+  let width = Number(extent.max_x) - Number(extent.min_x);
+  let height = Number(extent.max_y) - Number(extent.min_y);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const [x, y] of mesh.vertices || []) {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    width = maxX - minX;
+    height = maxY - minY;
+  }
+  const horizontal = Math.max(width, height, 1);
+  const relief = Math.max(Number(mesh.zmax) - Number(mesh.zmin), 1e-9);
+  const target = horizontal * 0.30;
+  return Math.max(1, Math.min(5000, target / relief));
+}
+
+function formatExaggeration(value) {
+  if (value >= 100) return String(Math.round(value));
+  if (value >= 10) return value.toFixed(0);
+  if (value >= 1) return value.toFixed(1);
+  return value.toFixed(2);
+}
+
+function setExaggeration(value, moveSlider = true) {
+  exaggeration = Math.max(0.01, Math.min(5000, Number(value) || 1));
+  group.scale.y = exaggeration;
+  $("exaggeration-value").textContent = `×${formatExaggeration(exaggeration)}`;
+  if (moveSlider) {
+    $("exaggeration").value = String(Math.log10(exaggeration));
+  }
+}
+
 function resizeView() {
   if (!$("result-pane").classList.contains("is-hidden")) {
     const width = sceneRoot.clientWidth || 1;
@@ -1235,6 +1270,7 @@ function renderResult(data, mesh) {
   addPoints(mesh.points, mesh.zmin, mesh.zmax);
   addContours(mesh.contours || []);
   attachFaultsToSurface(mesh);
+  setExaggeration(autoExaggeration(mesh));
   $("hud-title").textContent = `${mesh.shape[0]} × ${mesh.shape[1]} grid`;
   $("zmin").textContent = mesh.zmin.toFixed(2);
   $("zmax").textContent = mesh.zmax.toFixed(2);
@@ -1502,8 +1538,12 @@ $("map-surface").addEventListener("change", () => drawMap(lastMesh));
 $("download-report").addEventListener("click", downloadReport);
 
 $("exaggeration").addEventListener("input", (event) => {
-  exaggeration = Number(event.target.value);
-  group.scale.y = exaggeration;
+  setExaggeration(10 ** Number(event.target.value), false);
+});
+$("exaggeration-auto").addEventListener("click", () => {
+  if (!lastMesh) return;
+  setExaggeration(autoExaggeration(lastMesh));
+  fitView();
 });
 $("reset").addEventListener("click", fitView);
 

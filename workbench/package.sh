@@ -16,7 +16,7 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE"
 
 cp -a backend frontend examples tests "$STAGE"/
-cp README.md PLAN.md 3D_WATCH.md requirements.txt requirements-geo.txt \
+cp README.md requirements.txt requirements-geo.txt \
    run.sh Makefile "$STAGE"/
 rm -rf "$STAGE"/backend/__pycache__ "$STAGE"/tests/__pycache__
 rm -rf "$STAGE"/tests/screenshots

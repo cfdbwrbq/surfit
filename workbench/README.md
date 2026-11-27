@@ -221,5 +221,4 @@ and reloads a project, opens a cross-section, downloads a report and saves
 ## Not yet
 
 Users/auth, shared projects, polygon editing, PostGIS, streaming, WASM.
-Local projects are implemented; jobs still expire after six hours.  See
-`PLAN.md`.
+Local projects are implemented; jobs still expire after six hours.

@@ -55,6 +55,11 @@ STACK_VALIDATION_PLAN.md
 COMPETITIVE_ANALYSIS.md
 AUDIT_STATE.md
 SILENT_EXCEPTIONS.md
+CLEANUP.md
+.agents/skills/surfit/
+workbench/PLAN.md
+workbench/3D_WATCH.md
+workbench/tests/screenshots/
 
 # Generated working data
 grid.dat

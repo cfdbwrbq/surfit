@@ -139,6 +139,12 @@
       </section>
       <button id="solve" type="submit" class="primary">Solve surface</button>
       <div id="status" class="status">Ready. Add data to begin.</div>
+      <div id="progress" class="progress" hidden>
+        <div id="progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div id="progress-fill"></div>
+        </div>
+        <div class="progress-meta"><span id="progress-label"></span><span id="progress-time"></span></div>
+      </div>
     </form>
   </aside>
 

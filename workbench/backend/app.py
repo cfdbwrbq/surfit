@@ -65,6 +65,8 @@ _jobs: Dict[str, "Job"] = {}
 class Job:
     id: str
     status: str = "queued"
+    stage: str = "queued"
+    progress: int = 0
     error: Optional[str] = None
     created: float = field(default_factory=time.time)
     updated: float = field(default_factory=time.time)
@@ -486,6 +488,8 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
            lower: Optional[float], upper: Optional[float], extent_values):
     try:
         job.status = "running"
+        job.stage = "reading data"
+        job.progress = 5
         job.updated = time.time()
         point_rows = []
         for raw, name in point_files:
@@ -523,6 +527,8 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             # A single contour-only task crashes the current CMOFS completer;
             # reject it here until the core handles this degenerate input.
             raise ValueError("contour-only solve needs at least two contour lines")
+        job.stage = "building grid"
+        job.progress = 15
         if extent_values and all(item is not None for item in extent_values):
             min_x, max_x, min_y, max_y = [float(item) for item in extent_values]
         else:
@@ -652,7 +658,11 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         }
         for group in rule_order:
             handlers[group]()
+        job.stage = "solving"
+        job.progress = 20
         task.solve()
+        job.stage = "building mesh"
+        job.progress = 85
         values = np.asarray(task.values(), dtype=float)
         extent = {"min_x": min_x, "min_y": min_y,
                   "step_x": step_x, "step_y": step_y}
@@ -684,6 +694,8 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         job.gltf_path = str(WORK / (job.id + ".gltf"))
         surfit.export_gltf(job.gltf_path, surfit.grid_mesh(values, extent))
         task.close()
+        job.stage = "done"
+        job.progress = 100
         job.status = "done"
     except Exception as error:  # report the failure to the browser
         job.status = "error"
@@ -1185,7 +1197,8 @@ def get_job(job_id: str):
     if job is None:
         raise HTTPException(404, "job not found")
     return {
-        "id": job.id, "status": job.status, "error": job.error,
+        "id": job.id, "status": job.status, "stage": job.stage,
+        "progress": job.progress, "error": job.error,
         "metrics": job.metrics,
         "downloads": {
             "dat": "/api/jobs/%s/download.dat" % job.id if job.dat_path else None,

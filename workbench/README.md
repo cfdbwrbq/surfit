@@ -64,6 +64,11 @@ recomputes source URLs; it does not trust stored paths.
 The frontend is plain ES modules; three.js is vendored under
 `frontend/vendor/`, so there is no build step and no CDN dependency.
 
+While a job runs, the status area shows a stage progress bar and elapsed time.
+The C++ solve is one call without progress callbacks, so the bar uses honest
+stages (reading, grid, solving, mesh) and animates while the solver is inside
+that call; it is not a fabricated ETA.
+
 ## Input formats
 
 CSV/XYZ, GeoJSON and optional SHP/GeoPackage are accepted for each input.  The

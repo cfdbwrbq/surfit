@@ -4,6 +4,10 @@ import { OrbitControls } from "/static/vendor/OrbitControls.js";
 const $ = (id) => document.getElementById(id);
 const form = $("job-form");
 const statusBox = $("status");
+const progressBox = $("progress");
+let progressStarted = 0;
+let progressTimer = null;
+let progressHideTimer = null;
 const files = [];
 let fileSeq = 0;
 let lastMesh = null;
@@ -1614,26 +1618,91 @@ function renderResult(data, mesh) {
   fitView();
 }
 
+const STAGE_LABELS = {
+  queued: "Queued",
+  running: "Solving (C++ core)",
+  "reading data": "Reading sources",
+  "building grid": "Building grid",
+  solving: "Solving (C++ core)",
+  "building mesh": "Building 3D mesh",
+  done: "Done",
+};
+
+function renderProgressClock() {
+  if (!progressStarted) return;
+  const seconds = Math.max(0, Math.round((Date.now() - progressStarted) / 1000));
+  $("progress-time").textContent = `${seconds}s`;
+}
+
+function beginProgress(label = "Queued…") {
+  progressStarted = Date.now();
+  clearTimeout(progressHideTimer);
+  progressHideTimer = null;
+  clearInterval(progressTimer);
+  progressTimer = setInterval(renderProgressClock, 500);
+  progressBox.hidden = false;
+  progressBox.classList.remove("is-indeterminate");
+  $("progress-fill").style.width = "2%";
+  $("progress-label").textContent = label;
+  $("progress-time").textContent = "0s";
+}
+
+function updateProgress(data) {
+  const stage = data.stage || data.status || "working";
+  const progress = Number.isFinite(Number(data.progress)) ? Number(data.progress) : 0;
+  const solving = stage === "solving" || stage === "running";
+  progressBox.classList.toggle("is-indeterminate", solving);
+  $("progress-fill").style.width = solving ? "35%" : `${Math.max(2, progress)}%`;
+  $("progress-label").textContent = STAGE_LABELS[stage] || stage;
+  $("progress-track").setAttribute("aria-valuenow", String(progress));
+  renderProgressClock();
+}
+
+function finishProgress() {
+  clearInterval(progressTimer);
+  progressTimer = null;
+  updateProgress({ stage: "done", progress: 100 });
+  progressBox.classList.remove("is-indeterminate");
+  progressHideTimer = setTimeout(() => {
+    progressBox.hidden = true;
+    progressStarted = 0;
+    progressHideTimer = null;
+  }, 700);
+}
+
+function hideProgress() {
+  clearInterval(progressTimer);
+  clearTimeout(progressHideTimer);
+  progressTimer = null;
+  progressHideTimer = null;
+  progressStarted = 0;
+  progressBox.hidden = true;
+}
+
 async function poll(id) {
   const response = await fetch(`/api/jobs/${id}`);
   const data = await response.json();
   if (data.status === "error") {
     statusBox.textContent = data.error;
     statusBox.className = "status error";
+    hideProgress();
     $("solve").disabled = false;
     return;
   }
   if (data.status !== "done") {
+    updateProgress(data);
     statusBox.textContent = data.status === "running" ? "Solving…" : "Queued…";
     setTimeout(() => poll(id), 600);
     return;
   }
   statusBox.textContent = "Rendering…";
   statusBox.className = "status";
+  updateProgress({ stage: "building mesh", progress: 85 });
   lastJob = data;
   const mesh = await (await fetch(`/api/jobs/${id}/mesh`)).json();
   renderResult(data, mesh);
   statusBox.textContent = "Done.";
+  finishProgress();
   $("solve").disabled = false;
 }
 
@@ -1846,6 +1915,7 @@ form.addEventListener("submit", async (event) => {
   $("solve").disabled = true;
   statusBox.textContent = "Uploading…";
   statusBox.className = "status";
+  beginProgress("Uploading…");
   const body = new FormData();
   for (const item of activeFiles()) body.append(item.role, item.file);
   appendFieldSettings(body);
@@ -1868,6 +1938,7 @@ form.addEventListener("submit", async (event) => {
       : error.detail;
     statusBox.textContent = detail || "Upload failed";
     statusBox.className = "status error";
+    hideProgress();
     $("solve").disabled = false;
     return;
   }

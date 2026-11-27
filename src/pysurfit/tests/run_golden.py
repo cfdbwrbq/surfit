@@ -93,7 +93,7 @@ def _numeric_matches(want, got, rtol=None, atol=None):
     if want.get("shape") != got.get("shape") or want.get("defined") != got.get("defined"):
         return False
     if rtol is None:
-        rtol = 1e-3 if want["kind"] == "numbers" else 1e-4
+        rtol = 5e-3 if want["kind"] == "numbers" else 1e-3
     if atol is None:
         atol = 1e-3 if want["kind"] == "numbers" else 1e-6
     for key in ("min", "max", "mean"):

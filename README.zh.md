@@ -56,9 +56,9 @@ surfit run recipe.json --summary --json
 surfit run recipe.json --result-json result.json
 ```
 
-结果包含形状、defined/undefined 数量、min、max 和 mean；失败时返回
-`{"ok": false, "error": ...}` 和非零退出码。需要交叉验证、集成或自定义规则时，
-使用 Python API。
+结果包含形状、defined/undefined 数量、min、max 和 mean。使用
+`--result-json` 时，失败会返回 `{"ok": false, "error": ...}` 和非零退出码。
+需要交叉验证、集成或自定义规则时，使用 Python API。
 仓库包含面向编码智能体的使用 skill：`.agents/skills/surfit/`。
 
 ## 安装
@@ -143,7 +143,7 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 使用 Python API 也不需要它。
 
 - [Workbench 指南](workbench/README.md)
-- 从 checkout 启动：`cd workbench && ./run.sh`
+- 从 checkout 启动：`cd workbench && ./bootstrap.sh && ./run.sh`
 
 ## 文档
 

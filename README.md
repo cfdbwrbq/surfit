@@ -67,7 +67,8 @@ surfit run recipe.json --result-json result.json
 ```
 
 The result document contains shape, defined/undefined counts, min, max and
-mean; failures return `{"ok": false, "error": ...}` and a non-zero exit code.
+mean.  With `--result-json`, failures return `{"ok": false, "error": ...}` and
+a non-zero exit code.
 Use the Python API when the agent needs cross-validation, ensembles or custom
 rules.
 

@@ -26,8 +26,8 @@ result.
   ```
 
   The result document has `ok`, `name`, `shape`, `defined`, `undefined`,
-  `min`, `max` and `mean`; a failed run writes `{"ok": false, "error": ...}`
-  and exits non-zero.  Do not scrape a browser UI.
+  `min`, `max` and `mean`; with `--result-json`, a failed run writes
+  `{"ok": false, "error": ...}` and exits non-zero.  Do not scrape a browser UI.
 
 - **Human:** the optional browser workbench in `workbench/` of the source
   repository.  It is not part of the wheel and is not needed by an agent.

@@ -245,7 +245,7 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 
 ## Где смотреть дальше
 
-- `README.md` — быстрый старт;
+- `README.md` — обзор и быстрый старт;
 - `docs/en/python.rst` — полный Python-гайд;
 - `docs/en/how_it_works.rst` — CMOFS, penalty-loop и solvers;
 - `docs/en/commands.rst` — все команды;

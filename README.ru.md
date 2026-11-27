@@ -66,9 +66,10 @@ surfit run recipe.json --summary --json
 surfit run recipe.json --result-json result.json
 ```
 
-В результате будут форма, число defined/undefined, min, max и mean; ошибка
-вернёт `{"ok": false, "error": ...}` и ненулевой код возврата. Python API нужен,
-когда агенту требуются cross-validation, ансамбли или собственные правила.
+В результате будут форма, число defined/undefined, min, max и mean. При
+`--result-json` ошибка вернёт `{"ok": false, "error": ...}` и ненулевой код
+возврата. Python API нужен, когда агенту требуются cross-validation, ансамбли
+или собственные правила.
 В репозитории есть skill для кодовых агентов: `.agents/skills/surfit/`.
 
 ## Установка
@@ -167,7 +168,7 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 входит в wheel и не требуется для Python API.
 
 - [Руководство workbench](workbench/README.md)
-- запуск из checkout: `cd workbench && ./run.sh`
+- запуск из checkout: `cd workbench && ./bootstrap.sh && ./run.sh`
 
 ## Документация
 

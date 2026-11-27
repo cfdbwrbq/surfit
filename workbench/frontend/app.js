@@ -337,21 +337,36 @@ function formatBound(value) {
   return value.toFixed(3).replace(/\.?0+$/, "");
 }
 
+function updateBoundsMode() {
+  const auto = $("auto_bounds").checked;
+  $("lower").disabled = auto;
+  $("upper").disabled = auto;
+  $("bounds-from-data").disabled = auto || !previewZRange;
+  $("bounds-from-data").title = auto ? "auto bounds is on" : "";
+}
+
 function refreshDataRange(data) {
   previewZRange = dataZRange(data);
-  const button = $("bounds-from-data");
-  button.disabled = !previewZRange;
   if (!previewZRange) {
     $("data-z-range").textContent = "data z: —";
     $("lower").placeholder = "no bound";
     $("upper").placeholder = "no bound";
-    return;
+  } else {
+    const [low, high] = previewZRange;
+    $("data-z-range").textContent = `data z: ${formatBound(low)} … ${formatBound(high)}`;
+    $("lower").placeholder = `min ${formatBound(low)}`;
+    $("upper").placeholder = `max ${formatBound(high)}`;
   }
-  const [low, high] = previewZRange;
-  const text = `data z: ${formatBound(low)} … ${formatBound(high)}`;
-  $("data-z-range").textContent = text;
-  $("lower").placeholder = `min ${formatBound(low)}`;
-  $("upper").placeholder = `max ${formatBound(high)}`;
+  if ($("auto_bounds").checked) {
+    if (previewZRange) {
+      $("lower").value = formatBound(previewZRange[0]);
+      $("upper").value = formatBound(previewZRange[1]);
+    } else {
+      $("lower").value = "";
+      $("upper").value = "";
+    }
+  }
+  updateBoundsMode();
 }
 
 function refreshAreaRules(areas) {
@@ -1255,6 +1270,13 @@ $("bounds-from-data").addEventListener("click", () => {
   $("lower").value = formatBound(previewZRange[0]);
   $("upper").value = formatBound(previewZRange[1]);
 });
+$("auto_bounds").addEventListener("change", () => {
+  if ($("auto_bounds").checked && previewZRange) {
+    $("lower").value = formatBound(previewZRange[0]);
+    $("upper").value = formatBound(previewZRange[1]);
+  }
+  updateBoundsMode();
+});
 
 function sectionScreenPoint(x, y) {
   if (!mapProjection) return null;
@@ -1485,6 +1507,7 @@ function projectBody() {
   body.append("name", $("project_name").value.trim() || "Untitled");
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
+  if ($("auto_bounds").checked) body.append("auto_bounds", "true");
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {
     if ($(key).value !== "") body.append(key, $(key).value);
   }
@@ -1585,6 +1608,8 @@ async function loadProject(id) {
     $(key).value = value === null || value === undefined ? "" : value;
   }
   $("exclude_zero").checked = Boolean(meta.settings.exclude_zero);
+  $("auto_bounds").checked = Boolean(meta.settings.auto_bounds);
+  updateBoundsMode();
   pendingAreaRules = meta.settings.area_rules || null;
   pendingGlobalRules = meta.settings.global_rules || null;
   pendingRuleOrder = meta.settings.rule_order || null;
@@ -1623,6 +1648,7 @@ function downloadReport() {
   settings.area_rules = areaRules;
   settings.global_rules = currentGlobalRules();
   settings.rule_order = ruleOrder;
+  settings.auto_bounds = $("auto_bounds").checked;
   const report = {
     format: "surfit-workbench-report",
     version: 1,
@@ -1764,5 +1790,6 @@ renderer.setAnimationLoop(() => {
 renderFiles();
 refreshProjects();
 renderRuleOrder();
+updateBoundsMode();
 applyAutoCell();
 resizeView();

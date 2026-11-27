@@ -94,7 +94,9 @@ apply to both preview and solve.  GeoPackage still needs the optional
 `requirements-geo.txt`.
 `Result min` / `Result max` set global lower/upper bounds for the solved
 surface; leave them blank for no bound.  The preview reports the source Z range
-and `Use data range` fills both fields explicitly.
+and `Use data range` fills both fields explicitly.  `auto bounds` keeps them in
+step with the source range and locks the two inputs; the mode is saved in the
+project.
 
 Coordinates are used as stored; the workbench does not reproject.
 

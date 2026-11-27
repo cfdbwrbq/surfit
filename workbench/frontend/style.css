@@ -130,6 +130,7 @@ summary { cursor: pointer; }
 .slider .small { padding: 2px 5px; font-size: 10px; }
 .bounds-line { display: flex; align-items: center; gap: 7px; margin: 3px 0 8px; flex-wrap: wrap; }
 .bounds-line .hint { margin: 0; }
+.bounds-line .inline-check { margin: 0; }
 .result-hud .slider { margin-left: auto; }
 .result-actions { display: flex; gap: 7px; }
 #result-pane:fullscreen, #result-pane:-webkit-full-screen {

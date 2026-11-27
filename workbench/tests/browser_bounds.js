@@ -15,6 +15,23 @@ const { chromium } = require('playwright');
   if (!Number.isFinite(lower) || !Number.isFinite(upper) || lower > upper) {
     throw new Error(`bad data bounds: ${lower}..${upper}`);
   }
-  console.log(JSON.stringify({ range, lower, upper, errors }));
+
+  await page.check('#auto_bounds');
+  const autoLower = Number(await page.inputValue('#lower'));
+  const autoUpper = Number(await page.inputValue('#upper'));
+  if (autoLower !== lower || autoUpper !== upper) {
+    throw new Error(`auto bounds mismatch: ${autoLower}..${autoUpper}`);
+  }
+  if (!(await page.isDisabled('#lower'))) throw new Error('auto bounds inputs not locked');
+
+  await page.fill('#project_name', 'Auto bounds');
+  await page.click('#save-project');
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Project saved'));
+  await page.click('.projects summary');
+  await page.waitForSelector('.project-open');
+  await page.click('.project-open');
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Loaded'));
+  if (!(await page.isChecked('#auto_bounds'))) throw new Error('auto bounds did not survive reload');
+  console.log(JSON.stringify({ range, lower, upper, autoLower, autoUpper, errors }));
   await browser.close();
 })().catch((err) => { console.error(err); process.exit(1); });

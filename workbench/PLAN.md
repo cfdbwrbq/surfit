@@ -1,12 +1,17 @@
 # surfit surface workbench — MVP plan
 
 A local, single-user web workbench around the surfit engine.  No QGIS, no
-PostGIS, no map server: drop point/fault data, choose grid and solver settings,
-solve, inspect in 3D, download the result.
+PostGIS, no map server: drop points, contours, faults, areas and optional
+surfaces, choose grid and rule settings, solve, inspect in 3D, download the
+result.
+
+The MVP scope below is implemented, except where explicitly listed as out of
+scope.  Native `.mask` files are not supported; polygonal masks use area
+`undef`.
 
 ## Scope
 
-- upload points CSV/XYZ and optional fault lines;
+- upload points CSV/XYZ, contours, fault lines, polygons and surfaces;
 - auto or manual extent;
 - cell size, tolerance, solver;
 - points + completer + optional lower/upper bounds;
@@ -31,8 +36,9 @@ solve, inspect in 3D, download the result.
 - quality panel for the rule report (residual, penalty iterations, violations);
 - limits and TTL cleanup.
 
-Out of scope for MVP: users/auth, projects, polygon editing, PostGIS, jobs
-surviving restart, large-data streaming, WASM.
+Out of scope for MVP: users/auth, polygon editing, PostGIS, jobs surviving
+restart, large-data streaming, WASM.  Local projects and their archives are in
+scope.
 
 ## Architecture
 
@@ -55,12 +61,18 @@ grid + mesh JSON / .dat / glTF
 
 ## API
 
-- `POST /api/jobs` — points file, optional faults file, grid settings; returns id.
+- `POST /api/preview` — source summary for the map and field dropdowns.
+- `POST /api/schema` — fields per source role.
+- `POST /api/jobs` — points/contours/faults/areas/surfaces, grid settings,
+  area/global rules and rule order; returns id.
 - `GET /api/jobs/{id}` — status, timings, limits, errors, metrics.
-- `GET /api/jobs/{id}/mesh` — vertices/faces/points/faults for three.js.
+- `GET /api/jobs/{id}/mesh` — vertices/faces and source geometry for three.js.
 - `GET /api/jobs/{id}/download.dat` — native surfit result.
 - `GET /api/jobs/{id}/download.gltf` — glTF export.
+- `GET /api/projects` and project CRUD/archive/import endpoints.
 - `GET /api/health`.
+
+See `backend/app.py` for the complete route list.
 
 ## Acceptance
 

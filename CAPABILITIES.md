@@ -206,12 +206,22 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - `save_viewer`, `save_report`, `save_metadata`;
 - `save_geotiff` из метаданных задачи.
 
+### Workbench (отдельное приложение)
+
+- локальный браузерный интерфейс в `workbench/`;
+- points, contours, faults; CSV/XYZ, GeoJSON, SHP/zip;
+- preview исходников на карте до solve;
+- выбор полей SHP/GeoJSON, фильтр значений и auto cell size;
+- 2D-карта, 3D-поверхность, cross-section и Quality & rules;
+- локальные проекты, портативные архивы, JSON-отчёт;
+- не входит в wheel и не требуется для Python API.
+
 ## Ограничения
 
 - только 2.5D, без 3D voxel/octree;
 - нет CAD-редактора и mesh-топологии; визуализационный glTF/OBJ/STL/PyVista export есть;
 - нет ML/property prediction;
-- нет GUI/map composition;
+- нет полноценного GIS GUI/map composition; есть локальный workbench;
 - slope/curvature bounds — penalty-условия, не post-solve проекция;
 - rule report показывает residual для conditional-правил и violations для известных inequality-правил; для non-penalty data-правил residual = None;
 - P10/P50/P90 нельзя получить сложением per-cell интервалов;
@@ -237,4 +247,5 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - `docs/en/how_it_works.rst` — CMOFS, penalty-loop и solvers;
 - `docs/en/commands.rst` — все команды;
 - `docs/` — полная документация;
-- `examples/python/` — запускаемые примеры.
+- `examples/python/` — запускаемые примеры;
+- `workbench/README.md` — локальный браузерный интерфейс.

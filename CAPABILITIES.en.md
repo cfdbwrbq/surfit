@@ -130,10 +130,20 @@ is slower than `cg` on the 512² benchmark.  A standalone Galerkin V-cycle
 `benchmark_solvers` compares `cg/jcg/ssor/jacobi/rf`.  Details and measurements
 are in `docs/en/development.rst`.
 
+## Workbench (companion app)
+
+- local browser UI in `workbench/`;
+- points, contours and faults from CSV/XYZ, GeoJSON, SHP/zip;
+- source preview on a map before solving;
+- SHP/GeoJSON field selection, value range/zero filtering, automatic cell size;
+- 2D source map, 3D surface, cross-section and Quality & rules;
+- local projects, portable archives and a JSON report;
+- not part of the wheel and not required for the Python API.
+
 ## Limitations
 
 - 2.5D only, no 3D voxel/octree; no CAD/mesh topology or CAD editor;
-- no ML/property prediction, no GUI/map composition;
+- no ML/property prediction, no full GIS GUI/map composition; a local workbench exists;
 - slope/curvature are penalty conditions, not hard projections; mask bounds are
   exercised but tested numerically on an area;
 - `rule_report` shows conditional residuals, recent residual history,

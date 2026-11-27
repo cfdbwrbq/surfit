@@ -72,9 +72,9 @@ a non-zero exit code.
 Use the Python API when the agent needs cross-validation, ensembles or custom
 rules.
 
-A usage skill for coding agents is included at `.agents/skills/surfit/`.
-The skill is procedural knowledge, not a runtime: a harness must load it and
-call the Python/CLI to do the work.
+The wheel is the runtime; `.agents/skills/surfit/SKILL.md` is the operating
+brief. The agent calls Python/CLI to do the work; the skill keeps it from
+improvising the conventions.
 
 ## Install
 

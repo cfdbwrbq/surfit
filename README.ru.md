@@ -70,9 +70,9 @@ surfit run recipe.json --result-json result.json
 `--result-json` ошибка вернёт `{"ok": false, "error": ...}` и ненулевой код
 возврата. Python API нужен, когда агенту требуются cross-validation, ансамбли
 или собственные правила.
-В репозитории есть skill для кодовых агентов: `.agents/skills/surfit/`.
-Skill — это процедурное знание, а не runtime: harness должен его загрузить и
-вызвать Python/CLI, чтобы выполнить работу.
+Wheel — это runtime; `.agents/skills/surfit/SKILL.md` — инструкция к нему.
+Агент вызывает Python/CLI и делает работу, а skill не даёт ему импровизировать
+с конвенциями.
 
 ## Установка
 

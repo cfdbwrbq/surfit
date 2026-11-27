@@ -2,7 +2,7 @@
 
 **English** | [Русский](README.ru.md) | [中文](README.zh.md)
 
-## Build a surface that keeps the geology
+## Don't smooth the geology away.
 
 **Faults stay faults. Wells stay tied. Bounds stay bounds. Layers stay ordered.**
 

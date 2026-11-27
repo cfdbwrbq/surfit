@@ -319,6 +319,72 @@
     },
     {
       "key": "example1__group",
+      "numeric": {
+        "hist_result.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 1749.54,
+          "mean": 1099.5369999586665,
+          "min": 0.00114156,
+          "shape": [
+            30
+          ]
+        },
+        "hist_src.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 1749.34,
+          "mean": 1099.4696666703333,
+          "min": 0.00107991,
+          "shape": [
+            30
+          ]
+        },
+        "points_approx.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1712.0604563909142,
+          "mean": 1667.1495453072655,
+          "min": 1558.8557755457841,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "points_exact.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1749.14,
+          "mean": 1675.0581560708802,
+          "min": 1548.7739972819495,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "points_hist.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1749.339857424591,
+          "mean": 1687.4192361620949,
+          "min": 1548.97,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "points_triangulate.dat": {
+          "defined": 1134175,
+          "kind": "grid",
+          "max": 1749.14,
+          "mean": 1666.451825104413,
+          "min": 1548.97,
+          "shape": [
+            1039,
+            1494
+          ]
+        }
+      },
       "outputs": {
         "hist_result.txt": "d8339d6a862372c10862b95efbada3844b35520daebfbf1bcd7eff7f58f95354",
         "hist_src.txt": "4d889562bd5786afcdb95ad85b226823cdee7e72b7797a0ed6a45c4cd60cf2d6",
@@ -328,11 +394,55 @@
         "points_triangulate.dat": "f6e25cd4bcc667e8bb5ed54bc9c07cc6f8ace195dc808dd70ac2957ad6e48ac1"
       },
       "source": "examples/surfit/realworld/example1",
-      "strict": false,
+      "strict": true,
       "trace": "traces/example1__group.py"
     },
     {
       "key": "example2__group",
+      "numeric": {
+        "hist_result.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 0.227748,
+          "mean": 0.1172716613333333,
+          "min": 0.00525004,
+          "shape": [
+            30
+          ]
+        },
+        "hist_src.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 0.226667,
+          "mean": 0.11704041,
+          "min": 0.0,
+          "shape": [
+            30
+          ]
+        },
+        "kpor_with_hist.dat": {
+          "defined": 86666,
+          "kind": "grid",
+          "max": 0.18675470533123684,
+          "mean": 0.11399858587208281,
+          "min": 0.06493847314751941,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "kpor_wo_hist.dat": {
+          "defined": 86666,
+          "kind": "grid",
+          "max": 0.18613244181611655,
+          "mean": 0.10999999062270946,
+          "min": 0.06482641547119379,
+          "shape": [
+            570,
+            296
+          ]
+        }
+      },
       "outputs": {
         "hist_result.txt": "d1c9e5fe379024ecaa937325e52767730261c3a355cc0e98ba46da6f1cbd8ea9",
         "hist_src.txt": "5da81844f0f390f0fe27c80921de04ebe0d7338dbf926b9a87f2f62fa56a8e51",
@@ -340,11 +450,45 @@
         "kpor_wo_hist.dat": "6a8dfc29d5a1c3e359943c23a71e4a713066beb7abd38642cb6653b277e83248"
       },
       "source": "examples/surfit/realworld/example2",
-      "strict": false,
+      "strict": true,
       "trace": "traces/example2__group.py"
     },
     {
       "key": "example3__group",
+      "numeric": {
+        "saratov.dat": {
+          "defined": 864240,
+          "kind": "grid",
+          "max": 3930.2780686424994,
+          "mean": 3721.250919241674,
+          "min": 3468.1998146947008,
+          "shape": [
+            1040,
+            831
+          ]
+        },
+        "saratov_points.txt": {
+          "defined": 10839,
+          "kind": "numbers",
+          "max": 939823.283984,
+          "mean": 358690.49831418094,
+          "min": 3470.0,
+          "shape": [
+            10839
+          ]
+        },
+        "saratov_simple.dat": {
+          "defined": 138526,
+          "kind": "grid",
+          "max": 3936.440819610733,
+          "mean": 3711.72369591129,
+          "min": 3467.7955999213464,
+          "shape": [
+            416,
+            333
+          ]
+        }
+      },
       "outputs": {
         "faults.bln": "3f1b0536c20d6a9d2f52f527460dbe301e775fcef86e8c13b6118cebf9cbced4",
         "saratov.dat": "927ca784c83d5a0a4511abeb8b5c5e3f86930871b736a944b32cf7661c30b48f",
@@ -357,28 +501,250 @@
     },
     {
       "key": "example4__group",
+      "numeric": {
+        "top_D4.dat": {
+          "defined": 100694,
+          "kind": "grid",
+          "max": 4357.391113,
+          "mean": 4207.50409259947,
+          "min": 4147.40918,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "top_D5.grd": {
+          "defined": 168720,
+          "kind": "grid",
+          "max": 4439.247332,
+          "mean": 4166.634186843311,
+          "min": -999.0,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "top_D5_wo_trend.grd": {
+          "defined": 168720,
+          "kind": "grid",
+          "max": 4344.662108,
+          "mean": 4143.40897331668,
+          "min": -999.0,
+          "shape": [
+            570,
+            296
+          ]
+        }
+      },
       "outputs": {
         "top_D4.dat": "ae0a8646963078be1391974ad7555963df288c7f9cc87039221846da0c3ea180",
         "top_D5.grd": "c374b86bc6ad50b90aaad3f5e0df1a3f8abe3fa91f5fe021d3ce2e21c7ffd7cb",
         "top_D5_wo_trend.grd": "c688f46ec21a851badab84da2e9013cbda968e8da31fb4ffd13dfa7149aab514"
       },
       "source": "examples/surfit/realworld/example4",
-      "strict": false,
+      "strict": true,
       "trace": "traces/example4__group.py"
     },
     {
       "key": "poro__group",
+      "numeric": {
+        "average_poro.dat": {
+          "defined": 58081,
+          "kind": "grid",
+          "max": 0.274,
+          "mean": 0.25175065901385907,
+          "min": 0.222,
+          "shape": [
+            241,
+            241
+          ]
+        },
+        "hist_poro.dat": {
+          "defined": 58081,
+          "kind": "grid",
+          "max": 0.28006000000000003,
+          "mean": 0.2607480715061733,
+          "min": 0.22,
+          "shape": [
+            241,
+            241
+          ]
+        },
+        "simple_poro.dat": {
+          "defined": 58081,
+          "kind": "grid",
+          "max": 0.274,
+          "mean": 0.2598556420420841,
+          "min": 0.222,
+          "shape": [
+            241,
+            241
+          ]
+        }
+      },
       "outputs": {
         "average_poro.dat": "d21a3386c2020d2828a0aa1a00515946c4c0ced9e83823585de17c79dbb7deea",
         "hist_poro.dat": "ce22f53cb390f1a88da0cd9c8bbc2dbc5c677e07f05eb84919309224ea708369",
         "simple_poro.dat": "1d98266c4d3daeec6314cd13ff3d0fc19c46b0549a1ad8c833660e689a29896c"
       },
       "source": "examples/surfit/realworld/poro",
-      "strict": false,
+      "strict": true,
       "trace": "traces/poro__group.py"
     },
     {
       "key": "run_all",
+      "numeric": {
+        "example1/hist_result.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 1749.54,
+          "mean": 1099.5369999586665,
+          "min": 0.00114156,
+          "shape": [
+            30
+          ]
+        },
+        "example1/hist_src.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 1749.34,
+          "mean": 1099.4696666703333,
+          "min": 0.00107991,
+          "shape": [
+            30
+          ]
+        },
+        "example1/points_approx.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1712.0604563909142,
+          "mean": 1667.1495453072655,
+          "min": 1558.8557755457841,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "example1/points_exact.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1749.14,
+          "mean": 1675.0581560708802,
+          "min": 1548.7739972819495,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "example1/points_hist.dat": {
+          "defined": 1552266,
+          "kind": "grid",
+          "max": 1749.339857424591,
+          "mean": 1687.4192361620949,
+          "min": 1548.97,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "example1/points_triangulate.dat": {
+          "defined": 1134175,
+          "kind": "grid",
+          "max": 1749.14,
+          "mean": 1666.451825104413,
+          "min": 1548.97,
+          "shape": [
+            1039,
+            1494
+          ]
+        },
+        "example2/hist_result.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 0.227748,
+          "mean": 0.1172716613333333,
+          "min": 0.00525004,
+          "shape": [
+            30
+          ]
+        },
+        "example2/hist_src.txt": {
+          "defined": 30,
+          "kind": "numbers",
+          "max": 0.226667,
+          "mean": 0.11704041,
+          "min": 0.0,
+          "shape": [
+            30
+          ]
+        },
+        "example2/kpor_with_hist.dat": {
+          "defined": 86666,
+          "kind": "grid",
+          "max": 0.18675470533123684,
+          "mean": 0.11399858587208281,
+          "min": 0.06493847314751941,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "example2/kpor_wo_hist.dat": {
+          "defined": 86666,
+          "kind": "grid",
+          "max": 0.18613244181611655,
+          "mean": 0.10999999062270946,
+          "min": 0.06482641547119379,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "example3/saratov.dat": {
+          "defined": 864240,
+          "kind": "grid",
+          "max": 3930.2780686424994,
+          "mean": 3721.250919241674,
+          "min": 3468.1998146947008,
+          "shape": [
+            1040,
+            831
+          ]
+        },
+        "example4/top_D4.dat": {
+          "defined": 100694,
+          "kind": "grid",
+          "max": 4357.391113,
+          "mean": 4207.50409259947,
+          "min": 4147.40918,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "example4/top_D5.grd": {
+          "defined": 168720,
+          "kind": "grid",
+          "max": 4439.247332,
+          "mean": 4166.634186843311,
+          "min": -999.0,
+          "shape": [
+            570,
+            296
+          ]
+        },
+        "example4/top_D5_wo_trend.grd": {
+          "defined": 168720,
+          "kind": "grid",
+          "max": 4344.662108,
+          "mean": 4143.40897331668,
+          "min": -999.0,
+          "shape": [
+            570,
+            296
+          ]
+        }
+      },
       "outputs": {
         "example1/hist_result.txt": "d8339d6a862372c10862b95efbada3844b35520daebfbf1bcd7eff7f58f95354",
         "example1/hist_src.txt": "4d889562bd5786afcdb95ad85b226823cdee7e72b7797a0ed6a45c4cd60cf2d6",
@@ -396,11 +762,68 @@
         "example4/top_D5_wo_trend.grd": "c688f46ec21a851badab84da2e9013cbda968e8da31fb4ffd13dfa7149aab514"
       },
       "source": "examples/surfit/realworld",
-      "strict": false,
+      "strict": true,
       "trace": "traces/run_all.py"
     },
     {
       "key": "seis__group",
+      "numeric": {
+        "2d_seism.dat": {
+          "defined": 65536,
+          "kind": "grid",
+          "max": 1091.7641522854615,
+          "mean": 1045.2975400042906,
+          "min": 991.5128692408741,
+          "shape": [
+            256,
+            256
+          ]
+        },
+        "3d_seism.dat": {
+          "defined": 98784,
+          "kind": "grid",
+          "max": 1067.6602729340384,
+          "mean": 1052.9720379662733,
+          "min": 1035.3756954015214,
+          "shape": [
+            343,
+            288
+          ]
+        },
+        "base_tvd.dat": {
+          "defined": 592350,
+          "kind": "grid",
+          "max": 2216.35,
+          "mean": 2198.5989926088464,
+          "min": 2177.12,
+          "shape": [
+            718,
+            825
+          ]
+        },
+        "top_tvd.dat": {
+          "defined": 567321,
+          "kind": "grid",
+          "max": 2197.189136113119,
+          "mean": 2183.421921337405,
+          "min": 2154.2617355712982,
+          "shape": [
+            703,
+            807
+          ]
+        },
+        "top_tvd_simple.dat": {
+          "defined": 65536,
+          "kind": "grid",
+          "max": 2195.0685519909257,
+          "mean": 2172.8495199321433,
+          "min": 2156.83,
+          "shape": [
+            256,
+            256
+          ]
+        }
+      },
       "outputs": {
         "2d_seism.dat": "a13ff2aa63ec5a4cb0a90e1f967142148ad609f15f190de1969c3ed71e5972cd",
         "3d_seism.dat": "3a5b700639d142914ad71b73c9bcfc75c70916077ed91d68e30a9418943674fb",
@@ -409,11 +832,79 @@
         "top_tvd_simple.dat": "d8c3557d161a0acb8a1925a729cb88fdb03c2f091865e963da8439e1c5b94095"
       },
       "source": "examples/surfit/realworld/seis",
-      "strict": false,
+      "strict": true,
       "trace": "traces/seis__group.py"
     },
     {
       "key": "volumetrics__group",
+      "numeric": {
+        "base_surface.dat": {
+          "defined": 247401,
+          "kind": "grid",
+          "max": 2261.9058126868244,
+          "mean": 2230.3006527836933,
+          "min": 2177.1,
+          "shape": [
+            561,
+            441
+          ]
+        },
+        "eff_thickness.dat": {
+          "defined": 247401,
+          "kind": "grid",
+          "max": 21.18,
+          "mean": 8.665468752494991,
+          "min": 3.98,
+          "shape": [
+            561,
+            441
+          ]
+        },
+        "effoil_thickness.dat": {
+          "defined": 258423,
+          "kind": "grid",
+          "max": 21.163029603524382,
+          "mean": 0.6456896191660616,
+          "min": 0.0,
+          "shape": [
+            573,
+            451
+          ]
+        },
+        "thickness_surface.dat": {
+          "defined": 247401,
+          "kind": "grid",
+          "max": 27.09999999999991,
+          "mean": 20.169311406816693,
+          "min": 16.299999999999727,
+          "shape": [
+            561,
+            441
+          ]
+        },
+        "top_surface.dat": {
+          "defined": 247401,
+          "kind": "grid",
+          "max": 2242.513900273825,
+          "mean": 2210.131341376876,
+          "min": 2156.4249060341676,
+          "shape": [
+            561,
+            441
+          ]
+        },
+        "top_trend.dat": {
+          "defined": 247401,
+          "kind": "grid",
+          "max": 2244.2726734927505,
+          "mean": 2211.6243804127603,
+          "min": 2157.279999980014,
+          "shape": [
+            561,
+            441
+          ]
+        }
+      },
       "outputs": {
         "base_surface.dat": "d6b3c48c5ad9d4c8ce7871abc0023b331cee3d474e7bfed83b774d7efa7f3047",
         "eff_thickness.dat": "93297e9cdbe1a5ddd82e6a87fbfa2be354fb37db2c078780c821c3d2d176f60c",
@@ -423,7 +914,7 @@
         "top_trend.dat": "4c6847461030e7a756b46153edef1d1d791f84cb30ecfc0886b6412f182ab0b8"
       },
       "source": "examples/surfit/realworld/volumetrics",
-      "strict": false,
+      "strict": true,
       "trace": "traces/volumetrics__group.py"
     }
   ],

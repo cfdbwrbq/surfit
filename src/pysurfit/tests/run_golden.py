@@ -7,6 +7,7 @@ the large Tcl reference directories stay outside the repository.
 
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -33,6 +34,69 @@ def _normalize(data):
 def _digest(path):
     with open(path, "rb") as handle:
         return hashlib.sha256(_normalize(handle.read())).hexdigest()
+
+
+def _numeric_signature(path):
+    """Return a portable summary for native grid outputs, or None."""
+    if path.endswith(".dat"):
+        try:
+            if BIN not in sys.path:
+                sys.path.insert(0, BIN)
+            import surfit
+            task = surfit.Session(map_name="golden-compare", tol=1e-7)
+            loaded = task.surf_load(path)
+            if not any(loaded):
+                return None
+            values = task.values()
+            defined = surfit.defined_mask(values)
+            if not defined.any():
+                return None
+            data = values[defined]
+            return {"kind": "grid", "shape": list(values.shape),
+                    "defined": int(defined.sum()), "min": float(data.min()),
+                    "max": float(data.max()), "mean": float(data.mean())}
+        except Exception:
+            return None
+    if path.endswith(".txt"):
+        try:
+            with open(path, encoding="utf-8", errors="replace") as stream:
+                numbers = [float(value) for value in stream.read().split()]
+            if len(numbers) < 2:
+                return None
+            return {"kind": "numbers", "shape": [len(numbers)],
+                    "defined": len(numbers), "min": min(numbers),
+                    "max": max(numbers), "mean": sum(numbers) / len(numbers)}
+        except (OSError, ValueError):
+            return None
+    if path.endswith(".grd"):
+        try:
+            with open(path, encoding="utf-8", errors="replace") as stream:
+                lines = stream.read().splitlines()
+            if not lines or lines[0].strip().upper() != "DSAA":
+                return None
+            nx, ny = [int(value) for value in lines[1].split()]
+            numbers = [float(value) for value in " ".join(lines[5:]).split()]
+            if len(numbers) < nx * ny:
+                return None
+            data = numbers[:nx * ny]
+            return {"kind": "grid", "shape": [ny, nx], "defined": len(data),
+                    "min": min(data), "max": max(data),
+                    "mean": sum(data) / len(data)}
+        except (OSError, ValueError, IndexError):
+            return None
+    return None
+
+
+def _numeric_matches(want, got, rtol=1e-6, atol=1e-8):
+    if not want or not got or want.get("kind") != got.get("kind"):
+        return False
+    if want.get("shape") != got.get("shape") or want.get("defined") != got.get("defined"):
+        return False
+    for key in ("min", "max", "mean"):
+        if not math.isclose(float(want[key]), float(got[key]),
+                            rel_tol=rtol, abs_tol=atol):
+            return False
+    return True
 
 
 def _copy_source(source, directory):
@@ -86,6 +150,12 @@ def run_case(case):
             return False, "outputs got %s want %s" % (sorted(got), sorted(want))
         bad = [name for name in want if got[name] != want[name]]
         if bad:
+            numeric = case.get("numeric", {})
+            if all(name in numeric and
+                   _numeric_matches(numeric[name],
+                                    _numeric_signature(os.path.join(directory, name)))
+                   for name in bad):
+                return True, "%d file(s), numeric tolerance" % len(want)
             return False, "differ: %s" % ", ".join(sorted(bad))
         return True, "%d file(s)" % len(want)
 

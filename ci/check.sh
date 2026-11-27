@@ -77,6 +77,7 @@ fi
 
 step "Python golden traces for 3.7.2"
 run golden "$PYTHON" "$TESTS/run_golden.py"
+run golden-numeric "$PYTHON" "$TESTS/test_golden_numeric.py"
 
 if [ "$TCL" = "1" ]; then
 step "every Python example, against its Tcl original"

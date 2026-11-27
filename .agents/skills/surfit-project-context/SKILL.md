@@ -21,6 +21,12 @@ copy or preparing a release.
   as a wheel dependency.
 - **Core is frozen** unless the user explicitly asks for engine work. Workbench,
   wrappers, docs and release tooling come first.
+- **No notebook-first deliverable.** The user explicitly prefers the workbench
+  over notebooks; use scripts, examples and the browser UI instead.
+- **PyPI is deferred until after 3.8.** Until then installation stays on GitHub
+  release wheels and a checkout.
+- **Sell the strategy, not AI hype.** A differentiator must map to a command,
+  test, screenshot or documented workflow, not to a slogan.
 - **One repository:** workbench lives in `surfit/workbench`; do not split it
   into another repository or revive the obsolete `python` branch. The 2015
   prototype is archived as tag `archive/python-2015`; current Python code is on

@@ -20,6 +20,8 @@ The shortest path is:
 finds `../build-ci/bin` automatically.  Override with
 `SURFIT_BIN=/path/to/surfit/build-ci/bin ./run.sh` or `PORT=8080 ./run.sh`.
 
+![Workbench: source files, grid settings and the faulted 3D result](../docs/_static/workbench.png)
+
 Manual equivalent:
 
 ```bash

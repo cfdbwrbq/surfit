@@ -46,6 +46,10 @@ Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` �
 
 Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。
 
+![Workbench：源文件、网格设置和带断层的 3D 结果](docs/_static/workbench.png)
+
+*左侧是数据与规则；右侧是带断层的曲面、quality report 和网格指标。*
+
 ### Python 与 JSON recipe — 面向智能体
 
 **开箱即用的智能体接口：** 不需要浏览器自动化，也没有隐藏的 GUI 状态。

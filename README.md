@@ -56,6 +56,11 @@ account.
 The workbench lives in `workbench/` in the source repository; it is not a
 wheel dependency.
 
+![Workbench: source files, grid settings and the faulted 3D result](docs/_static/workbench.png)
+
+*Sources and rules on the left; the faulted surface, quality report and grid
+metrics on the right.*
+
 ### Python and JSON recipes — for agents
 
 **Agent-ready out of the box:** no browser automation and no hidden GUI state.

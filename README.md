@@ -36,25 +36,24 @@ implementation under `Under the hood`.
 
 ## One engine. Two ways in.
 
-**Humans get the workbench. Agents get a deterministic Python and JSON surface.**
+**Humans get SURFIT STUDIO. Agents get a deterministic Python and JSON surface.**
 Same engine, same rules, same files.
 
 | | For people | For agents |
 |---|---|---|
-| Interface | local browser workbench | Python API, `surfit run` |
+| Interface | SURFIT STUDIO, local browser workbench | Python API, `surfit run` |
 | What you see | map, 3D surface, rule report | JSON result, native files |
 | Style | interactive | scriptable, reproducible |
 
-### Workbench — for people
+### SURFIT STUDIO — for people
 
 **SURFIT STUDIO** is the local browser workbench. Drop wells, contours, faults
-and polygons, set rules, preview the map, solve,
-inspect the surface in 3D and save the project. No build step, no cloud, no
-account.
+and polygons, set rules, preview the map, solve, inspect the surface in 3D and
+save the project. No build step, no cloud, no account.
 
-[Open the workbench guide](workbench/README.md).
+[Open the SURFIT STUDIO guide](workbench/README.md).
 
-The workbench lives in `workbench/` in the source repository; it is not a
+SURFIT STUDIO lives in `workbench/` in the source repository; it is not a
 wheel dependency. From a checkout:
 
 ```bash

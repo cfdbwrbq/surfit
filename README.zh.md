@@ -33,19 +33,19 @@ Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` �
 
 | | 面向人 | 面向智能体 |
 |---|---|---|
-| 界面 | 本地浏览器 workbench | Python API、`surfit run` |
+| 界面 | SURFIT STUDIO 本地工作台 | Python API、`surfit run` |
 | 看到什么 | 地图、3D 曲面、规则报告 | JSON 结果、原生文件 |
 | 方式 | 交互式 | 可脚本化、可复现 |
 
-### Workbench — 面向人
+### SURFIT STUDIO — 面向人
 
-**SURFIT STUDIO** 是本地浏览器 workbench。拖入井、等值线、断层和多边形，
+**SURFIT STUDIO** 是本地浏览器工作台。拖入井、等值线、断层和多边形，
 设置规则，查看地图，求解，在 3D 中检查曲面
 并保存项目。无需构建、云服务或账号。
 
-[Workbench 指南](workbench/README.md)。
+[SURFIT STUDIO 指南](workbench/README.md)。
 
-Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。从 checkout 运行：
+SURFIT STUDIO 位于源码仓库的 `workbench/`，不是 wheel 的依赖。从 checkout 运行：
 
 ```bash
 git clone https://github.com/cfdbwrbq/surfit.git

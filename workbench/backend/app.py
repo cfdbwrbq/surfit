@@ -481,7 +481,7 @@ def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
 
 def _solve(job: Job, point_files, fault_files, contour_files, area_files,
            surface_files, area_rules, global_rules, rule_order, fields, value_filter,
-           cell_size: float, auto_cell: bool, tol: float, solver: str,
+           cell_size: float, auto_cell: bool, auto_cells: int, tol: float, solver: str,
            d1: float, d2: float,
            lower: Optional[float], upper: Optional[float], extent_values):
     try:
@@ -544,7 +544,8 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         if max_x <= min_x or max_y <= min_y:
             raise ValueError("extent is empty")
         if auto_cell:
-            cell_size = max(max_x - min_x, max_y - min_y) / AUTO_GRID_SIDE
+            auto_cells = max(20, min(2000, int(auto_cells)))
+            cell_size = max(max_x - min_x, max_y - min_y) / auto_cells
         if cell_size <= 0:
             raise ValueError("cell size must be positive")
         nx = int(np.floor((max_x - min_x) / cell_size)) + 1
@@ -669,6 +670,7 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             "grid": [int(nx), int(ny)],
             "cell_size": float(cell_size),
             "auto_cell": bool(auto_cell),
+            "auto_cells": int(auto_cells),
             "tol": float(tol),
             "solver": solver,
             "defined": job.mesh["defined"],
@@ -789,6 +791,7 @@ async def save_project(
     exclude_zero: bool = Form(False),
     cell_size: float = Form(1.0),
     cell_size_auto: bool = Form(False),
+    auto_cells: int = Form(AUTO_GRID_SIDE),
     auto_bounds: bool = Form(False),
     tol: float = Form(1e-6),
     solver: str = Form("cg"),
@@ -825,7 +828,7 @@ async def save_project(
             sources.append({"role": role, "name": original or filename,
                             "stored": "%s/%s" % (role, filename)})
     settings = {"cell_size": cell_size, "cell_size_auto": cell_size_auto,
-                "auto_bounds": auto_bounds,
+                "auto_cells": auto_cells, "auto_bounds": auto_bounds,
                 "tol": tol, "solver": solver,
                 "d1": d1, "d2": d2, "lower": lower, "upper": upper,
                 "min_x": min_x, "max_x": max_x, "min_y": min_y, "max_y": max_y,
@@ -1137,6 +1140,7 @@ async def create_job(
     exclude_zero: bool = Form(False),
     cell_size: float = Form(1.0),
     cell_size_auto: bool = Form(False),
+    auto_cells: int = Form(AUTO_GRID_SIDE),
     tol: float = Form(1e-6),
     solver: str = Form("cg"),
     d1: float = Form(1.0),
@@ -1169,7 +1173,8 @@ async def create_job(
                  _parse_global_rules(global_rules), _parse_rule_order(rule_order),
                  _fields_from(x_field, y_field, z_field, weight_field),
                  _value_filter(min_value, max_value, exclude_zero),
-                 cell_size, cell_size_auto, tol, solver, d1, d2, lower, upper,
+                 cell_size, cell_size_auto, auto_cells, tol, solver, d1, d2,
+                 lower, upper,
                  (min_x, max_x, min_y, max_y))
     return {"id": job.id, "status": job.status}
 

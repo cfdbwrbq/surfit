@@ -28,6 +28,107 @@ let ruleOrder = ["points", "contours", "faults", "areas", "global",
                  "bounds", "completer"];
 const pendingFields = {};
 
+const HELP_TEXT = {
+  cell_size: "Grid step in source units. Smaller cells preserve more detail but use more memory and time.",
+  tol: "Solver tolerance. It is a step tolerance, not a guaranteed error bound.",
+  cell_size_auto: "Derive cell size from the source extent and the target number of cells; the field is locked.",
+  auto_cells: "Target number of cells along the longer side in auto mode (20–2000).",
+  lower: "Global minimum for the solved surface, applied during solve. Blank means no bound.",
+  upper: "Global maximum for the solved surface, applied during solve. Blank means no bound.",
+  auto_bounds: "Keep Result min/max in sync with the source Z range and lock both fields.",
+  d1: "Completer D1 term: raises the cost of slope variation and smooths the result.",
+  d2: "Completer D2 term: raises the cost of bending and makes the result flatter.",
+  solver: "Linear solver used by CMOFS: cg, jcg, ssor, jacobi or rf.",
+  x_field: "Source property used as X. Leave blank to use point or line geometry.",
+  y_field: "Source property used as Y. Leave blank to use point or line geometry.",
+  z_field: "Source property used as Z. Leave blank to use coordinate Z or the auto value fallback.",
+  weight_field: "Source property used as the point weight. Leave blank for unit weights.",
+  min_value: "Lower bound for the source value filter; inclusive.",
+  max_value: "Upper bound for the source value filter; inclusive.",
+  exclude_zero: "Drop source values exactly equal to zero. Negative values are kept.",
+  min_x: "Manual grid X minimum. Fill all four manual extent fields to override the data bounds.",
+  max_x: "Manual grid X maximum. Fill all four manual extent fields to override the data bounds.",
+  min_y: "Manual grid Y minimum. Fill all four manual extent fields to override the data bounds.",
+  max_y: "Manual grid Y maximum. Fill all four manual extent fields to override the data bounds.",
+};
+
+const SUMMARY_HELP = [
+  [".rule-order summary", "Rules are applied in this order inside the solve. Completer is usually last."],
+  [".surface-rules summary", "Global mean, weighted mean and trend rules using an uploaded surface."],
+  [".area-rules summary", "Per-polygon rules: constant value, bounds, mask, mean or weighted contribution."],
+  [".field-map summary", "Map DBF/GeoJSON properties to X, Y, Z and point weights."],
+  [".section-panel summary", "A/B profile through the surface. Drag the line or its endpoints on the map."],
+  [".projects summary", "Local projects save sources, settings, rules and the completed result."],
+  [".manual-extent summary", "Override the automatic grid extent with all four bounds."],
+];
+
+let helpPopover = null;
+
+function closeHelp() {
+  if (helpPopover) {
+    helpPopover.remove();
+    helpPopover = null;
+  }
+}
+
+function showHelp(anchor, text) {
+  closeHelp();
+  const pop = document.createElement("div");
+  pop.className = "help-pop";
+  pop.textContent = text;
+  document.body.appendChild(pop);
+  const rect = anchor.getBoundingClientRect();
+  const width = pop.offsetWidth;
+  const height = pop.offsetHeight;
+  let left = rect.right + 8;
+  if (left + width > window.innerWidth - 8) left = Math.max(8, rect.left - width - 8);
+  let top = rect.top;
+  if (top + height > window.innerHeight - 8) top = Math.max(8, window.innerHeight - height - 8);
+  pop.style.left = `${left}px`;
+  pop.style.top = `${top}px`;
+  helpPopover = pop;
+}
+
+function installHelp() {
+  for (const [id, text] of Object.entries(HELP_TEXT)) {
+    const control = $(id);
+    const label = control?.closest("label");
+    if (!label || label.querySelector(".help")) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "help";
+    button.textContent = "?";
+    button.dataset.help = text;
+    button.setAttribute("aria-label", `Help: ${text}`);
+    label.appendChild(button);
+  }
+  for (const [selector, text] of SUMMARY_HELP) {
+    const summary = document.querySelector(selector);
+    if (!summary || summary.querySelector(".help")) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "help";
+    button.textContent = "?";
+    button.dataset.help = text;
+    button.setAttribute("aria-label", `Help: ${text}`);
+    summary.appendChild(button);
+  }
+}
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".help");
+  if (button) {
+    event.preventDefault();
+    event.stopPropagation();
+    showHelp(button, button.dataset.help);
+    return;
+  }
+  if (!event.target.closest(".help-pop")) closeHelp();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeHelp();
+});
+
 /* ---------- tabs ---------- */
 function showTab(name) {
   document.querySelectorAll(".tab").forEach((tab) => {
@@ -497,9 +598,42 @@ async function refreshSchema() {
   }
 }
 
+function previewExtent(data) {
+  const bounds = data?.bounds;
+  if (!bounds) return null;
+  const raw = ["min_x", "max_x", "min_y", "max_y"].map((key) => $(key).value);
+  const manual = raw.map((value) => Number(value));
+  if (raw.every((value) => value !== "") && manual.every(Number.isFinite)) {
+    return {
+      minX: manual[0], maxX: manual[1], minY: manual[2], maxY: manual[3],
+    };
+  }
+  const padX = (bounds.max_x - bounds.min_x) * 0.05;
+  const padY = (bounds.max_y - bounds.min_y) * 0.05;
+  return {
+    minX: bounds.min_x - padX, maxX: bounds.max_x + padX,
+    minY: bounds.min_y - padY, maxY: bounds.max_y + padY,
+  };
+}
+
+function refreshAutoCell(data) {
+  if (!$("cell_size_auto").checked) return;
+  const extent = previewExtent(data);
+  if (!extent) {
+    $("cell_size").value = "";
+    return;
+  }
+  const cells = Math.max(20, Math.min(2000, Number($("auto_cells").value) || 200));
+  const span = Math.max(extent.maxX - extent.minX, extent.maxY - extent.minY);
+  if (span <= 0) return;
+  $("cell_size").value = Number(span / cells).toPrecision(4);
+}
+
 function applyAutoCell() {
   const auto = $("cell_size_auto").checked;
   $("cell_size").disabled = auto;
+  $("auto_cells").disabled = !auto;
+  if (auto) refreshAutoCell(sourceData);
 }
 
 function schedulePreview() {
@@ -510,9 +644,9 @@ function schedulePreview() {
     drawMap(null);
     refreshPointEditor();
     refreshLineEditor();
-    refreshAreaRules(data.areas || []);
-    refreshSurfaceOptions(data.surfaces || []);
-    refreshDataRange(data);
+    refreshAreaRules([]);
+    refreshSurfaceOptions([]);
+    refreshDataRange(null);
     return;
   }
   refreshSchema().finally(() => {
@@ -546,6 +680,7 @@ async function runPreview() {
     refreshAreaRules(data.areas || []);
     refreshSurfaceOptions(data.surfaces || []);
     refreshDataRange(data);
+    refreshAutoCell(data);
   } catch (error) {
     if (seq !== previewSeq) return;
     sourceData = null;
@@ -1256,6 +1391,7 @@ function resetMapView() {
 }
 
 $("cell_size_auto").addEventListener("change", applyAutoCell);
+$("auto_cells").addEventListener("input", () => refreshAutoCell(sourceData));
 for (const key of ["x_field", "y_field", "z_field", "weight_field", "exclude_zero"]) {
   $(key).addEventListener("change", schedulePreview);
 }
@@ -1506,7 +1642,10 @@ function projectBody() {
   appendRuleOrder(body);
   body.append("name", $("project_name").value.trim() || "Untitled");
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
-  if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
+  if ($("cell_size_auto").checked) {
+    body.append("cell_size_auto", "true");
+    body.append("auto_cells", $("auto_cells").value);
+  }
   if ($("auto_bounds").checked) body.append("auto_bounds", "true");
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {
     if ($(key).value !== "") body.append(key, $(key).value);
@@ -1595,6 +1734,7 @@ async function loadProject(id) {
   }
   $("project_name").value = meta.name;
   $("cell_size_auto").checked = Boolean(meta.settings.cell_size_auto);
+  $("auto_cells").value = meta.settings.auto_cells || 200;
   for (const key of ["cell_size", "tol", "lower", "upper", "d1", "d2", "solver",
                      "min_x", "max_x", "min_y", "max_y"]) {
     const value = meta.settings[key];
@@ -1709,7 +1849,10 @@ form.addEventListener("submit", async (event) => {
   appendGlobalRules(body);
   appendRuleOrder(body);
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
-  if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
+  if ($("cell_size_auto").checked) {
+    body.append("cell_size_auto", "true");
+    body.append("auto_cells", $("auto_cells").value);
+  }
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {
     if ($(key).value !== "") body.append(key, $(key).value);
   }
@@ -1787,6 +1930,7 @@ renderer.setAnimationLoop(() => {
   controls.update();
   if (!$("result-pane").classList.contains("is-hidden")) renderer.render(scene, camera);
 });
+installHelp();
 renderFiles();
 refreshProjects();
 renderRuleOrder();

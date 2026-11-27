@@ -1,0 +1,25 @@
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch({ headless: true, args: ['--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const errors = [];
+  page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+  page.on('pageerror', (err) => errors.push(err.message));
+  await page.goto('http://127.0.0.1:8010/', { waitUntil: 'networkidle' });
+  const helpCount = await page.locator('.help').count();
+  if (helpCount < 20) throw new Error(`too few help buttons: ${helpCount}`);
+  await page.locator('.help').first().click();
+  await page.waitForSelector('.help-pop');
+  const text = await page.textContent('.help-pop');
+  if (!text || text.length < 20) throw new Error('help text missing');
+  await page.keyboard.press('Escape');
+  if (await page.locator('.help-pop').count()) throw new Error('Escape did not close help');
+  const summaryHelp = page.locator('.manual-extent summary .help');
+  if (!(await summaryHelp.count())) throw new Error('summary help missing');
+  await summaryHelp.click();
+  await page.waitForSelector('.help-pop');
+  const summaryText = await page.textContent('.help-pop');
+  if (summaryText.length < 20) throw new Error('summary help missing');
+  console.log(JSON.stringify({ helpCount, text, summaryText, errors }));
+  await browser.close();
+})().catch((err) => { console.error(err); process.exit(1); });

@@ -92,11 +92,20 @@ falls back to coordinate z, then common properties (`z`, `Z`, `elev`,
 equal to 0` removes zero rows/lines without touching negative values.  Filters
 apply to both preview and solve.  GeoPackage still needs the optional
 `requirements-geo.txt`.
+`Auto cell size` computes the cell size from the preview extent and the
+`cells across` target (20–2000), fills the cell-size field and locks it.
+Changing the target updates the value immediately; the mode and target are
+saved in the project.
+
 `Result min` / `Result max` set global lower/upper bounds for the solved
 surface; leave them blank for no bound.  The preview reports the source Z range
 and `Use data range` fills both fields explicitly.  `auto bounds` keeps them in
 step with the source range and locks the two inputs; the mode is saved in the
 project.
+
+Every setting has a `?` button with a short explanation.  The same help is
+available on the rule, data-field, cross-section, project and manual-extent
+panels.
 
 Coordinates are used as stored; the workbench does not reproject.
 

@@ -63,7 +63,10 @@
           <label>Cell size<input id="cell_size" type="number" step="any" value="1"></label>
           <label>Tolerance<input id="tol" type="number" step="any" value="0.000001"></label>
         </div>
-        <label class="inline-check"><input id="cell_size_auto" type="checkbox">auto cell size (~200 cells across the longest side)</label>
+        <div class="auto-cell-line">
+          <label class="inline-check"><input id="cell_size_auto" type="checkbox">auto cell size</label>
+          <label class="auto-cells">cells across<input id="auto_cells" type="number" min="20" max="2000" step="10" value="200" disabled></label>
+        </div>
         <div class="grid2">
           <label>Result min<input id="lower" type="number" step="any" placeholder="no bound"></label>
           <label>Result max<input id="upper" type="number" step="any" placeholder="no bound"></label>
@@ -124,7 +127,7 @@
           <label class="inline-check"><input id="exclude_zero" type="checkbox">exclude values equal to 0</label>
           <p class="hint">Leave X/Y empty to use geometry. Use Z for a DBF/GeoJSON property.</p>
         </details>
-        <details>
+        <details class="manual-extent">
           <summary>Manual extent</summary>
           <div class="grid2">
             <label>min x<input id="min_x" type="number" step="any" placeholder="auto"></label>

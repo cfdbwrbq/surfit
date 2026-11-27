@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>surfit surface workbench</title>
+<link rel="stylesheet" href="/static/style.css">
+<script type="importmap">
+{"imports": {"three": "/static/vendor/three.module.js"}}
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="eyebrow">surfit studio</span>
+    <span class="brand-name">Surface workbench</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab is-active" data-tab="map" role="tab">Map &amp; data</button>
+    <button class="tab" data-tab="result" role="tab">Result 3D<span id="result-badge" class="badge" hidden>ready</span></button>
+  </nav>
+</header>
+
+<main class="shell">
+  <aside class="panel">
+    <section class="drop-card">
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <strong>Drop data here</strong>
+        <span>CSV · GeoJSON · zipped SHP</span>
+        <button type="button" id="browse" class="ghost">Choose files</button>
+        <input id="files" type="file" multiple hidden
+               accept=".csv,.txt,.xyz,.geojson,.json,.shp,.gpkg,.zip">
+      </div>
+      <div id="file-list" class="file-list"></div>
+      <p class="hint">Assign each file: points, contours or faults. Points are optional when contours are present.</p>
+      <details class="point-editor">
+        <summary>Edit points <span id="point-count">0</span></summary>
+        <div id="point-list" class="point-list"></div>
+      </details>
+      <details class="line-editor">
+        <summary>Edit lines <span id="line-count">0</span></summary>
+        <div id="line-list" class="line-list"></div>
+      </details>
+    </section>
+
+    <section class="project-card">
+      <div class="project-save">
+        <label>Project name<input id="project_name" type="text" placeholder="Untitled"></label>
+        <button id="save-project" type="button" class="ghost">Save</button>
+        <button id="import-project" type="button" class="ghost">Import</button>
+        <input id="project-archive" type="file" accept=".zip" hidden>
+      </div>
+      <details class="projects">
+        <summary>Saved projects</summary>
+        <div id="project-list" class="project-list"></div>
+      </details>
+    </section>
+
+    <form id="job-form">
+      <section class="settings">
+        <h2>Grid</h2>
+        <div class="grid2">
+          <label>Cell size<input id="cell_size" type="number" step="any" value="1"></label>
+          <label>Tolerance<input id="tol" type="number" step="any" value="0.000001"></label>
+        </div>
+        <label class="inline-check"><input id="cell_size_auto" type="checkbox">auto cell size (~200 cells across the longest side)</label>
+        <div class="grid2">
+          <label>Lower bound<input id="lower" type="number" step="any" placeholder="none"></label>
+          <label>Upper bound<input id="upper" type="number" step="any" placeholder="none"></label>
+        </div>
+        <div class="grid2">
+          <label>D1<input id="d1" type="number" step="any" value="1"></label>
+          <label>D2<input id="d2" type="number" step="any" value="1.6"></label>
+        </div>
+        <label>Solver
+          <select id="solver">
+            <option>cg</option><option>jcg</option><option>ssor</option>
+            <option>jacobi</option><option>rf</option>
+          </select>
+        </label>
+        <details class="field-map" open>
+          <summary>Data fields (SHP/GeoJSON)</summary>
+          <div class="grid2">
+            <label>X field<select id="x_field"><option value="">geometry</option></select></label>
+            <label>Y field<select id="y_field"><option value="">geometry</option></select></label>
+            <label>Z field<select id="z_field"><option value="">auto / coordinate z</option></select></label>
+            <label>Weight field<select id="weight_field"><option value="">1</option></select></label>
+            <label>From value<input id="min_value" type="number" step="any" placeholder="min"></label>
+            <label>To value<input id="max_value" type="number" step="any" placeholder="max"></label>
+          </div>
+          <label class="inline-check"><input id="exclude_zero" type="checkbox">exclude values equal to 0</label>
+          <p class="hint">Leave X/Y empty to use geometry. Use Z for a DBF/GeoJSON property.</p>
+        </details>
+        <details>
+          <summary>Manual extent</summary>
+          <div class="grid2">
+            <label>min x<input id="min_x" type="number" step="any" placeholder="auto"></label>
+            <label>max x<input id="max_x" type="number" step="any" placeholder="auto"></label>
+            <label>min y<input id="min_y" type="number" step="any" placeholder="auto"></label>
+            <label>max y<input id="max_y" type="number" step="any" placeholder="auto"></label>
+          </div>
+        </details>
+      </section>
+      <button id="solve" type="submit" class="primary">Solve surface</button>
+      <div id="status" class="status">Ready. Add data to begin.</div>
+    </form>
+  </aside>
+
+  <section class="workspace">
+    <section id="map-pane" class="pane">
+      <canvas id="map"></canvas>
+      <div class="map-hud">
+        <div>
+          <span class="hud-kicker">Map &amp; data</span>
+          <strong id="map-title">Source data</strong>
+        </div>
+        <div class="map-actions">
+          <div id="map-stats" class="map-stats"></div>
+          <label class="map-toggle"><input id="map-surface" type="checkbox">surface</label>
+          <button id="map-zoom-in" type="button" class="map-button" title="zoom in">+</button>
+          <button id="map-zoom-out" type="button" class="map-button" title="zoom out">−</button>
+          <button id="map-reset" type="button" class="map-button" title="reset view">⌂</button>
+        </div>
+      </div>
+      <div id="map-empty" class="empty-state">
+        <span class="empty-icon">＋</span>
+        <strong>Drop points, contours or faults</strong>
+        <span>The map shows your source data. The 3D result opens in the next tab.</span>
+      </div>
+      <div class="map-legend"><i class="dot point"></i>points <i class="dot contour"></i>contours <i class="dot fault"></i>faults</div>
+    </section>
+
+    <section id="result-pane" class="pane is-hidden">
+      <div id="scene"></div>
+      <div class="result-hud">
+        <div>
+          <span class="hud-kicker">Result 3D</span>
+          <strong id="hud-title">No surface yet</strong>
+        </div>
+        <label class="slider">Vertical exaggeration
+          <input id="exaggeration" type="range" min="0.25" max="4" step="0.05" value="1">
+        </label>
+        <button id="reset" type="button" class="ghost">Reset view</button>
+      </div>
+      <div id="metrics" class="metrics"></div>
+      <div id="downloads" class="downloads"></div>
+      <button id="download-report" type="button" class="report-button">Download report</button>
+      <details class="quality-panel" open>
+        <summary>Quality &amp; rules</summary>
+        <div id="quality" class="quality"></div>
+      </details>
+      <details class="section-panel">
+        <summary>Cross-section</summary>
+        <div class="section-form">
+          <label>A x<input id="sec-x0" type="number" step="any"></label>
+          <label>A y<input id="sec-y0" type="number" step="any"></label>
+          <label>B x<input id="sec-x1" type="number" step="any"></label>
+          <label>B y<input id="sec-y1" type="number" step="any"></label>
+          <button id="draw-section" type="button" class="ghost">Draw section</button>
+        </div>
+        <canvas id="section-canvas"></canvas>
+        <div id="section-note" class="section-note">Set A and B, then draw.</div>
+      </details>
+      <div class="legend"><span id="zmin">–</span><div class="ramp"></div><span id="zmax">–</span></div>
+    </section>
+  </section>
+</main>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -47,7 +47,8 @@ Same engine, same rules, same files.
 
 ### Workbench — for people
 
-Drop wells, contours, faults and polygons, set rules, preview the map, solve,
+**SURFIT STUDIO** is the local browser workbench. Drop wells, contours, faults
+and polygons, set rules, preview the map, solve,
 inspect the surface in 3D and save the project. No build step, no cloud, no
 account.
 

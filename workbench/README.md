@@ -1,4 +1,4 @@
-# surfit surface workbench (MVP)
+# SURFIT STUDIO — surface workbench (MVP)
 
 A local, single-user web workbench around the surfit engine.  No QGIS, no
 PostGIS, no map server.

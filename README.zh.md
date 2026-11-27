@@ -39,7 +39,8 @@ Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` �
 
 ### Workbench — 面向人
 
-拖入井、等值线、断层和多边形，设置规则，查看地图，求解，在 3D 中检查曲面
+**SURFIT STUDIO** 是本地浏览器 workbench。拖入井、等值线、断层和多边形，
+设置规则，查看地图，求解，在 3D 中检查曲面
 并保存项目。无需构建、云服务或账号。
 
 [Workbench 指南](workbench/README.md)。

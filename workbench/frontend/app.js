@@ -100,7 +100,11 @@ function installHelp() {
     button.textContent = "?";
     button.dataset.help = text;
     button.setAttribute("aria-label", `Help: ${text}`);
-    label.appendChild(button);
+    if (label.classList.contains("inline-check")) {
+      label.appendChild(button);
+    } else {
+      label.insertBefore(button, control);
+    }
   }
   for (const [selector, text] of SUMMARY_HELP) {
     const summary = document.querySelector(selector);

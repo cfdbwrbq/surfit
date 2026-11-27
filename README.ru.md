@@ -7,7 +7,6 @@
 **Разломы остаются разломами. Скважины привязаны к замерам. Границы стоят на месте. Слои сохраняют порядок.**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
-[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
 ![Поверхность с одиннадцатью скважинами и четырьмя линиями разломов, изометрический вид](docs/_static/author-surface.svg)
@@ -159,6 +158,10 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
   предназначен для просмотра, а не для CAD.
 
 ## Как это устроено
+
+WPS запускается с явными исключениями по файлам в `.flake8`; это линт-политика
+проекта, а не заявление о 100% соответствии WPS.
+
 
 Движок на C++ (2002–2015) управляется пакетом Python и исходным
 Tcl-фронтендом. В основе CMOFS: упорядоченные функционалы, цикл штрафов для

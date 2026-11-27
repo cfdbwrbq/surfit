@@ -7,7 +7,6 @@
 **Faults stay faults. Wells stay tied. Bounds stay bounds. Layers stay ordered.**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
-[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
 ![A faulted surface with eleven wells and four fault lines, isometric view](docs/_static/author-surface.svg)
@@ -159,6 +158,10 @@ checked for structural parity by `docs/check_docs.py`.
   viewing, not CAD.
 
 ## Under the hood
+
+WPS runs with the explicit per-file exceptions in `.flake8`; it is a
+project lint policy, not a claim of 100% WPS compliance.
+
 
 The C++ engine (2002–2015) is driven by a Python package and by the original
 Tcl front end. It uses CMOFS: ordered functionals, a penalty loop for

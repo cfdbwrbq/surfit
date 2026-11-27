@@ -7,7 +7,6 @@
 **断层不被抹平，井仍绑在实测值上，边界守得住，层序不乱。**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
-[![WPS](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/wps.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
 
 ![带四条断层的曲面，十一条井，等轴测视图](docs/_static/author-surface.svg)
@@ -135,6 +134,10 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 - GeoParquet 多边形只保留外环；3D 网格导出用于查看，不是 CAD。
 
 ## 实现细节
+
+WPS 使用 `.flake8` 中列出的逐文件例外运行；这是项目的 lint 策略，不代表
+100% 符合 WPS。
+
 
 引擎是 C++（2002–2015），由 Python 包和原始 Tcl 前端驱动。核心是 CMOFS：有序泛函、约束的惩罚项迭代，以及 8×8 多重网格逐级加密。求解器可选 `cg`、`jcg`、`rf`、`jacobi`、`ssor`；`tol` 是步长容差，不是保证的误差界。
 

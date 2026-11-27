@@ -73,6 +73,8 @@ Use the Python API when the agent needs cross-validation, ensembles or custom
 rules.
 
 A usage skill for coding agents is included at `.agents/skills/surfit/`.
+The skill is procedural knowledge, not a runtime: a harness must load it and
+call the Python/CLI to do the work.
 
 ## Install
 

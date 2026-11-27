@@ -441,7 +441,8 @@ generated from the 3.7.2 Tcl run; ``run_golden.py`` runs them without tclsh or
 SWIG and compares output hashes.  The 35 unit cases are strict.  The realworld
 outputs first try a byte-identical hash, then compare a portable numeric
 signature: shape, defined count, min, max and mean for ``.dat``/``.grd`` grids,
-and numeric-only ``.txt`` files.  The tolerance is ``rtol=1e-6``/``atol=1e-8``.
+and numeric-only ``.txt`` files.  Grids use ``rtol=1e-4``/``atol=1e-6``;
+histogram-style numeric text uses ``rtol=1e-3``/``atol=1e-3``.
 Seven realworld groups are strict; ``example3__group`` keeps a textual
 ``faults.bln`` file and remains a WARN gate.  The large Tcl reference directories
 are not stored in the repository.

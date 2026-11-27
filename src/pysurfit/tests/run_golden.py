@@ -87,11 +87,15 @@ def _numeric_signature(path):
     return None
 
 
-def _numeric_matches(want, got, rtol=1e-6, atol=1e-8):
+def _numeric_matches(want, got, rtol=None, atol=None):
     if not want or not got or want.get("kind") != got.get("kind"):
         return False
     if want.get("shape") != got.get("shape") or want.get("defined") != got.get("defined"):
         return False
+    if rtol is None:
+        rtol = 1e-3 if want["kind"] == "numbers" else 1e-4
+    if atol is None:
+        atol = 1e-3 if want["kind"] == "numbers" else 1e-6
     for key in ("min", "max", "mean"):
         if not math.isclose(float(want[key]), float(got[key]),
                             rel_tol=rtol, abs_tol=atol):

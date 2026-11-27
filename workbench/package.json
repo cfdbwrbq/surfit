@@ -1,5 +1,5 @@
 {
-  "name": "surfit-workbench-browser-check",
+  "name": "surfit-studio-browser-check",
   "private": true,
   "scripts": {
     "check": "node tests/browser_check.js"

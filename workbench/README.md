@@ -57,8 +57,8 @@ data`, drag either endpoint or the line itself to update the profile.
 ## Projects
 
 `Save` stores the source files, grid settings and, when a solve has completed,
-the mesh, metrics, `.dat` and glTF under `~/.local/share/surfit-workbench` (or
-`SURFIT_WORKBENCH_WORK`; legacy `SURFIT_STUDIO_WORK` is still accepted).  `Saved
+the mesh, metrics, `.dat` and glTF under `~/.local/share/surfit-studio` (or
+`SURFIT_STUDIO_WORK`; legacy `SURFIT_WORKBENCH_WORK` is still accepted).  `Saved
 projects` lists them; loading restores the sources and the result without
 re-solving.  Projects are local files, not a database or a user account.
 

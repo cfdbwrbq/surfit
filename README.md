@@ -31,8 +31,45 @@ surface is supported by the data, and where it is not.
 - **GIS specialist.** CRS-aware exchange through GeoTIFF, GeoParquet, shapefile,
   BLN, glTF and OBJ.
 
-The Python API and the C++ core are documented under `Under the hood`; they are
-integration tools, not a separate audience.
+The Python API and CLI are the agent-facing interface; the C++ core is the
+implementation under `Under the hood`.
+
+## One engine. Two ways in.
+
+**Humans get the workbench. Agents get a deterministic Python and JSON surface.**
+Same engine, same rules, same files.
+
+| | For people | For agents |
+|---|---|---|
+| Interface | local browser workbench | Python API, `surfit run` |
+| What you see | map, 3D surface, rule report | JSON result, native files |
+| Style | interactive | scriptable, reproducible |
+
+### Workbench — for people
+
+Drop wells, contours, faults and polygons, set rules, preview the map, solve,
+inspect the surface in 3D and save the project. No build step, no cloud, no
+account.
+
+[Open the workbench guide](workbench/README.md).
+
+The workbench lives in `workbench/` in the source repository; it is not a
+wheel dependency.
+
+### Python and JSON recipes — for agents
+
+**Agent-ready out of the box:** no browser automation and no hidden GUI state.
+Install the wheel, call the Python API, or run a declarative recipe:
+
+```bash
+surfit run recipe.json --summary --json
+surfit run recipe.json --result-json result.json
+```
+
+The result document contains shape, defined/undefined counts, min, max and
+mean; failures return `{"ok": false, "error": ...}` and a non-zero exit code.
+Use the Python API when the agent needs cross-validation, ensembles or custom
+rules.
 
 ## Install
 

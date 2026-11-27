@@ -24,8 +24,41 @@ surfit 从井、曲线、等值线、多边形、趋势面和断层线构建规�
 - **GIS 专业人员。** 考虑 CRS 的数据交换：GeoTIFF、GeoParquet、shapefile、
   BLN、glTF 和 OBJ。
 
-Python API 和 C++ 内核在 `实现细节` 中说明；它们是集成工具，不是另一个
-用户群体。
+Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` 中的实现。
+
+## 一个引擎，两种工作方式。
+
+**人使用 workbench，智能体使用确定性的 Python 和 JSON 接口。**
+同一个引擎、同一套规则、同一批文件。
+
+| | 面向人 | 面向智能体 |
+|---|---|---|
+| 界面 | 本地浏览器 workbench | Python API、`surfit run` |
+| 看到什么 | 地图、3D 曲面、规则报告 | JSON 结果、原生文件 |
+| 方式 | 交互式 | 可脚本化、可复现 |
+
+### Workbench — 面向人
+
+拖入井、等值线、断层和多边形，设置规则，查看地图，求解，在 3D 中检查曲面
+并保存项目。无需构建、云服务或账号。
+
+[Workbench 指南](workbench/README.md)。
+
+Workbench 位于源码仓库的 `workbench/`，不是 wheel 的依赖。
+
+### Python 与 JSON recipe — 面向智能体
+
+**开箱即用的智能体接口：** 不需要浏览器自动化，也没有隐藏的 GUI 状态。
+安装 wheel 后直接调用 Python API，或运行声明式 recipe：
+
+```bash
+surfit run recipe.json --summary --json
+surfit run recipe.json --result-json result.json
+```
+
+结果包含形状、defined/undefined 数量、min、max 和 mean；失败时返回
+`{"ok": false, "error": ...}` 和非零退出码。需要交叉验证、集成或自定义规则时，
+使用 Python API。
 
 ## 安装
 

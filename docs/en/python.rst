@@ -675,10 +675,15 @@ A task can also be described declaratively::
 
     surfit run recipe.json
     surfit run recipe.json --summary --json
+    surfit run recipe.json --result-json result.json
 
 The recipe has ``name``, ``grid``, ``data`` (points/curves/areas/contours or a
 ``.npy`` surface), ordered ``rules`` and ``output``.  JSON always works; YAML
 needs PyYAML.  The runner is thin and calls normal Session methods.
+``--result-json`` writes a machine-readable result document with the grid
+shape, defined/undefined counts and min/max/mean; a failed run writes
+``{"ok": false, "error": ...}`` and exits non-zero.  This is the supported
+entry point for an AI agent that should not drive the browser.
 
 GeoParquet
 ----------

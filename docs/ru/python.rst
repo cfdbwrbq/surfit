@@ -663,6 +663,12 @@ Dask не обещается. ``regression_trend`` подгоняет тренд
 
     surfit run recipe.json
     surfit run recipe.json --summary --json
+    surfit run recipe.json --result-json result.json
+
+``--result-json`` записывает машиночитаемый результат: форму сетки,
+defined/undefined и min/max/mean; ошибка даёт ``{"ok": false, "error": ...}``
+и ненулевой код. Это поддерживаемая точка входа для ИИ-агента, которому не
+нужно управлять браузером.
 
 В рецепте есть ``name``, ``grid``, ``data`` (points/curves/areas/contours или
 ``.npy``-поверхность), упорядоченные ``rules`` и ``output``. JSON работает

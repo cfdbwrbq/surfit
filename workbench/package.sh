@@ -6,7 +6,11 @@ cd "$(dirname "$0")"
 VERSION="${VERSION:-$(date +%Y%m%d)}"
 OUT="${OUT:-dist}"
 STAGE="$OUT/surfit-workbench-$VERSION"
-WHEELS="${WHEELS:-../wheels-manylinux2014}"
+if [ -d ../../wheels-manylinux2014 ]; then
+  WHEELS="${WHEELS:-../../wheels-manylinux2014}"
+else
+  WHEELS="${WHEELS:-../wheels-manylinux2014}"
+fi
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE"

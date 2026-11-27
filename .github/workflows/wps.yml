@@ -3,7 +3,9 @@ name: WPS
 on:
   push:
     branches: [master]
+    paths-ignore: ["workbench/**"]
   pull_request:
+    paths-ignore: ["workbench/**"]
 
 permissions:
   contents: read

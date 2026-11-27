@@ -2,7 +2,9 @@ name: ci
 
 on:
   push:
+    paths-ignore: ["workbench/**"]
   pull_request:
+    paths-ignore: ["workbench/**"]
   schedule:
     # The realworld pipelines take about an hour, so they run at night rather
     # than on every push.

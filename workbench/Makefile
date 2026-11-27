@@ -4,7 +4,7 @@ run:
 
 test:
 	PYTHONPATH="$$PWD:$$PWD/.site:$${SURFIT_BIN:-}" \
-	SURFIT_BIN="$${SURFIT_BIN:-$$PWD/../surfit/build-ci/bin}" \
+	SURFIT_BIN="$${SURFIT_BIN:-$$PWD/../build-ci/bin}" \
 	python3 tests/test_app.py
 
 browser-test:

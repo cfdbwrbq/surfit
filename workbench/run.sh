@@ -6,8 +6,8 @@ cd "$(dirname "$0")"
 
 if [ -z "${SURFIT_BIN:-}" ]; then
   for candidate in \
-    "$PWD/../surfit/build-ci/bin" \
-    "$PWD/../surfit/build/bin" \
+    "$PWD/../build-ci/bin" \
+    "$PWD/../build/bin" \
     "$PWD/.site"; do
     if [ -f "$candidate/surfit/__init__.py" ]; then
       export SURFIT_BIN="$candidate"

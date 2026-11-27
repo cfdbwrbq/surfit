@@ -3,6 +3,7 @@ name: docs
 on:
   push:
     branches: [master]
+    paths-ignore: ["workbench/**"]
   workflow_dispatch:
 
 permissions:

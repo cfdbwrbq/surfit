@@ -12,16 +12,18 @@ points / faults  ->  grid + rules  ->  3D surface  ->  .dat / glTF
 The shortest path is:
 
 ```bash
+./bootstrap.sh
 ./run.sh
 ```
 
-It finds `../surfit/build-ci/bin` automatically.  Override with
+`bootstrap.sh` installs the workbench dependencies into `.site`; `run.sh`
+finds `../build-ci/bin` automatically.  Override with
 `SURFIT_BIN=/path/to/surfit/build-ci/bin ./run.sh` or `PORT=8080 ./run.sh`.
 
 Manual equivalent:
 
 ```bash
-export SURFIT_BIN=/home/gisolog/dev/surfit/surfit/build-ci/bin
+export SURFIT_BIN=/path/to/surfit/build-ci/bin
 export PYTHONPATH="$PWD:$PWD/.site:$SURFIT_BIN"
 python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
@@ -161,7 +163,7 @@ any `surfit-*.whl` found in `../wheels-manylinux2014`.  The bundled
 API test:
 
 ```bash
-export SURFIT_BIN=/home/gisolog/dev/surfit/surfit/build-ci/bin
+export SURFIT_BIN=/path/to/surfit/build-ci/bin
 export PYTHONPATH="$PWD:$PWD/.site:$SURFIT_BIN"
 python tests/test_app.py
 # or:

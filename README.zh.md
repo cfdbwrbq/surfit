@@ -103,6 +103,15 @@ print(grid.shape, np.nanmin(grid), np.nanmax(grid))
 |---|---|
 | **数据与边界。** 井绑在实测值上，边界放在哪里就守在哪里。 | **多规则，一张面。** 五个多边形一次求解：两个取常数、两个按权重逼近，中间刻意保留 `undef`。 |
 
+## Workbench
+
+仓库还包含一个本地浏览器 workbench：拖入点、等值线或断层，先在地图上查看
+原始数据，再求解并在 3D 中检查曲面。它是独立的配套应用，不包含在 wheel 中，
+使用 Python API 也不需要它。
+
+- [Workbench 指南](workbench/README.md)
+- 从 checkout 启动：`cd workbench && ./run.sh`
+
 ## 文档
 
 - [英文指南](https://cfdbwrbq.github.io/surfit/en/)

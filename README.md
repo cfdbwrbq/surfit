@@ -123,6 +123,16 @@ remain visible in the result.
 |---|---|
 | **Data and limits.** Wells tie to measurements; bounds hold where you put them. | **Many rules, one surface.** Five polygons in one solve: two constants, two weighted areas, and a hole that stays `undef` by design. |
 
+## Workbench
+
+The repository also contains a local browser workbench for interactive grids:
+drop points, contours or faults, preview the sources on a map, solve and
+inspect the surface in 3D.  It is a separate companion app, not part of the
+wheel and not required to use the Python API.
+
+- [Workbench guide](workbench/README.md)
+- run from a checkout: `cd workbench && ./bootstrap.sh && ./run.sh`
+
 ## Documentation
 
 - [English guide](https://cfdbwrbq.github.io/surfit/en/)

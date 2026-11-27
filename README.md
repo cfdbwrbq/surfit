@@ -2,9 +2,9 @@
 
 **English** | [Русский](README.ru.md) | [中文](README.zh.md)
 
-## Don't smooth the rules away.
+## Your data. Your rules.
 
-**Faults stay faults. Wells stay tied. Bounds stay bounds. Layers stay ordered.**
+**A surface you can explain — and verify.**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
@@ -28,8 +28,8 @@ surface is supported by the data, and where it is not.
   grid, with explicit rules instead of one global smoothing trend.
 - **Reservoir / development geologist.** Thickness, volumes, stacked horizons,
   pinch-outs and calibrated uncertainty.
-- **GIS specialist.** CRS-aware exchange through GeoTIFF, GeoParquet, shapefile,
-  BLN, glTF and OBJ.
+- **Geographer / GIS specialist.** CRS-aware exchange through GeoTIFF,
+  GeoParquet, shapefile, BLN, glTF and OBJ.
 
 The Python API and CLI are the agent-facing interface; the C++ core is the
 implementation under `Under the hood`.

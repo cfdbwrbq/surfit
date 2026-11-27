@@ -2,9 +2,9 @@
 
 [English](README.md) | [Русский](README.ru.md) | **中文**
 
-## 不要把规则平滑掉。
+## 你的数据，你的规则。
 
-**断层不被抹平，井仍绑在实测值上，边界守得住，层序不乱。**
+**一个解释得清、也验证得了的曲面。**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
@@ -21,8 +21,8 @@ surfit 从井、曲线、等值线、多边形、趋势面和断层线构建规�
 - **地球物理人员。** 规则网格上的地震解释点、等值线和断层迹线，用明确规则
   代替一个全局平滑趋势。
 - **油藏/开发地质人员。** 厚度、体积、叠置层位、尖灭和校准后的不确定性。
-- **GIS 专业人员。** 考虑 CRS 的数据交换：GeoTIFF、GeoParquet、shapefile、
-  BLN、glTF 和 OBJ。
+- **地理 / GIS 专业人员。** 考虑 CRS 的数据交换：GeoTIFF、GeoParquet、
+  shapefile、BLN、glTF 和 OBJ。
 
 Python API 与 CLI 是面向智能体的接口；C++ 内核是 `实现细节` 中的实现。
 

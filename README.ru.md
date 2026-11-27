@@ -2,9 +2,9 @@
 
 [English](README.md) | **Русский** | [中文](README.zh.md)
 
-## Не размывайте правила.
+## Ваши данные. Ваши правила.
 
-**Разломы остаются разломами. Скважины привязаны к замерам. Границы стоят на месте. Слои сохраняют порядок.**
+**Поверхность, которую можно объяснить — и проверить.**
 
 [![CI](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml/badge.svg)](https://github.com/cfdbwrbq/surfit/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/cfdbwrbq/surfit)](https://github.com/cfdbwrbq/surfit/releases)
@@ -28,8 +28,8 @@ surfit строит регулярную 2.5D-поверхность по скв
   сетке — с явными правилами вместо одного глобального сглаживания.
 - **Геолог-разработчик.** Толщины, объёмы, слоистые горизонты, выклинивание и
   калиброванная неопределённость.
-- **GIS-специалист.** Обмен с учётом CRS: GeoTIFF, GeoParquet, shapefile, BLN,
-  glTF и OBJ.
+- **Географ / GIS-специалист.** Обмен с учётом CRS: GeoTIFF, GeoParquet,
+  shapefile, BLN, glTF и OBJ.
 
 Python API и CLI — интерфейс для агента; ядро на C++ — реализация, описанная
 в `Как это устроено`.

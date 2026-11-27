@@ -21,6 +21,20 @@ trends and faults. The rules you set stay visible in the result.
 Cross-validation, bootstrap ensembles and calibrated intervals show where the
 surface is supported by the data, and where it is not.
 
+## Who it is for
+
+- **Geologist.** Wells, faults, horizons and structural maps: the surface steps
+  across a fault and stays tied to the wells.
+- **Geophysicist.** Seismic picks, contour maps and fault traces on a regular
+  grid, with explicit rules instead of one global smoothing trend.
+- **Reservoir / development geologist.** Thickness, volumes, stacked horizons,
+  pinch-outs and calibrated uncertainty.
+- **GIS specialist.** CRS-aware exchange through GeoTIFF, GeoParquet, shapefile,
+  BLN, glTF and OBJ.
+
+The Python API and the C++ core are documented under `Under the hood`; they are
+integration tools, not a separate audience.
+
 ## Install
 
 Linux x86_64 wheels (CPython 3.9–3.13) are attached to each

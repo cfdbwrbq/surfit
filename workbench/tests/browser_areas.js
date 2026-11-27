@@ -1,0 +1,24 @@
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch({ headless: true, args: ['--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const errors = [];
+  page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+  page.on('pageerror', (err) => errors.push(err.message));
+  await page.goto('http://127.0.0.1:8010/', { waitUntil: 'networkidle' });
+  await page.setInputFiles('#files', ['examples/points.geojson', 'examples/area.geojson']);
+  await page.waitForFunction(() => document.querySelector('#map-stats').textContent.includes('1 areas'));
+  await page.click('.area-rules summary');
+  await page.waitForSelector('.area-rule');
+  const mode = await page.$eval('.area-rule select', (node) => node.value);
+  if (mode !== 'constant') throw new Error('area mode not inferred: ' + mode);
+  await page.fill('.area-rule input', '10');
+  await page.fill('#cell_size', '0.1');
+  await page.click('#solve');
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Done'), null, { timeout: 30000 });
+  const metrics = await page.textContent('#metrics');
+  if (!metrics.includes('areas')) throw new Error('area metric missing');
+  await page.screenshot({ path: 'tests/screenshots/areas.png', fullPage: true });
+  console.log(JSON.stringify({ status: await page.textContent('#status'), mode, errors }));
+  await browser.close();
+})().catch((err) => { console.error(err); process.exit(1); });

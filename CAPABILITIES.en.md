@@ -133,9 +133,10 @@ are in `docs/en/development.rst`.
 ## Workbench (companion app)
 
 - local browser UI in `workbench/`;
-- points, contours and faults from CSV/XYZ, GeoJSON, SHP/zip;
+- points, contours, faults and polygon areas from CSV/XYZ, GeoJSON, SHP/zip;
 - source preview on a map before solving;
 - SHP/GeoJSON field selection, value range/zero filtering, automatic cell size;
+- area rules: constant, bounds, undef and mean;
 - 2D source map, 3D surface, cross-section and Quality & rules;
 - local projects, portable archives and a JSON report;
 - not part of the wheel and not required for the Python API.

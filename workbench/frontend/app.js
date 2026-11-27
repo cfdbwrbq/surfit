@@ -17,6 +17,8 @@ let mapDrawFrame = 0;
 let previewSeq = 0;
 let previewTimer = null;
 let schemaSeq = 0;
+let areaRules = [];
+let pendingAreaRules = null;
 const pendingFields = {};
 
 /* ---------- tabs ---------- */
@@ -36,6 +38,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
 /* ---------- dropped files ---------- */
 function inferRole(name) {
   const lower = name.toLowerCase();
+  if (/(area|polygon|mask|полигон|площад)/.test(lower)) return "areas";
   if (/(contour|isoline|iso_|izol|isol|изолин)/.test(lower)) return "contours";
   if (/(fault|flt|break|разлом)/.test(lower)) return "faults";
   return "points";
@@ -73,7 +76,8 @@ function renderFiles() {
     const role = document.createElement("select");
     role.className = "file-role";
     role.dataset.id = item.id;
-    for (const [value, label] of [["points", "points"], ["contours", "contours"], ["faults", "faults"]]) {
+    for (const [value, label] of [["points", "points"], ["contours", "contours"],
+                                  ["faults", "faults"], ["areas", "areas"]]) {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = label;
@@ -151,7 +155,7 @@ function setFieldValue(key, value) {
 
 function populateFieldOptions(schema) {
   const names = new Set();
-  for (const role of ["points", "faults", "contours"]) {
+  for (const role of ["points", "faults", "contours", "areas"]) {
     for (const name of schema[role] || []) names.add(name);
   }
   const definitions = [
@@ -188,6 +192,90 @@ function populateFieldOptions(schema) {
   }
 }
 
+function appendAreaRules(body) {
+  if (areaRules.length) body.append("area_rules", JSON.stringify(areaRules));
+}
+
+function refreshAreaRules(areas) {
+  const list = $("area-rule-list");
+  const previous = new Map(areaRules.map((rule) => [rule.name, rule]));
+  const pending = pendingAreaRules;
+  pendingAreaRules = null;
+  areaRules = (areas || []).map((area, index) => {
+    const old = previous.get(area.name);
+    const supplied = pending && pending[index] ? pending[index] : null;
+    const properties = area.properties || {};
+    const fallback = properties.value !== undefined
+      ? { mode: "constant", value: properties.value }
+      : { mode: "none" };
+    return Object.assign({ name: area.name }, fallback, old || {}, supplied || {});
+  });
+  $("area-rule-count").textContent = String(areaRules.length);
+  list.innerHTML = "";
+  if (!areaRules.length) {
+    const empty = document.createElement("span");
+    empty.className = "hint";
+    empty.textContent = "No areas loaded.";
+    list.appendChild(empty);
+    return;
+  }
+  areaRules.forEach((rule, index) => {
+    const row = document.createElement("div");
+    row.className = "area-rule";
+    const title = document.createElement("b");
+    title.textContent = rule.name;
+    title.title = rule.name;
+    row.appendChild(title);
+
+    const modeField = document.createElement("label");
+    modeField.textContent = "mode";
+    const mode = document.createElement("select");
+    for (const value of ["none", "constant", "bounds", "undef", "mean"]) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      mode.appendChild(option);
+    }
+    mode.value = rule.mode || "none";
+    mode.addEventListener("change", () => {
+      rule.mode = mode.value;
+      renderAreaRuleFields(row, rule);
+    });
+    modeField.appendChild(mode);
+    row.appendChild(modeField);
+
+    const fields = document.createElement("div");
+    fields.className = "area-rule-fields";
+    row.appendChild(fields);
+    renderAreaRuleFields(row, rule);
+    list.appendChild(row);
+  });
+}
+
+function renderAreaRuleFields(row, rule) {
+  const old = row.querySelector(".area-rule-fields");
+  if (!old) return;
+  old.innerHTML = "";
+  const add = (label, property) => {
+    const wrapper = document.createElement("label");
+    wrapper.textContent = label;
+    const input = document.createElement("input");
+    input.type = "number";
+    input.step = "any";
+    input.value = rule[property] ?? "";
+    input.addEventListener("input", () => {
+      rule[property] = input.value === "" ? null : Number(input.value);
+    });
+    wrapper.appendChild(input);
+    old.appendChild(wrapper);
+  };
+  if (rule.mode === "constant" || rule.mode === "mean") add("value", "value");
+  if (rule.mode === "bounds") {
+    add("lower", "lower");
+    add("upper", "upper");
+  }
+}
+
 async function refreshSchema() {
   const active = activeFiles();
   if (!active.length) return;
@@ -216,6 +304,7 @@ function schedulePreview() {
     drawMap(null);
     refreshPointEditor();
     refreshLineEditor();
+    refreshAreaRules(data.areas || []);
     return;
   }
   refreshSchema().finally(() => {
@@ -246,6 +335,7 @@ async function runPreview() {
     drawMap(data);
     refreshPointEditor();
     refreshLineEditor();
+    refreshAreaRules(data.areas || []);
   } catch (error) {
     if (seq !== previewSeq) return;
     sourceData = null;
@@ -622,6 +712,7 @@ function sourceBounds(mesh) {
   for (const point of mesh.points || []) { xs.push(point[0]); ys.push(point[1]); }
   for (const contour of mesh.contours || []) for (const point of contour.points) { xs.push(point[0]); ys.push(point[1]); }
   for (const fault of mesh.faults || []) for (const point of fault.points) { xs.push(point[0]); ys.push(point[1]); }
+  for (const area of mesh.areas || []) for (const point of area.points) { xs.push(point[0]); ys.push(point[1]); }
   if (!xs.length) return null;
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const value of xs) { if (value < minX) minX = value; if (value > maxX) maxX = value; }
@@ -649,7 +740,7 @@ function drawMap(sources) {
   const bounds = data ? sourceBounds(data) : null;
   $("map-empty").style.display = bounds ? "none" : "flex";
   $("map-stats").textContent = data
-    ? `${data.points.length} points · ${data.contours.length} contours · ${data.faults.length} faults`
+    ? `${data.points.length} points · ${data.contours.length} contours · ${data.faults.length} faults · ${(data.areas || []).length} areas`
     : files.map((item) => `${item.role}: ${item.file.name}`).join(" · ");
   if (!bounds) return;
 
@@ -678,6 +769,19 @@ function drawMap(sources) {
   ctx.strokeStyle = "#9eb5c1";
   ctx.lineWidth = 1 / mapView.zoom;
   ctx.strokeRect(pad, pad, width - pad * 2, height - pad * 2);
+
+  for (const area of data.areas || []) {
+    ctx.beginPath();
+    area.points.forEach(([x, y], index) => {
+      if (index === 0) ctx.moveTo(tx(x), ty(y)); else ctx.lineTo(tx(x), ty(y));
+    });
+    ctx.closePath();
+    ctx.fillStyle = "rgba(180, 71, 47, 0.12)";
+    ctx.fill();
+    ctx.strokeStyle = "#b4472f";
+    ctx.lineWidth = 1.5 / mapView.zoom;
+    ctx.stroke();
+  }
 
   if ($("map-surface").checked && data === lastMesh && data.faces?.length) {
     ctx.save();
@@ -961,7 +1065,7 @@ function setMetrics(data) {
   setQuality(m);
   $("metrics").innerHTML = [
     ["points", m.points], ["contours", m.contours], ["faults", m.faults],
-    ["grid", m.grid ? `${m.grid[0]} × ${m.grid[1]}` : "–"],
+    ["areas", m.areas], ["grid", m.grid ? `${m.grid[0]} × ${m.grid[1]}` : "–"],
     ["defined", m.defined], ["undefined", m.undefined],
   ].map(([key, value]) => `<div class="metric"><span>${key}</span><b>${value ?? "–"}</b></div>`).join("");
   $("downloads").innerHTML = [
@@ -1019,6 +1123,7 @@ function projectBody() {
   const body = new FormData();
   for (const item of activeFiles()) body.append(item.role, item.file);
   appendFieldSettings(body);
+  appendAreaRules(body);
   body.append("name", $("project_name").value.trim() || "Untitled");
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
@@ -1122,6 +1227,7 @@ async function loadProject(id) {
     $(key).value = value === null || value === undefined ? "" : value;
   }
   $("exclude_zero").checked = Boolean(meta.settings.exclude_zero);
+  pendingAreaRules = meta.settings.area_rules || null;
   applyAutoCell();
   renderFiles();
   schedulePreview();
@@ -1154,6 +1260,7 @@ function downloadReport() {
   }
   settings.exclude_zero = $("exclude_zero").checked;
   settings.cell_size_auto = $("cell_size_auto").checked;
+  settings.area_rules = areaRules;
   const report = {
     format: "surfit-workbench-report",
     version: 1,
@@ -1210,6 +1317,7 @@ form.addEventListener("submit", async (event) => {
   const body = new FormData();
   for (const item of activeFiles()) body.append(item.role, item.file);
   appendFieldSettings(body);
+  appendAreaRules(body);
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {

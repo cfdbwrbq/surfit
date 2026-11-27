@@ -45,6 +45,13 @@ button { cursor: pointer; }
 .file-row select { width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 5px; background: #fff; font-size: 11px; color: var(--ink); }
 .remove { border: 0; background: transparent; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px; }
 .hint { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 8px 0 0; }
+.area-rules { margin: 10px 0; color: var(--muted); font-size: 11px; }
+.area-rules summary { cursor: pointer; }
+.area-rule-list { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; max-height: 230px; overflow-y: auto; }
+.area-rule { display: grid; grid-template-columns: minmax(0,1fr) 90px; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 6px; }
+.area-rule b { grid-column: 1 / -1; color: var(--ink); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.area-rule label { margin: 0; font-size: 10px; }
+.area-rule input, .area-rule select { padding: 4px 5px; font-size: 10px; }
 .inline-check { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: var(--muted); font-size: 11px; }
 .inline-check input { width: auto; margin: 0; padding: 0; }
 .point-editor { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
@@ -107,7 +114,7 @@ summary { cursor: pointer; }
 .slider { display: flex; align-items: center; gap: 8px; margin: 0; background: rgba(255,255,255,.86); border-radius: 7px; padding: 7px 9px; font-size: 11px; }
 .slider input { width: 100px; margin: 0; padding: 0; }
 .result-hud .slider { margin-left: auto; }
-.metrics { position: absolute; left: 16px; right: 16px; bottom: 52px; display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 7px; }
+.metrics { position: absolute; left: 16px; right: 16px; bottom: 52px; display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 7px; }
 .metric { background: rgba(255,255,255,.88); border-radius: 7px; padding: 7px 9px; }
 .metric b { display: block; font-size: 14px; }
 .metric span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }

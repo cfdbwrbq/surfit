@@ -34,7 +34,7 @@ def main():
                             "application/geo+json")},
     )
     assert preview.status_code == 200, preview.text
-    assert preview.json()["counts"] == {"points": 8, "faults": 1, "contours": 2}
+    assert preview.json()["counts"] == {"points": 8, "faults": 1, "contours": 2, "areas": 0}
     response = client.post(
         "/api/jobs",
         files={"points": ("points.csv", POINTS, "text/plain"),
@@ -125,6 +125,29 @@ def main():
     assert auto_state["status"] == "done", auto_state
     assert auto_state["metrics"]["auto_cell"] is True
     assert auto_state["metrics"]["grid"] == [201, 201]
+
+    area = client.post(
+        "/api/jobs",
+        files={
+            "points": ("auto.csv",
+                       "0 0 1\n1 0 2\n0 1 3\n1 1 4\n0.5 0.5 2.5\n",
+                       "text/plain"),
+            "areas": ("area.geojson",
+                      open("examples/area.geojson", "rb").read(),
+                      "application/geo+json"),
+        },
+        data={"cell_size": "0.1", "solver": "cg",
+              "area_rules": '[{"mode": "constant", "value": 10}]'},
+    )
+    assert area.status_code == 200, area.text
+    area_id = area.json()["id"]
+    for _ in range(80):
+        area_state = client.get("/api/jobs/%s" % area_id).json()
+        if area_state["status"] in ("done", "error"):
+            break
+        time.sleep(0.2)
+    assert area_state["status"] == "done", area_state
+    assert area_state["metrics"]["areas"] == 1
 
     project = client.post(
         "/api/projects",

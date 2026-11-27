@@ -4,7 +4,7 @@ A local, single-user web workbench around the surfit engine.  No QGIS, no
 PostGIS, no map server.
 
 ```text
-points / faults  ->  grid + rules  ->  3D surface  ->  .dat / glTF
+points / contours / faults / areas  ->  grid + rules  ->  3D surface
 ```
 
 ## Run
@@ -33,13 +33,15 @@ Open <http://127.0.0.1:8000>.  Example inputs are in `examples/`.
 ## Workflow
 
 ```text
-drop files -> assign role (points / contours / faults)
+drop files -> assign role (points / contours / faults / areas)
              -> Map & data previews the sources immediately
+             -> set area rules
              -> Solve
              -> Result 3D opens with the surface
 ```
 
-The map tab is a top-down preview of the source points, contours and faults,
+The map tab is a top-down preview of the source points, contours, faults and
+area polygons,
 available before solving.  The result tab is the 3D surface; the tabs stay
 available so you can compare the input and the result without re-running.
 
@@ -63,7 +65,7 @@ The frontend is plain ES modules; three.js is vendored under
 ## Formats
 
 CSV/XYZ, GeoJSON and optional SHP/GeoPackage are accepted for each input.  The
-same file is interpreted by its role: points, faults or contours.
+same file is interpreted by its role: points, faults, contours or areas.
 
 For GeoJSON:
 
@@ -100,6 +102,19 @@ x y z weight
 
 `#` comments and a non-numeric header row are ignored.  Maximum 200,000 points
 and a 25 MB upload.
+
+### Area rules
+
+Polygon areas from GeoJSON/SHP get a row in `Area rules`:
+
+- `constant`: value inside the polygon;
+- `bounds`: lower/upper inside the polygon;
+- `undef`: mask the polygon;
+- `mean`: average inside the polygon;
+- `none`: no rule.
+
+Fields are prefilled from polygon properties when possible and can be edited
+before solving.  Areas are drawn on the source map.
 
 ### Editing points
 

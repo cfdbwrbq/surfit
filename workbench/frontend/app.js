@@ -23,6 +23,7 @@ let pendingAreaRules = null;
 let currentAreas = [];
 let pendingGlobalRules = null;
 let pendingRuleOrder = null;
+let previewZRange = null;
 let ruleOrder = ["points", "contours", "faults", "areas", "global",
                  "bounds", "completer"];
 const pendingFields = {};
@@ -314,6 +315,45 @@ function appendAreaRules(body) {
   if (areaRules.length) body.append("area_rules", JSON.stringify(areaRules));
 }
 
+function dataZRange(data) {
+  let low = Infinity;
+  let high = -Infinity;
+  const add = (point) => {
+    const value = point?.[2];
+    if (!Number.isFinite(value)) return;
+    if (value < low) low = value;
+    if (value > high) high = value;
+  };
+  for (const point of data?.points || []) add(point);
+  for (const contour of data?.contours || []) {
+    for (const point of contour.points || []) add(point);
+  }
+  return low === Infinity ? null : [low, high];
+}
+
+function formatBound(value) {
+  if (!Number.isFinite(value)) return "—";
+  if (Math.abs(value) >= 1000) return value.toFixed(0);
+  return value.toFixed(3).replace(/\.?0+$/, "");
+}
+
+function refreshDataRange(data) {
+  previewZRange = dataZRange(data);
+  const button = $("bounds-from-data");
+  button.disabled = !previewZRange;
+  if (!previewZRange) {
+    $("data-z-range").textContent = "data z: —";
+    $("lower").placeholder = "no bound";
+    $("upper").placeholder = "no bound";
+    return;
+  }
+  const [low, high] = previewZRange;
+  const text = `data z: ${formatBound(low)} … ${formatBound(high)}`;
+  $("data-z-range").textContent = text;
+  $("lower").placeholder = `min ${formatBound(low)}`;
+  $("upper").placeholder = `max ${formatBound(high)}`;
+}
+
 function refreshAreaRules(areas) {
   const list = $("area-rule-list");
   currentAreas = areas || [];
@@ -457,6 +497,7 @@ function schedulePreview() {
     refreshLineEditor();
     refreshAreaRules(data.areas || []);
     refreshSurfaceOptions(data.surfaces || []);
+    refreshDataRange(data);
     return;
   }
   refreshSchema().finally(() => {
@@ -489,6 +530,7 @@ async function runPreview() {
     refreshLineEditor();
     refreshAreaRules(data.areas || []);
     refreshSurfaceOptions(data.surfaces || []);
+    refreshDataRange(data);
   } catch (error) {
     if (seq !== previewSeq) return;
     sourceData = null;
@@ -1208,6 +1250,11 @@ for (const key of ["min_value", "max_value"]) {
 $("map-zoom-in").addEventListener("click", () => setMapZoom(mapView.zoom * 1.35));
 $("map-zoom-out").addEventListener("click", () => setMapZoom(mapView.zoom / 1.35));
 $("map-reset").addEventListener("click", resetMapView);
+$("bounds-from-data").addEventListener("click", () => {
+  if (!previewZRange) return;
+  $("lower").value = formatBound(previewZRange[0]);
+  $("upper").value = formatBound(previewZRange[1]);
+});
 
 function sectionScreenPoint(x, y) {
   if (!mapProjection) return null;

@@ -93,7 +93,8 @@ equal to 0` removes zero rows/lines without touching negative values.  Filters
 apply to both preview and solve.  GeoPackage still needs the optional
 `requirements-geo.txt`.
 `Result min` / `Result max` set global lower/upper bounds for the solved
-surface; leave them blank for no bound.
+surface; leave them blank for no bound.  The preview reports the source Z range
+and `Use data range` fills both fields explicitly.
 
 Coordinates are used as stored; the workbench does not reproject.
 

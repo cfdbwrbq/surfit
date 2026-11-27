@@ -69,6 +69,10 @@
           <label>Result max<input id="upper" type="number" step="any" placeholder="no bound"></label>
         </div>
         <p class="hint">Global bounds applied during solve; leave blank for no bound.</p>
+        <div class="bounds-line">
+          <button id="bounds-from-data" type="button" class="ghost small" disabled>Use data range</button>
+          <span id="data-z-range" class="hint">data z: —</span>
+        </div>
         <div class="grid2">
           <label>D1<input id="d1" type="number" step="any" value="1"></label>
           <label>D2<input id="d2" type="number" step="any" value="1.6"></label>

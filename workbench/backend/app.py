@@ -542,22 +542,30 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         for name, _line in faults:
             curve_name = str(name) if "fault" in str(name) else "fault_%s" % name
             task.fault(curve_name)
-        for index, (name, _polygon, _properties) in enumerate(areas):
-            if index >= len(area_rules):
+        area_by_name = {str(name): name for name, _polygon, _props in areas}
+        for index, rule in enumerate(area_rules):
+            rule = rule or {}
+            name = rule.get("name", "")
+            if name not in area_by_name and index < len(areas):
+                name = areas[index][0]
+            if name not in area_by_name:
                 continue
-            rule = area_rules[index] or {}
+            area_name = str(name)
             mode = rule.get("mode", "none")
             if mode == "constant":
-                task.area(float(rule["value"]), str(name))
+                task.area(float(rule["value"]), area_name)
             elif mode == "bounds":
                 if rule.get("lower") is not None:
-                    task.area_geq(float(rule["lower"]), str(name))
+                    task.area_geq(float(rule["lower"]), area_name)
                 if rule.get("upper") is not None:
-                    task.area_leq(float(rule["upper"]), str(name))
+                    task.area_leq(float(rule["upper"]), area_name)
             elif mode == "undef":
-                task.area("undef", str(name))
+                task.area("undef", area_name)
             elif mode == "mean":
-                task.area_mean(float(rule["value"]), str(name))
+                task.area_mean(float(rule["value"]), area_name)
+            elif mode == "add":
+                task.area_add(float(rule["value"]), float(rule.get("weight", 0.1)),
+                              area_name)
         if lower is not None:
             task.geq(lower)
         if upper is not None:

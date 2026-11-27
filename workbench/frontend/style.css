@@ -49,7 +49,10 @@ button { cursor: pointer; }
 .area-rules summary { cursor: pointer; }
 .area-rule-list { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; max-height: 230px; overflow-y: auto; }
 .area-rule { display: grid; grid-template-columns: minmax(0,1fr) 90px; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 6px; }
-.area-rule b { grid-column: 1 / -1; color: var(--ink); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.area-rule b { color: var(--ink); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.area-rule-controls { display: flex; gap: 3px; justify-content: flex-end; }
+.area-rule-controls button { border: 1px solid var(--line); background: var(--paper); border-radius: 3px; font-size: 10px; padding: 1px 4px; color: var(--ink); }
+.area-rule-fields { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .area-rule label { margin: 0; font-size: 10px; }
 .area-rule input, .area-rule select { padding: 4px 5px; font-size: 10px; }
 .inline-check { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: var(--muted); font-size: 11px; }

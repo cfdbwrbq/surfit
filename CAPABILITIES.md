@@ -212,7 +212,7 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - points, contours, faults и полигоны-areas; CSV/XYZ, GeoJSON, SHP/zip;
 - preview исходников на карте до solve;
 - выбор полей SHP/GeoJSON, фильтр значений и auto cell size;
-- area-правила: constant, bounds, undef, mean;
+- area-правила: constant, bounds, undef, mean, add; порядок правил;
 - 2D-карта, 3D-поверхность, cross-section и Quality & rules;
 - локальные проекты, портативные архивы, JSON-отчёт;
 - не входит в wheel и не требуется для Python API.

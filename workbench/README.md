@@ -111,7 +111,10 @@ Polygon areas from GeoJSON/SHP get a row in `Area rules`:
 - `bounds`: lower/upper inside the polygon;
 - `undef`: mask the polygon;
 - `mean`: average inside the polygon;
+- `add`: weighted area contribution;
 - `none`: no rule.
+
+Rules can be moved up and down; surfit applies them in that order.
 
 Fields are prefilled from polygon properties when possible and can be edited
 before solving.  Areas are drawn on the source map.

@@ -19,6 +19,7 @@ let previewTimer = null;
 let schemaSeq = 0;
 let areaRules = [];
 let pendingAreaRules = null;
+let currentAreas = [];
 const pendingFields = {};
 
 /* ---------- tabs ---------- */
@@ -198,7 +199,10 @@ function appendAreaRules(body) {
 
 function refreshAreaRules(areas) {
   const list = $("area-rule-list");
+  currentAreas = areas || [];
   const previous = new Map(areaRules.map((rule) => [rule.name, rule]));
+  const previousOrder = new Map(((pendingAreaRules || areaRules) || [])
+    .map((rule, index) => [rule.name, index]));
   const pending = pendingAreaRules;
   pendingAreaRules = null;
   areaRules = (areas || []).map((area, index) => {
@@ -209,6 +213,11 @@ function refreshAreaRules(areas) {
       ? { mode: "constant", value: properties.value }
       : { mode: "none" };
     return Object.assign({ name: area.name }, fallback, old || {}, supplied || {});
+  });
+  areaRules.sort((a, b) => {
+    const left = previousOrder.has(a.name) ? previousOrder.get(a.name) : Number.MAX_SAFE_INTEGER;
+    const right = previousOrder.has(b.name) ? previousOrder.get(b.name) : Number.MAX_SAFE_INTEGER;
+    return left - right;
   });
   $("area-rule-count").textContent = String(areaRules.length);
   list.innerHTML = "";
@@ -226,11 +235,33 @@ function refreshAreaRules(areas) {
     title.textContent = rule.name;
     title.title = rule.name;
     row.appendChild(title);
+    const controls = document.createElement("div");
+    controls.className = "area-rule-controls";
+    const up = document.createElement("button");
+    up.type = "button";
+    up.textContent = "↑";
+    up.title = "move rule up";
+    up.disabled = index === 0;
+    up.addEventListener("click", () => {
+      [areaRules[index - 1], areaRules[index]] = [areaRules[index], areaRules[index - 1]];
+      refreshAreaRules(currentAreas);
+    });
+    const down = document.createElement("button");
+    down.type = "button";
+    down.textContent = "↓";
+    down.title = "move rule down";
+    down.disabled = index === areaRules.length - 1;
+    down.addEventListener("click", () => {
+      [areaRules[index + 1], areaRules[index]] = [areaRules[index], areaRules[index + 1]];
+      refreshAreaRules(currentAreas);
+    });
+    controls.append(up, down);
+    row.appendChild(controls);
 
     const modeField = document.createElement("label");
     modeField.textContent = "mode";
     const mode = document.createElement("select");
-    for (const value of ["none", "constant", "bounds", "undef", "mean"]) {
+    for (const value of ["none", "constant", "bounds", "undef", "mean", "add"]) {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = value;
@@ -269,7 +300,10 @@ function renderAreaRuleFields(row, rule) {
     wrapper.appendChild(input);
     old.appendChild(wrapper);
   };
-  if (rule.mode === "constant" || rule.mode === "mean") add("value", "value");
+  if (rule.mode === "constant" || rule.mode === "mean" || rule.mode === "add") {
+    add("value", "value");
+  }
+  if (rule.mode === "add") add("weight", "weight");
   if (rule.mode === "bounds") {
     add("lower", "lower");
     add("upper", "upper");

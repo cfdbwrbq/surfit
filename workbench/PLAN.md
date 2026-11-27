@@ -23,7 +23,7 @@ solve, inspect in 3D, download the result.
 - portable project archive export/import;
 - SHP via bundled pyshp (direct .shp or zipped sidecars) with field selection;
 - schema endpoint and dropdowns for DBF/GeoJSON fields;
-- polygon areas with constant/bounds/undef/mean rules;
+- polygon areas with constant/bounds/undef/mean/add rules and reordering;
 - inclusive value range and optional zero exclusion;
 - automatic cell size (about 200 cells across the longest extent);
 - quality panel for the rule report (residual, penalty iterations, violations);

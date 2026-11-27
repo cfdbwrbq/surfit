@@ -15,6 +15,7 @@ import backend.app as app
 
 POINTS = "0 0 1\n1 0 2\n0 1 3\n1 1 4\n0.5 0.5 2.5\n"
 FAULTS = "0.5 0 10\n0.5 1 10\n"
+TWO_COLUMN_FAULTS = "0.5 0\n0.5 1\n"
 CONTOURS = "0.2 0.5 10 1\n0.8 0.5 10 1\n0.5 0.2 12 2\n0.5 0.8 12 2\n"
 
 
@@ -35,6 +36,13 @@ def main():
     )
     assert preview.status_code == 200, preview.text
     assert preview.json()["counts"] == {"points": 8, "faults": 1, "contours": 2, "areas": 0, "surfaces": 0}
+    two_column = client.post(
+        "/api/preview",
+        files={"points": ("points.csv", POINTS, "text/plain"),
+               "faults": ("faults.txt", TWO_COLUMN_FAULTS, "text/plain")},
+    )
+    assert two_column.status_code == 200, two_column.text
+    assert two_column.json()["counts"]["faults"] == 1
     response = client.post(
         "/api/jobs",
         files={"points": ("points.csv", POINTS, "text/plain"),

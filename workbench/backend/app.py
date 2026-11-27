@@ -78,7 +78,7 @@ class Job:
     name: str = "surface"
 
 
-def _parse_table(raw: bytes) -> np.ndarray:
+def _parse_table(raw: bytes, min_width: int = 3) -> np.ndarray:
     text = raw.decode("utf-8", errors="replace")
     rows = []
     for line in text.splitlines():
@@ -96,7 +96,9 @@ def _parse_table(raw: bytes) -> np.ndarray:
     if not rows:
         raise HTTPException(400, "empty data file")
     width = min(len(row) for row in rows)
-    if width < 3:
+    if width < min_width:
+        if min_width == 2:
+            raise HTTPException(400, "lines need at least x y")
         raise HTTPException(400, "points need at least x y z")
     return np.asarray([row[:width] for row in rows], dtype=float)
 
@@ -318,7 +320,7 @@ def _faults(raw: Optional[bytes], filename: Optional[str] = None):
         if not result:
             raise HTTPException(400, "faults file has no LineString features")
         return result
-    data = _parse_table(raw)
+    data = _parse_table(raw, min_width=2)
     groups = {}
     if data.shape[1] >= 3:
         ids = data[:, 2].astype(int)

@@ -19,6 +19,20 @@ const { chromium } = require('playwright');
   const metrics = await page.textContent('#metrics');
   if (!metrics.includes('areas')) throw new Error('area metric missing');
   await page.screenshot({ path: 'tests/screenshots/areas.png', fullPage: true });
-  console.log(JSON.stringify({ status: await page.textContent('#status'), mode, errors }));
+
+  await page.fill('#project_name', 'Area project');
+  await page.click('#save-project');
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Project saved'));
+  await page.click('.projects summary');
+  await page.waitForSelector('.project-open');
+  await page.click('.project-open');
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('Loaded'));
+  await page.click('.area-rules summary');
+  const loadedRules = await page.textContent('#area-rule-count');
+  const loadedMode = await page.$eval('.area-rule select', (node) => node.value);
+  if (loadedRules !== '1' || loadedMode !== 'constant') {
+    throw new Error(`area rules did not survive reload: ${loadedRules}/${loadedMode}`);
+  }
+  console.log(JSON.stringify({ status: await page.textContent('#status'), mode, loadedMode, errors }));
   await browser.close();
 })().catch((err) => { console.error(err); process.exit(1); });

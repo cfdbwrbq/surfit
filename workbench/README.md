@@ -109,7 +109,7 @@ Polygon areas from GeoJSON/SHP get a row in `Area rules`:
 
 - `constant`: value inside the polygon;
 - `bounds`: lower/upper inside the polygon;
-- `undef`: mask the polygon;
+- `undef` / mask: leave the polygon undefined;
 - `mean`: average inside the polygon;
 - `add`: weighted area contribution;
 - `none`: no rule.

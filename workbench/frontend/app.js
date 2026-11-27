@@ -264,7 +264,7 @@ function refreshAreaRules(areas) {
     for (const value of ["none", "constant", "bounds", "undef", "mean", "add"]) {
       const option = document.createElement("option");
       option.value = value;
-      option.textContent = value;
+      option.textContent = value === "undef" ? "undef / mask" : value;
       mode.appendChild(option);
     }
     mode.value = rule.mode || "none";

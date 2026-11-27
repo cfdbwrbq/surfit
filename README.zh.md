@@ -59,7 +59,7 @@ surfit run recipe.json --result-json result.json
 结果包含形状、defined/undefined 数量、min、max 和 mean；失败时返回
 `{"ok": false, "error": ...}` 和非零退出码。需要交叉验证、集成或自定义规则时，
 使用 Python API。
-仓库包含面向编码智能体的使用 skill：`.agents/skills/surfit/`。
+面向编码智能体的项目 skills 位于 `.agents/skills/`：usage、workbench、release、testing 和 review。
 
 ## 安装
 

@@ -2,7 +2,7 @@
 
 **English** | [Русский](README.ru.md) | [中文](README.zh.md)
 
-## Don't smooth the geology away.
+## Don't smooth the rules away.
 
 **Faults stay faults. Wells stay tied. Bounds stay bounds. Layers stay ordered.**
 

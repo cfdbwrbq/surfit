@@ -58,8 +58,9 @@ wheel dependency.
 
 ![Workbench: source files, grid settings and the faulted 3D result](docs/_static/workbench.png)
 
-*Sources and rules on the left; the faulted surface, quality report and grid
-metrics on the right.*
+*The same eleven wells and four faults as the hero image, now inside the
+workbench: sources and rules on the left; the faulted surface, quality report
+and grid metrics on the right.*
 
 ### Python and JSON recipes — for agents
 

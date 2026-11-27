@@ -20,7 +20,10 @@ The shortest path is:
 finds `../build-ci/bin` automatically.  Override with
 `SURFIT_BIN=/path/to/surfit/build-ci/bin ./run.sh` or `PORT=8080 ./run.sh`.
 
-![Workbench: source files, grid settings and the faulted 3D result](../docs/_static/workbench.png)
+![Workbench: the same eleven wells and four faults as the hero image](../docs/_static/workbench.png)
+
+*The hero scene inside the workbench: eleven wells, four faults, one regular
+grid, with the quality report visible.*
 
 Manual equivalent:
 

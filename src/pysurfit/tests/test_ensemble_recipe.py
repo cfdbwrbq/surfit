@@ -57,6 +57,16 @@ def test_recipe():
         from surfit.cli import main as cli_main
 
         assert cli_main(["run", path, "--summary"]) == 0
+        result_path = os.path.join(directory, "result.json")
+        assert cli_main(["run", path, "--result-json", result_path]) == 0
+        with open(result_path, encoding="utf-8") as stream:
+            result = json.load(stream)
+        assert result["ok"] is True
+        assert len(result["shape"]) == 2
+        assert result["defined"] > 0
+        assert result["defined"] + result["undefined"] == (
+            result["shape"][0] * result["shape"][1])
+        assert result["min"] <= result["mean"] <= result["max"]
 
 
 def main():

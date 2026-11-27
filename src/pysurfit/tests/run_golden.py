@@ -151,12 +151,16 @@ def run_case(case):
         bad = [name for name in want if got[name] != want[name]]
         if bad:
             numeric = case.get("numeric", {})
+            signatures = {name: _numeric_signature(os.path.join(directory, name))
+                          for name in bad}
             if all(name in numeric and
-                   _numeric_matches(numeric[name],
-                                    _numeric_signature(os.path.join(directory, name)))
+                   _numeric_matches(numeric[name], signatures[name])
                    for name in bad):
                 return True, "%d file(s), numeric tolerance" % len(want)
-            return False, "differ: %s" % ", ".join(sorted(bad))
+            details = "; ".join("%s want=%s got=%s" %
+                                (name, numeric.get(name), signatures[name])
+                                for name in sorted(bad))
+            return False, "differ: %s [%s]" % (", ".join(sorted(bad)), details)
         return True, "%d file(s)" % len(want)
 
 

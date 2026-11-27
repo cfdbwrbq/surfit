@@ -1,0 +1,4 @@
+# Optional GeoPackage support; SHP is covered by pyshp in requirements.txt.
+geopandas>=0.14
+pyogrio>=0.7
+shapely>=2

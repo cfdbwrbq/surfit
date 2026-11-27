@@ -1537,6 +1537,48 @@ $("draw-section").addEventListener("click", drawSection);
 $("map-surface").addEventListener("change", () => drawMap(lastMesh));
 $("download-report").addEventListener("click", downloadReport);
 
+function fullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function updateFullscreenButton() {
+  const active = fullscreenElement() === $("result-pane");
+  const button = $("fullscreen");
+  button.textContent = active ? "Exit fullscreen" : "Fullscreen";
+  button.setAttribute("aria-pressed", String(active));
+}
+
+async function toggleFullscreen() {
+  const pane = $("result-pane");
+  try {
+    if (fullscreenElement()) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) await exit.call(document);
+    } else {
+      const request = pane.requestFullscreen || pane.webkitRequestFullscreen;
+      if (request) await request.call(pane);
+    }
+  } catch (error) {
+    console.warn("fullscreen unavailable", error);
+  }
+  updateFullscreenButton();
+  requestAnimationFrame(resizeView);
+}
+
+$("fullscreen").addEventListener("click", toggleFullscreen);
+document.addEventListener("fullscreenchange", () => {
+  updateFullscreenButton();
+  requestAnimationFrame(resizeView);
+});
+document.addEventListener("webkitfullscreenchange", () => {
+  updateFullscreenButton();
+  requestAnimationFrame(resizeView);
+});
+
+if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+  $("fullscreen").hidden = true;
+}
+
 $("exaggeration").addEventListener("input", (event) => {
   setExaggeration(10 ** Number(event.target.value), false);
 });

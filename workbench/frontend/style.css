@@ -129,6 +129,14 @@ summary { cursor: pointer; }
 .slider output { min-width: 44px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .slider .small { padding: 2px 5px; font-size: 10px; }
 .result-hud .slider { margin-left: auto; }
+.result-actions { display: flex; gap: 7px; }
+#result-pane:fullscreen, #result-pane:-webkit-full-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #e7f0f5;
+}
 .metrics { position: absolute; left: 16px; right: 16px; bottom: 52px; display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 7px; }
 .metric { background: rgba(255,255,255,.88); border-radius: 7px; padding: 7px 9px; }
 .metric b { display: block; font-size: 14px; }

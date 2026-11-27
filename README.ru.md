@@ -69,7 +69,7 @@ surfit run recipe.json --result-json result.json
 В результате будут форма, число defined/undefined, min, max и mean; ошибка
 вернёт `{"ok": false, "error": ...}` и ненулевой код возврата. Python API нужен,
 когда агенту требуются cross-validation, ансамбли или собственные правила.
-Проектные skills для кодовых агентов лежат в `.agents/skills/`: usage, workbench, release, testing и review.
+В репозитории есть skill для кодовых агентов: `.agents/skills/surfit/`.
 
 ## Установка
 

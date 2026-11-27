@@ -71,7 +71,7 @@ mean; failures return `{"ok": false, "error": ...}` and a non-zero exit code.
 Use the Python API when the agent needs cross-validation, ensembles or custom
 rules.
 
-Project skills for coding agents live under `.agents/skills/`: usage, workbench, release, testing and review.
+A usage skill for coding agents is included at `.agents/skills/surfit/`.
 
 ## Install
 

@@ -15,17 +15,6 @@ The Python package is a thin wrapper around the same C++ engine as the Tcl
 front end: one Tcl command maps to one Python call, and both produce the same
 result.
 
-## Project skills
-
-Before changing product direction, workbench, docs, marketing or a release,
-load the project skills:
-
-- `.agents/skills/surfit-project-context/SKILL.md` — standing decisions;
-- `.agents/skills/surfit-workbench/SKILL.md` — workbench implementation/testing;
-- `.agents/skills/release-sync/SKILL.md` — release invariants and sequence;
-- `.agents/skills/surfit-testing/SKILL.md` — test layers;
-- `.agents/skills/surfit-review/SKILL.md` — change review.
-
 ## Interfaces in 3.7.5
 
 - **Agent/headless:** the Python API and the `surfit` CLI.  A recipe can be

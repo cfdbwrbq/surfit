@@ -29,7 +29,7 @@
         <span>CSV · GeoJSON · zipped SHP</span>
         <button type="button" id="browse" class="ghost">Choose files</button>
         <input id="files" type="file" multiple hidden
-               accept=".csv,.txt,.xyz,.geojson,.json,.shp,.gpkg,.zip">
+               accept=".csv,.txt,.xyz,.geojson,.json,.shp,.gpkg,.zip,.func,.dat">
       </div>
       <div id="file-list" class="file-list"></div>
       <p class="hint">Assign each file: points, contours or faults. Points are optional when contours are present.</p>
@@ -82,6 +82,23 @@
           <summary>Area rules <span id="area-rule-count">0</span></summary>
           <div id="area-rule-list" class="area-rule-list"></div>
           <p class="hint">Areas come from GeoJSON/SHP polygons. Rules apply after geometry and before completer.</p>
+        </details>
+        <details class="surface-rules">
+          <summary>Surface rules <span id="surface-count">0</span></summary>
+          <label class="inline-check"><input id="mean-enabled" type="checkbox">global mean</label>
+          <input id="mean-value" type="number" step="any" placeholder="mean value">
+          <label class="inline-check"><input id="wmean-enabled" type="checkbox">weighted mean</label>
+          <div class="grid2">
+            <input id="wmean-value" type="number" step="any" placeholder="wmean value">
+            <select id="wmean-surface"><option value="">surface</option></select>
+          </div>
+          <label class="inline-check"><input id="trend-enabled" type="checkbox">trend</label>
+          <div class="grid2">
+            <input id="trend-weight" type="number" step="any" placeholder="weight" value="1">
+            <input id="trend-order" type="number" step="any" placeholder="order" value="10">
+          </div>
+          <select id="trend-surface"><option value="">surface</option></select>
+          <p class="hint">Surface rules apply after areas and before completer.</p>
         </details>
         <details class="field-map" open>
           <summary>Data fields (SHP/GeoJSON)</summary>

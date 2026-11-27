@@ -60,12 +60,11 @@ recomputes source URLs; it does not trust stored paths.
 The frontend is plain ES modules; three.js is vendored under
 `frontend/vendor/`, so there is no build step and no CDN dependency.
 
-## Input
-
-## Formats
+## Input formats
 
 CSV/XYZ, GeoJSON and optional SHP/GeoPackage are accepted for each input.  The
-same file is interpreted by its role: points, faults, contours or areas.
+same file is interpreted by its role: points, faults, contours, areas or
+surfaces.
 
 For GeoJSON:
 
@@ -73,7 +72,8 @@ For GeoJSON:
   property;
 - faults: `LineString` or `MultiLineString`;
 - contours: `LineString` or `MultiLineString`, with 3D coordinates or a
-  `z`/`value` property.
+  `z`/`value` property;
+- surfaces: native surfit `.func` or compatible `.dat` grids.
 
 SHP is read by the bundled `pyshp` dependency, without GDAL.  A zipped
 `.shp/.shx/.dbf/.prj` keeps attributes and the z/weight fields; a bare `.shp`
@@ -102,6 +102,17 @@ x y z weight
 
 `#` comments and a non-numeric header row are ignored.  Maximum 200,000 points
 and a 25 MB upload.
+
+### Surface rules
+
+Upload a native surfit surface (`.func` or a compatible `.dat`) as the
+`surfaces` role.  The panel can add:
+
+- global `mean`;
+- weighted `mean` with the selected surface;
+- `trend` with weight/order.
+
+Surface rules run after areas and before `completer`.
 
 ### Area rules
 

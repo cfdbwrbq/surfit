@@ -412,6 +412,18 @@ def _parse_area_rules(raw: Optional[str]):
     return rules
 
 
+def _parse_global_rules(raw: Optional[str]):
+    if not raw:
+        return []
+    try:
+        rules = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise HTTPException(400, "global_rules must be JSON") from error
+    if not isinstance(rules, list):
+        raise HTTPException(400, "global_rules must be a list")
+    return rules
+
+
 def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
     values = np.asarray(values, dtype=float)
     step = max(1, int(np.ceil(max(values.shape) / max_side)))
@@ -448,7 +460,7 @@ def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
 
 
 def _solve(job: Job, point_files, fault_files, contour_files, area_files,
-           area_rules, fields, value_filter,
+           surface_files, area_rules, global_rules, fields, value_filter,
            cell_size: float, auto_cell: bool, tol: float, solver: str,
            d1: float, d2: float,
            lower: Optional[float], upper: Optional[float], extent_values):
@@ -523,6 +535,20 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         step_y = (max_y - min_y) / (ny - 1)
         task = surfit.Session(map_name="studio", tol=tol, strict=True)
         task.set_solver(solver)
+        surface_dir = tempfile.TemporaryDirectory()
+        surface_names = []
+        for index, (raw, original) in enumerate(surface_files):
+            surface_path = os.path.join(surface_dir.name, "surface_%d.func" % index)
+            with open(surface_path, "wb") as handle:
+                handle.write(raw)
+            before = set(task.surf_names())
+            loaded = task.surf_load(surface_path)
+            if not any(loaded):
+                raise ValueError("could not load surface %s" % (original or index))
+            new_names = [name for name in task.surf_names() if name not in before]
+            if not new_names:
+                raise ValueError("surface %s has no readable grid" % (original or index))
+            surface_names.append(new_names[0])
         if x is not None:
             task.add_points(x, y, z, weights=weights, name="points")
         for name, line in contours:
@@ -566,6 +592,21 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             elif mode == "add":
                 task.area_add(float(rule["value"]), float(rule.get("weight", 0.1)),
                               area_name)
+        for rule in global_rules:
+            mode = rule.get("mode", "none")
+            if mode == "mean":
+                task.mean(float(rule["value"]), 0)
+            elif mode == "wmean":
+                surface = str(rule.get("surface", ""))
+                if surface.startswith("surface_"):
+                    surface = surface_names[int(surface.split("_")[1])]
+                task.wmean(float(rule["value"]), surface, 0)
+            elif mode == "trend":
+                surface = str(rule.get("surface", ""))
+                if surface.startswith("surface_"):
+                    surface = surface_names[int(surface.split("_")[1])]
+                task.trend(float(rule.get("weight", 1)), int(rule.get("order", 10)),
+                           surface)
         if lower is not None:
             task.geq(lower)
         if upper is not None:
@@ -585,6 +626,7 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             "contours": len(contours),
             "faults": len(faults),
             "areas": len(areas),
+            "surfaces": len(surface_files),
             "grid": [int(nx), int(ny)],
             "cell_size": float(cell_size),
             "auto_cell": bool(auto_cell),
@@ -693,7 +735,9 @@ async def save_project(
     faults: List[UploadFile] = File(default=[]),
     contours: List[UploadFile] = File(default=[]),
     areas: List[UploadFile] = File(default=[]),
+    surfaces: List[UploadFile] = File(default=[]),
     area_rules: str = Form(""),
+    global_rules: str = Form(""),
     name: str = Form("Untitled"),
     job_id: Optional[str] = Form(None),
     x_field: str = Form(""),
@@ -720,6 +764,7 @@ async def save_project(
     fault_files = await _read_group(faults, "faults")
     contour_files = await _read_group(contours, "contours")
     area_files = await _read_group(areas, "areas")
+    surface_files = await _read_group(surfaces, "surfaces")
     if not point_files and not contour_files:
         raise HTTPException(400, "save at least one points or contours file")
     project_id = uuid.uuid4().hex[:12]
@@ -728,7 +773,8 @@ async def save_project(
     sources_dir.mkdir(parents=True)
     sources = []
     for role, group in (("points", point_files), ("faults", fault_files),
-                        ("contours", contour_files), ("areas", area_files)):
+                        ("contours", contour_files), ("areas", area_files),
+                        ("surfaces", surface_files)):
         role_dir = sources_dir / role
         role_dir.mkdir()
         for index, (raw, original) in enumerate(group):
@@ -745,9 +791,11 @@ async def save_project(
                 "weight_field": weight_field,
                 "min_value": min_value, "max_value": max_value,
                 "exclude_zero": exclude_zero,
-                "area_rules": _parse_area_rules(area_rules)}
+                "area_rules": _parse_area_rules(area_rules),
+                "global_rules": _parse_global_rules(global_rules)}
     counts = {"points": len(point_files), "faults": len(fault_files),
-              "contours": len(contour_files), "areas": len(area_files)}
+              "contours": len(contour_files), "areas": len(area_files),
+              "surfaces": len(surface_files)}
     result = {}
     job = _jobs.get(job_id) if job_id else None
     if job is not None and job.status == "done":
@@ -834,7 +882,7 @@ async def import_project(archive: UploadFile = File(...)):
 
 @app.get("/api/projects/{project_id}/sources/{role}/{index}")
 def project_source(project_id: str, role: str, index: int):
-    if role not in {"points", "faults", "contours", "areas"}:
+    if role not in {"points", "faults", "contours", "areas", "surfaces"}:
         raise HTTPException(404, "source not found")
     meta = _project_meta(project_id)
     matches = [item for item in meta.get("sources", []) if item["role"] == role]
@@ -898,7 +946,7 @@ async def _read_group(group, label):
 
 
 def _preview_sources(point_files, fault_files, contour_files, area_files,
-                     fields=None, value_filter=None):
+                     surface_files, fields=None, value_filter=None):
     points = []
     point_count = 0
     fields = fields or {}
@@ -925,6 +973,8 @@ def _preview_sources(point_files, fault_files, contour_files, area_files,
             areas.append({"name": "%d_%s" % (index, feature),
                           "points": polygon.tolist(),
                           "properties": properties})
+    surfaces = [{"key": "surface_%d" % index, "name": name or "surface"}
+                for index, (_raw, name) in enumerate(surface_files)]
     xs = [point[0] for point in points]
     ys = [point[1] for point in points]
     for item in faults + contours + areas:
@@ -939,8 +989,10 @@ def _preview_sources(point_files, fault_files, contour_files, area_files,
         "faults": faults,
         "contours": contours,
         "areas": areas,
+        "surfaces": surfaces,
         "counts": {"points": len(points), "faults": len(faults),
-                   "contours": len(contours), "areas": len(areas)},
+                   "contours": len(contours), "areas": len(areas),
+                   "surfaces": len(surfaces)},
         "bounds": bounds,
     }
 
@@ -973,16 +1025,19 @@ async def schema(
     faults: List[UploadFile] = File(default=[]),
     contours: List[UploadFile] = File(default=[]),
     areas: List[UploadFile] = File(default=[]),
+    surfaces: List[UploadFile] = File(default=[]),
 ):
     point_files = await _read_group(points, "points")
     fault_files = await _read_group(faults, "faults")
     contour_files = await _read_group(contours, "contours")
     area_files = await _read_group(areas, "areas")
+    surface_files = await _read_group(surfaces, "surfaces")
     return {
         "points": _schema_for_group(point_files),
         "faults": _schema_for_group(fault_files),
         "contours": _schema_for_group(contour_files),
         "areas": _schema_for_group(area_files),
+        "surfaces": [],
     }
 
 
@@ -992,6 +1047,7 @@ async def preview(
     faults: List[UploadFile] = File(default=[]),
     contours: List[UploadFile] = File(default=[]),
     areas: List[UploadFile] = File(default=[]),
+    surfaces: List[UploadFile] = File(default=[]),
     x_field: str = Form(""),
     y_field: str = Form(""),
     z_field: str = Form(""),
@@ -1005,10 +1061,11 @@ async def preview(
     fault_files = await _read_group(faults, "faults")
     contour_files = await _read_group(contours, "contours")
     area_files = await _read_group(areas, "areas")
+    surface_files = await _read_group(surfaces, "surfaces")
     if not point_files and not contour_files and not fault_files and not area_files:
-        return _preview_sources([], [], [], [])
+        return _preview_sources([], [], [], [], surface_files)
     return _preview_sources(
-        point_files, fault_files, contour_files, area_files,
+        point_files, fault_files, contour_files, area_files, surface_files,
         _fields_from(x_field, y_field, z_field, weight_field),
         _value_filter(min_value, max_value, exclude_zero))
 
@@ -1024,7 +1081,9 @@ async def create_job(
     faults: List[UploadFile] = File(default=[]),
     contours: List[UploadFile] = File(default=[]),
     areas: List[UploadFile] = File(default=[]),
+    surfaces: List[UploadFile] = File(default=[]),
     area_rules: str = Form(""),
+    global_rules: str = Form(""),
     x_field: str = Form(""),
     y_field: str = Form(""),
     z_field: str = Form(""),
@@ -1054,6 +1113,7 @@ async def create_job(
     fault_files = await _read_group(faults, "faults")
     contour_files = await _read_group(contours, "contours")
     area_files = await _read_group(areas, "areas")
+    surface_files = await _read_group(surfaces, "surfaces")
     if not point_files and not contour_files:
         raise HTTPException(400, "upload points or contours")
     _cleanup()
@@ -1061,7 +1121,8 @@ async def create_job(
     with _lock:
         _jobs[job.id] = job
     _pool.submit(_solve, job, point_files, fault_files, contour_files,
-                 area_files, _parse_area_rules(area_rules),
+                 area_files, surface_files, _parse_area_rules(area_rules),
+                 _parse_global_rules(global_rules),
                  _fields_from(x_field, y_field, z_field, weight_field),
                  _value_filter(min_value, max_value, exclude_zero),
                  cell_size, cell_size_auto, tol, solver, d1, d2, lower, upper,

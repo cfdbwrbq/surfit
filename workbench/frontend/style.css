@@ -45,6 +45,10 @@ button { cursor: pointer; }
 .file-row select { width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 5px; background: #fff; font-size: 11px; color: var(--ink); }
 .remove { border: 0; background: transparent; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px; }
 .hint { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 8px 0 0; }
+.surface-rules { margin: 10px 0; color: var(--muted); font-size: 11px; }
+.surface-rules summary { cursor: pointer; }
+.surface-rules > input, .surface-rules > select { margin: 5px 0; }
+.surface-rules .inline-check { margin-top: 7px; }
 .area-rules { margin: 10px 0; color: var(--muted); font-size: 11px; }
 .area-rules summary { cursor: pointer; }
 .area-rule-list { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; max-height: 230px; overflow-y: auto; }

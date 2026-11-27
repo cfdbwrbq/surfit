@@ -34,7 +34,7 @@ def main():
                             "application/geo+json")},
     )
     assert preview.status_code == 200, preview.text
-    assert preview.json()["counts"] == {"points": 8, "faults": 1, "contours": 2, "areas": 0}
+    assert preview.json()["counts"] == {"points": 8, "faults": 1, "contours": 2, "areas": 0, "surfaces": 0}
     response = client.post(
         "/api/jobs",
         files={"points": ("points.csv", POINTS, "text/plain"),
@@ -148,6 +148,31 @@ def main():
         time.sleep(0.2)
     assert area_state["status"] == "done", area_state
     assert area_state["metrics"]["areas"] == 1
+
+    surface = client.post(
+        "/api/jobs",
+        files={
+            "points": ("surface.csv",
+                       "0 0 1\n1 0 2\n0 1 3\n1 1 4\n0.5 0.5 2.5\n",
+                       "text/plain"),
+            "surfaces": ("func.func",
+                         open("examples/func.func", "rb").read(),
+                         "application/octet-stream"),
+        },
+        data={"cell_size": "1", "solver": "cg",
+              "global_rules": '[{"mode": "mean", "value": 2.5}]'},
+    )
+    assert surface.status_code == 200, surface.text
+    surface_id = surface.json()["id"]
+    for _ in range(120):
+        surface_state = client.get("/api/jobs/%s" % surface_id).json()
+        if surface_state["status"] in ("done", "error"):
+            break
+        time.sleep(0.2)
+    assert surface_state["status"] == "done", surface_state
+    assert surface_state["metrics"]["surfaces"] == 1
+    assert any(rule["name"] == "f_mean"
+               for rule in surface_state["metrics"]["rule_report"]["rules"])
 
     project = client.post(
         "/api/projects",

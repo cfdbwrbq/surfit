@@ -20,6 +20,7 @@ let schemaSeq = 0;
 let areaRules = [];
 let pendingAreaRules = null;
 let currentAreas = [];
+let pendingGlobalRules = null;
 const pendingFields = {};
 
 /* ---------- tabs ---------- */
@@ -39,6 +40,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
 /* ---------- dropped files ---------- */
 function inferRole(name) {
   const lower = name.toLowerCase();
+  if (/(surface|trend|func|grid|поверхность)/.test(lower)) return "surfaces";
   if (/(area|polygon|mask|полигон|площад)/.test(lower)) return "areas";
   if (/(contour|isoline|iso_|izol|isol|изолин)/.test(lower)) return "contours";
   if (/(fault|flt|break|разлом)/.test(lower)) return "faults";
@@ -78,7 +80,8 @@ function renderFiles() {
     role.className = "file-role";
     role.dataset.id = item.id;
     for (const [value, label] of [["points", "points"], ["contours", "contours"],
-                                  ["faults", "faults"], ["areas", "areas"]]) {
+                                  ["faults", "faults"], ["areas", "areas"],
+                                  ["surfaces", "surfaces"]]) {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = label;
@@ -190,6 +193,69 @@ function populateFieldOptions(schema) {
   const contourFiles = activeFiles().some((item) => item.role === "contours");
   if (!zSelect.value && contourFiles && names.size === 1) {
     zSelect.value = [...names][0];
+  }
+}
+
+function currentGlobalRules() {
+  const rules = [];
+  if ($("mean-enabled").checked) {
+    rules.push({ mode: "mean", value: Number($("mean-value").value) });
+  }
+  if ($("wmean-enabled").checked) {
+    rules.push({ mode: "wmean", value: Number($("wmean-value").value),
+                 surface: $("wmean-surface").value });
+  }
+  if ($("trend-enabled").checked) {
+    rules.push({ mode: "trend", surface: $("trend-surface").value,
+                 weight: Number($("trend-weight").value || 1),
+                 order: Number($("trend-order").value || 10) });
+  }
+  return rules;
+}
+
+function appendGlobalRules(body) {
+  const rules = currentGlobalRules();
+  if (rules.length) body.append("global_rules", JSON.stringify(rules));
+}
+
+function refreshSurfaceOptions(surfaces) {
+  const options = (surfaces || []).map((item) => ({ key: item.key, name: item.name }));
+  for (const id of ["wmean-surface", "trend-surface"]) {
+    const select = $(id);
+    const current = select.value;
+    select.innerHTML = '<option value="">surface</option>';
+    for (const option of options) {
+      const node = document.createElement("option");
+      node.value = option.key;
+      node.textContent = option.name;
+      select.appendChild(node);
+    }
+    if ([...select.options].some((node) => node.value === current)) select.value = current;
+  }
+  $("surface-count").textContent = String(options.length);
+  if (pendingGlobalRules) {
+    applyGlobalRules(pendingGlobalRules);
+    pendingGlobalRules = null;
+  }
+}
+
+function applyGlobalRules(rules) {
+  const byMode = new Map((rules || []).map((rule) => [rule.mode, rule]));
+  const mean = byMode.get("mean");
+  const wmean = byMode.get("wmean");
+  const trend = byMode.get("trend");
+  $("mean-enabled").checked = Boolean(mean);
+  if (mean) $("mean-value").value = mean.value ?? "";
+  $("wmean-enabled").checked = Boolean(wmean);
+  if (wmean) {
+    $("wmean-value").value = wmean.value ?? "";
+    if (wmean.surface) $("wmean-surface").value = wmean.surface;
+  }
+  $("trend-enabled").checked = Boolean(trend);
+  if (trend) {
+    $("trend-weight").value = trend.weight ?? 1;
+    $("trend-order").value = trend.order ?? 10;
+    if (trend.surface) $("trend-surface").value = trend.surface;
   }
 }
 
@@ -339,6 +405,7 @@ function schedulePreview() {
     refreshPointEditor();
     refreshLineEditor();
     refreshAreaRules(data.areas || []);
+    refreshSurfaceOptions(data.surfaces || []);
     return;
   }
   refreshSchema().finally(() => {
@@ -370,6 +437,7 @@ async function runPreview() {
     refreshPointEditor();
     refreshLineEditor();
     refreshAreaRules(data.areas || []);
+    refreshSurfaceOptions(data.surfaces || []);
   } catch (error) {
     if (seq !== previewSeq) return;
     sourceData = null;
@@ -774,7 +842,7 @@ function drawMap(sources) {
   const bounds = data ? sourceBounds(data) : null;
   $("map-empty").style.display = bounds ? "none" : "flex";
   $("map-stats").textContent = data
-    ? `${data.points.length} points · ${data.contours.length} contours · ${data.faults.length} faults · ${(data.areas || []).length} areas`
+    ? `${data.points.length} points · ${data.contours.length} contours · ${data.faults.length} faults · ${(data.areas || []).length} areas · ${(data.surfaces || []).length} surfaces`
     : files.map((item) => `${item.role}: ${item.file.name}`).join(" · ");
   if (!bounds) return;
 
@@ -1158,6 +1226,7 @@ function projectBody() {
   for (const item of activeFiles()) body.append(item.role, item.file);
   appendFieldSettings(body);
   appendAreaRules(body);
+  appendGlobalRules(body);
   body.append("name", $("project_name").value.trim() || "Untitled");
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
@@ -1262,6 +1331,7 @@ async function loadProject(id) {
   }
   $("exclude_zero").checked = Boolean(meta.settings.exclude_zero);
   pendingAreaRules = meta.settings.area_rules || null;
+  pendingGlobalRules = meta.settings.global_rules || null;
   applyAutoCell();
   renderFiles();
   schedulePreview();
@@ -1295,6 +1365,7 @@ function downloadReport() {
   settings.exclude_zero = $("exclude_zero").checked;
   settings.cell_size_auto = $("cell_size_auto").checked;
   settings.area_rules = areaRules;
+  settings.global_rules = currentGlobalRules();
   const report = {
     format: "surfit-workbench-report",
     version: 1,
@@ -1352,6 +1423,7 @@ form.addEventListener("submit", async (event) => {
   for (const item of activeFiles()) body.append(item.role, item.file);
   appendFieldSettings(body);
   appendAreaRules(body);
+  appendGlobalRules(body);
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {

@@ -24,6 +24,7 @@ solve, inspect in 3D, download the result.
 - SHP via bundled pyshp (direct .shp or zipped sidecars) with field selection;
 - schema endpoint and dropdowns for DBF/GeoJSON fields;
 - polygon areas with constant/bounds/undef/mean/add rules and reordering;
+- global mean, weighted mean and trend rules using uploaded surfaces;
 - inclusive value range and optional zero exclusion;
 - automatic cell size (about 200 cells across the longest extent);
 - quality panel for the rule report (residual, penalty iterations, violations);

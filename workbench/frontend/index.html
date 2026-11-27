@@ -65,9 +65,10 @@
         </div>
         <label class="inline-check"><input id="cell_size_auto" type="checkbox">auto cell size (~200 cells across the longest side)</label>
         <div class="grid2">
-          <label>Lower bound<input id="lower" type="number" step="any" placeholder="none"></label>
-          <label>Upper bound<input id="upper" type="number" step="any" placeholder="none"></label>
+          <label>Result min<input id="lower" type="number" step="any" placeholder="no bound"></label>
+          <label>Result max<input id="upper" type="number" step="any" placeholder="no bound"></label>
         </div>
+        <p class="hint">Global bounds applied during solve; leave blank for no bound.</p>
         <div class="grid2">
           <label>D1<input id="d1" type="number" step="any" value="1"></label>
           <label>D2<input id="d2" type="number" step="any" value="1.6"></label>

@@ -92,6 +92,8 @@ falls back to coordinate z, then common properties (`z`, `Z`, `elev`,
 equal to 0` removes zero rows/lines without touching negative values.  Filters
 apply to both preview and solve.  GeoPackage still needs the optional
 `requirements-geo.txt`.
+`Result min` / `Result max` set global lower/upper bounds for the solved
+surface; leave them blank for no bound.
 
 Coordinates are used as stored; the workbench does not reproject.
 

@@ -424,6 +424,26 @@ def _parse_global_rules(raw: Optional[str]):
     return rules
 
 
+DEFAULT_RULE_ORDER = ["points", "contours", "faults", "areas", "global",
+                      "bounds", "completer"]
+
+
+def _parse_rule_order(raw: Optional[str]):
+    if not raw:
+        return list(DEFAULT_RULE_ORDER)
+    try:
+        order = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise HTTPException(400, "rule_order must be JSON") from error
+    if not isinstance(order, list) or not all(isinstance(item, str) for item in order):
+        raise HTTPException(400, "rule_order must be a list of strings")
+    result = [item for item in order if item in DEFAULT_RULE_ORDER]
+    for item in DEFAULT_RULE_ORDER:
+        if item not in result:
+            result.append(item)
+    return result
+
+
 def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
     values = np.asarray(values, dtype=float)
     step = max(1, int(np.ceil(max(values.shape) / max_side)))
@@ -460,7 +480,7 @@ def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
 
 
 def _solve(job: Job, point_files, fault_files, contour_files, area_files,
-           surface_files, area_rules, global_rules, fields, value_filter,
+           surface_files, area_rules, global_rules, rule_order, fields, value_filter,
            cell_size: float, auto_cell: bool, tol: float, solver: str,
            d1: float, d2: float,
            lower: Optional[float], upper: Optional[float], extent_values):
@@ -560,58 +580,77 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         for name, polygon, _properties in areas:
             task.add_areas(polygon[:, 0], polygon[:, 1], name=str(name))
         task.grid(min_x, max_x, step_x, min_y, max_y, step_y)
-        if x is not None:
-            task.points("points")
-        for name, _line in contours:
-            curve_name = str(name) if "contour" in str(name) else "contour_%s" % name
-            task.contour(curve_name)
-        for name, _line in faults:
-            curve_name = str(name) if "fault" in str(name) else "fault_%s" % name
-            task.fault(curve_name)
-        area_by_name = {str(name): name for name, _polygon, _props in areas}
-        for index, rule in enumerate(area_rules):
-            rule = rule or {}
-            name = rule.get("name", "")
-            if name not in area_by_name and index < len(areas):
-                name = areas[index][0]
-            if name not in area_by_name:
-                continue
-            area_name = str(name)
-            mode = rule.get("mode", "none")
-            if mode == "constant":
-                task.area(float(rule["value"]), area_name)
-            elif mode == "bounds":
-                if rule.get("lower") is not None:
-                    task.area_geq(float(rule["lower"]), area_name)
-                if rule.get("upper") is not None:
-                    task.area_leq(float(rule["upper"]), area_name)
-            elif mode == "undef":
-                task.area("undef", area_name)
-            elif mode == "mean":
-                task.area_mean(float(rule["value"]), area_name)
-            elif mode == "add":
-                task.area_add(float(rule["value"]), float(rule.get("weight", 0.1)),
-                              area_name)
-        for rule in global_rules:
-            mode = rule.get("mode", "none")
-            if mode == "mean":
-                task.mean(float(rule["value"]), 0)
-            elif mode == "wmean":
-                surface = str(rule.get("surface", ""))
-                if surface.startswith("surface_"):
-                    surface = surface_names[int(surface.split("_")[1])]
-                task.wmean(float(rule["value"]), surface, 0)
-            elif mode == "trend":
-                surface = str(rule.get("surface", ""))
-                if surface.startswith("surface_"):
-                    surface = surface_names[int(surface.split("_")[1])]
-                task.trend(float(rule.get("weight", 1)), int(rule.get("order", 10)),
-                           surface)
-        if lower is not None:
-            task.geq(lower)
-        if upper is not None:
-            task.leq(upper)
-        task.completer(d1, d2)
+        def add_points_rule():
+            if x is not None:
+                task.points("points")
+
+        def add_contours_rule():
+            for name, _line in contours:
+                curve_name = str(name) if "contour" in str(name) else "contour_%s" % name
+                task.contour(curve_name)
+
+        def add_faults_rule():
+            for name, _line in faults:
+                curve_name = str(name) if "fault" in str(name) else "fault_%s" % name
+                task.fault(curve_name)
+
+        def add_area_rules():
+            area_by_name = {str(name): name for name, _polygon, _props in areas}
+            for index, rule in enumerate(area_rules):
+                rule = rule or {}
+                name = rule.get("name", "")
+                if name not in area_by_name and index < len(areas):
+                    name = areas[index][0]
+                if name not in area_by_name:
+                    continue
+                area_name = str(name)
+                mode = rule.get("mode", "none")
+                if mode == "constant":
+                    task.area(float(rule["value"]), area_name)
+                elif mode == "bounds":
+                    if rule.get("lower") is not None:
+                        task.area_geq(float(rule["lower"]), area_name)
+                    if rule.get("upper") is not None:
+                        task.area_leq(float(rule["upper"]), area_name)
+                elif mode in ("undef", "mask"):
+                    task.area("undef", area_name)
+                elif mode == "mean":
+                    task.area_mean(float(rule["value"]), area_name)
+                elif mode == "add":
+                    task.area_add(float(rule["value"]), float(rule.get("weight", 0.1)),
+                                  area_name)
+
+        def add_global_rules():
+            for rule in global_rules:
+                mode = rule.get("mode", "none")
+                if mode == "mean":
+                    task.mean(float(rule["value"]), 0)
+                elif mode == "wmean":
+                    surface = str(rule.get("surface", ""))
+                    if surface.startswith("surface_"):
+                        surface = surface_names[int(surface.split("_")[1])]
+                    task.wmean(float(rule["value"]), surface, 0)
+                elif mode == "trend":
+                    surface = str(rule.get("surface", ""))
+                    if surface.startswith("surface_"):
+                        surface = surface_names[int(surface.split("_")[1])]
+                    task.trend(float(rule.get("weight", 1)),
+                               int(rule.get("order", 10)), surface)
+
+        def add_bounds():
+            if lower is not None:
+                task.geq(lower)
+            if upper is not None:
+                task.leq(upper)
+
+        handlers = {
+            "points": add_points_rule, "contours": add_contours_rule,
+            "faults": add_faults_rule, "areas": add_area_rules,
+            "global": add_global_rules, "bounds": add_bounds,
+            "completer": lambda: task.completer(d1, d2),
+        }
+        for group in rule_order:
+            handlers[group]()
         task.solve()
         values = np.asarray(task.values(), dtype=float)
         extent = {"min_x": min_x, "min_y": min_y,
@@ -738,6 +777,7 @@ async def save_project(
     surfaces: List[UploadFile] = File(default=[]),
     area_rules: str = Form(""),
     global_rules: str = Form(""),
+    rule_order: str = Form(""),
     name: str = Form("Untitled"),
     job_id: Optional[str] = Form(None),
     x_field: str = Form(""),
@@ -792,7 +832,8 @@ async def save_project(
                 "min_value": min_value, "max_value": max_value,
                 "exclude_zero": exclude_zero,
                 "area_rules": _parse_area_rules(area_rules),
-                "global_rules": _parse_global_rules(global_rules)}
+                "global_rules": _parse_global_rules(global_rules),
+                "rule_order": _parse_rule_order(rule_order)}
     counts = {"points": len(point_files), "faults": len(fault_files),
               "contours": len(contour_files), "areas": len(area_files),
               "surfaces": len(surface_files)}
@@ -1084,6 +1125,7 @@ async def create_job(
     surfaces: List[UploadFile] = File(default=[]),
     area_rules: str = Form(""),
     global_rules: str = Form(""),
+    rule_order: str = Form(""),
     x_field: str = Form(""),
     y_field: str = Form(""),
     z_field: str = Form(""),
@@ -1122,7 +1164,7 @@ async def create_job(
         _jobs[job.id] = job
     _pool.submit(_solve, job, point_files, fault_files, contour_files,
                  area_files, surface_files, _parse_area_rules(area_rules),
-                 _parse_global_rules(global_rules),
+                 _parse_global_rules(global_rules), _parse_rule_order(rule_order),
                  _fields_from(x_field, y_field, z_field, weight_field),
                  _value_filter(min_value, max_value, exclude_zero),
                  cell_size, cell_size_auto, tol, solver, d1, d2, lower, upper,

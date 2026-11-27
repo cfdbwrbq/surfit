@@ -21,6 +21,9 @@ let areaRules = [];
 let pendingAreaRules = null;
 let currentAreas = [];
 let pendingGlobalRules = null;
+let pendingRuleOrder = null;
+let ruleOrder = ["points", "contours", "faults", "areas", "global",
+                 "bounds", "completer"];
 const pendingFields = {};
 
 /* ---------- tabs ---------- */
@@ -237,6 +240,14 @@ function refreshSurfaceOptions(surfaces) {
     applyGlobalRules(pendingGlobalRules);
     pendingGlobalRules = null;
   }
+  if (pendingRuleOrder) {
+    ruleOrder = pendingRuleOrder.filter((group) => RULE_LABELS[group]);
+    for (const group of Object.keys(RULE_LABELS)) {
+      if (!ruleOrder.includes(group)) ruleOrder.push(group);
+    }
+    pendingRuleOrder = null;
+    renderRuleOrder();
+  }
 }
 
 function applyGlobalRules(rules) {
@@ -257,6 +268,45 @@ function applyGlobalRules(rules) {
     $("trend-order").value = trend.order ?? 10;
     if (trend.surface) $("trend-surface").value = trend.surface;
   }
+}
+
+const RULE_LABELS = {
+  points: "points", contours: "contours", faults: "fault lines",
+  areas: "area rules", global: "mean / trend", bounds: "global bounds",
+  completer: "completer",
+};
+
+function renderRuleOrder() {
+  const list = $("rule-order-list");
+  list.innerHTML = "";
+  ruleOrder.forEach((group, index) => {
+    const row = document.createElement("div");
+    row.className = "rule-order-row";
+    const label = document.createElement("span");
+    label.textContent = RULE_LABELS[group] || group;
+    const up = document.createElement("button");
+    up.type = "button";
+    up.textContent = "↑";
+    up.disabled = index === 0;
+    up.addEventListener("click", () => {
+      [ruleOrder[index - 1], ruleOrder[index]] = [ruleOrder[index], ruleOrder[index - 1]];
+      renderRuleOrder();
+    });
+    const down = document.createElement("button");
+    down.type = "button";
+    down.textContent = "↓";
+    down.disabled = index === ruleOrder.length - 1;
+    down.addEventListener("click", () => {
+      [ruleOrder[index + 1], ruleOrder[index]] = [ruleOrder[index], ruleOrder[index + 1]];
+      renderRuleOrder();
+    });
+    row.append(label, up, down);
+    list.appendChild(row);
+  });
+}
+
+function appendRuleOrder(body) {
+  body.append("rule_order", JSON.stringify(ruleOrder));
 }
 
 function appendAreaRules(body) {
@@ -1227,6 +1277,7 @@ function projectBody() {
   appendFieldSettings(body);
   appendAreaRules(body);
   appendGlobalRules(body);
+  appendRuleOrder(body);
   body.append("name", $("project_name").value.trim() || "Untitled");
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
@@ -1332,6 +1383,7 @@ async function loadProject(id) {
   $("exclude_zero").checked = Boolean(meta.settings.exclude_zero);
   pendingAreaRules = meta.settings.area_rules || null;
   pendingGlobalRules = meta.settings.global_rules || null;
+  pendingRuleOrder = meta.settings.rule_order || null;
   applyAutoCell();
   renderFiles();
   schedulePreview();
@@ -1366,6 +1418,7 @@ function downloadReport() {
   settings.cell_size_auto = $("cell_size_auto").checked;
   settings.area_rules = areaRules;
   settings.global_rules = currentGlobalRules();
+  settings.rule_order = ruleOrder;
   const report = {
     format: "surfit-workbench-report",
     version: 1,
@@ -1424,6 +1477,7 @@ form.addEventListener("submit", async (event) => {
   appendFieldSettings(body);
   appendAreaRules(body);
   appendGlobalRules(body);
+  appendRuleOrder(body);
   for (const key of ["cell_size", "tol", "d1", "d2", "solver"]) body.append(key, $(key).value);
   if ($("cell_size_auto").checked) body.append("cell_size_auto", "true");
   for (const key of ["lower", "upper", "min_x", "max_x", "min_y", "max_y"]) {
@@ -1459,5 +1513,6 @@ renderer.setAnimationLoop(() => {
 });
 renderFiles();
 refreshProjects();
+renderRuleOrder();
 applyAutoCell();
 resizeView();

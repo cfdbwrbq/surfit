@@ -114,6 +114,12 @@ Upload a native surfit surface (`.func` or a compatible `.dat`) as the
 
 Surface rules run after areas and before `completer`.
 
+### Rule order
+
+The `Rule order` panel controls the order of points, contours, faults, area
+rules, surface rules, global bounds and `completer`.  Rules are sent to solve in
+that order; the default keeps `completer` last.
+
 ### Area rules
 
 Polygon areas from GeoJSON/SHP get a row in `Area rules`:

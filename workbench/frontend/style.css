@@ -45,6 +45,12 @@ button { cursor: pointer; }
 .file-row select { width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 5px; background: #fff; font-size: 11px; color: var(--ink); }
 .remove { border: 0; background: transparent; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px; }
 .hint { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 8px 0 0; }
+.rule-order { margin: 10px 0; color: var(--muted); font-size: 11px; }
+.rule-order summary { cursor: pointer; }
+.rule-order-list { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.rule-order-row { display: flex; align-items: center; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; }
+.rule-order-row span { flex: 1; color: var(--ink); font-size: 10px; }
+.rule-order-row button { border: 1px solid var(--line); background: var(--paper); border-radius: 3px; padding: 1px 4px; color: var(--ink); font-size: 10px; }
 .surface-rules { margin: 10px 0; color: var(--muted); font-size: 11px; }
 .surface-rules summary { cursor: pointer; }
 .surface-rules > input, .surface-rules > select { margin: 5px 0; }

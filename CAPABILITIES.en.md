@@ -138,6 +138,8 @@ are in `docs/en/development.rst`.
 - SHP/GeoJSON field selection, value range/zero filtering, automatic cell size;
 - area rules: constant, bounds, undef, mean and add, with reordering;
 - global mean/wmean and trend rules from an uploaded surface;
+- ordering of all rule groups: points, contours, faults, areas, global,
+  bounds, completer;
 - 2D source map, 3D surface, cross-section and Quality & rules;
 - local projects, portable archives and a JSON report;
 - not part of the wheel and not required for the Python API.

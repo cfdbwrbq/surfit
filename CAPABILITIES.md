@@ -214,6 +214,7 @@ English one-page version: [CAPABILITIES.en.md](CAPABILITIES.en.md).
 - выбор полей SHP/GeoJSON, фильтр значений и auto cell size;
 - area-правила: constant, bounds, undef, mean, add; порядок правил;
 - глобальные mean/wmean и trend по загруженной поверхности;
+- порядок всех групп правил: points, contours, faults, areas, global, bounds, completer;
 - 2D-карта, 3D-поверхность, cross-section и Quality & rules;
 - локальные проекты, портативные архивы, JSON-отчёт;
 - не входит в wheel и не требуется для Python API.

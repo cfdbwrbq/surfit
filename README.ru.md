@@ -28,7 +28,7 @@ wheel-пакеты для Linux x86_64 (CPython 3.9–3.13). Выберите п
 например, для CPython 3.12:
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 Из исходников, с CMake и компилятором C++:

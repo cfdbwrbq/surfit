@@ -21,7 +21,7 @@ surfit 从井、曲线、等值线、多边形、趋势面和断层线构建规�
 每次 [release](https://github.com/cfdbwrbq/surfit/releases) 都附带 Linux x86_64 wheel（CPython 3.9–3.13）。选择对应解释器的 wheel，例如 CPython 3.12：
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 从源码安装需要 CMake 和 C++ 编译器：

@@ -1,4 +1,4 @@
-# Legacy cleanup — second pass (3.7.3)
+# Legacy cleanup — second pass (3.7.4)
 
 The first pass (`504dc90`) removed the old Doxygen `doc/` tree, the Windows
 NSIS installer, the Windows build scripts, `Hints`, `short_description` and the

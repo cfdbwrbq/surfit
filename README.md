@@ -28,7 +28,7 @@ Linux x86_64 wheels (CPython 3.9–3.13) are attached to each
 interpreter, for example CPython 3.12:
 
 ```bash
-pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.3/surfit-3.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+pip install https://github.com/cfdbwrbq/surfit/releases/download/v3.7.4/surfit-3.7.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
 ```
 
 From source, with CMake and a C++ compiler:

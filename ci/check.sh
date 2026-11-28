@@ -97,6 +97,7 @@ run physics "$PYTHON" "$TESTS/test_physics.py"
 
 step "parallel CV, bootstrap and ensembles"
 run parallel "$PYTHON" "$TESTS/test_parallel.py"
+run progress "$PYTHON" "$TESTS/test_progress.py"
 
 step "per-point weights"
 run weights "$PYTHON" "$TESTS/test_weights.py"

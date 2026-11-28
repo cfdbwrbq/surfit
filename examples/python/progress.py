@@ -1,10 +1,10 @@
-"""Shows solver progress with tqdm.
+"""Shows solver progress.
 
     python3 examples/python/progress.py
 
 The engine reports each solve and every iteration through its logging; the
-progress() context manager turns that into a bar.  tqdm is optional, so this
-prints a note instead of failing when it is missing.
+progress() context manager turns that into a bar when tqdm is available and
+into one line per event otherwise.
 """
 import os
 import sys
@@ -32,15 +32,8 @@ def main():
     task.area_add(20, 0.07, "area2")
     task.area_add(40, 0.07, "area4")
 
-    try:
-        import tqdm  # noqa: F401
-    except ImportError:
-        print("tqdm is not installed; running without a progress bar")
+    with surfit.progress():
         task.solve()
-    else:
-        # The bar lives on stderr, next to the engine's own console output.
-        with surfit.progress():
-            task.solve()
 
     grid = task.values()
     print("solved %s, %d of %d nodes defined"

@@ -1113,8 +1113,9 @@ residual, as :doc:`how_it_works` explains.
 
 ``style="bar"`` draws a tqdm bar in place and needs ``pip install
 surfit[progress]``; ``style="lines"`` writes one line per event, throttled by
-``every`` seconds; ``style=None`` picks a bar when stderr is a terminal and lines
-otherwise. Use lines when the output is captured, as in CI logs or notebooks.
+``every`` seconds; ``style=None`` picks a bar when stderr is a terminal **and**
+tqdm is installed, and lines otherwise. Use lines when the output is captured,
+as in CI logs or notebooks.
 
 In a captured stream the carriage returns collapse the frames into each other,
 so the default switches to lines automatically:

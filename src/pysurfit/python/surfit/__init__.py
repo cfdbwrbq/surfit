@@ -178,13 +178,14 @@ class _BarProgress(_ProgressBase):
 
     def _open(self):
         try:
-            from tqdm import tqdm
+            import tqdm as tqdm_module
         except ImportError:
             raise ImportError(
                 "progress(style='bar') needs tqdm; install it with "
                 "`pip install surfit[progress]` or `pip install tqdm`")
-        self._bar = tqdm(unit="iter", desc="gridding", disable=self._disable,
-                         dynamic_ncols=True, **self._tqdm_kwargs)
+        self._bar = tqdm_module.tqdm(
+            unit="iter", desc="gridding", disable=self._disable,
+            dynamic_ncols=True, **self._tqdm_kwargs)
 
     def _close(self):
         if self._bar is not None:
@@ -225,6 +226,12 @@ class _LineProgress(_ProgressBase):
     transcript -- the frames overwrite each other and only the last survives.
     One line per event survives intact.
     """
+
+    def _open(self):
+        """No resources to open for a line-oriented display."""
+
+    def _close(self):
+        """No resources to close for a line-oriented display."""
 
     def __init__(self, every=2.0, stream=None):
         self._every = every
@@ -269,13 +276,22 @@ def progress(disable=False, style=None, **tqdm_kwargs):
         logs, notebooks, and anywhere the output is captured rather than shown
         live on a terminal.
     ``None``
-        a bar when stderr is a terminal, lines otherwise.
+        a bar when stderr is a terminal **and** tqdm is installed; lines
+        otherwise.  tqdm is optional, so the default progress display never
+        fails just because the extra is missing.
 
     The mechanism is the ordinary log hook, so ``set_log_handler`` can be used
     directly when you want the messages yourself.
     """
     if style is None:
-        style = "bar" if sys.stderr.isatty() else "lines"
+        style = "lines"
+        if sys.stderr.isatty():
+            try:
+                import tqdm  # noqa: F401
+            except ImportError:
+                style = "lines"
+            else:
+                style = "bar"
     if style == "bar":
         return _BarProgress(disable=disable, **tqdm_kwargs)
     if style == "lines":

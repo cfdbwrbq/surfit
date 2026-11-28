@@ -60,6 +60,10 @@ def main():
         time.sleep(0.2)
     assert state["status"] == "done", state
     assert state["metrics"]["faults"] == 1
+    assert state["solver"] == "cg"
+    assert state["iteration"] > 0
+    assert state["phase"] > 0
+    assert state["phase_count"] > 0
     assert state["metrics"]["contours"] == 2
     mesh = client.get("/api/jobs/%s/mesh" % job_id).json()
     assert len(mesh["vertices"]) > 0

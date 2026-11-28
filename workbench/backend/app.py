@@ -84,6 +84,13 @@ class Job:
     status: str = "queued"
     stage: str = "queued"
     progress: int = 0
+    solver: str = ""
+    phase: int = 0
+    phase_count: int = 0
+    phase_grid: Optional[List[int]] = None
+    iteration: int = 0
+    solver_error: Optional[float] = None
+    convergence: float = 0.0
     error: Optional[str] = None
     created: float = field(default_factory=time.time)
     updated: float = field(default_factory=time.time)
@@ -500,6 +507,62 @@ def _mesh(values, extent, points, faults, contours=(), areas=(), max_side=260):
     }
 
 
+_PHASE_RE = re.compile(r"Phase\s+(\d+),\s+grid size\s*=\s*(\d+)\s*x\s*(\d+)")
+_SOLVER_RE = re.compile(r"^([A-Za-z0-9_]+):\s*\((\d+)\)")
+_ITER_FIRST_RE = re.compile(r"iter\s*:\s*(\d+).*?error\s*:\s*([0-9eE.+-]+)")
+_ERROR_FIRST_RE = re.compile(r"error\s*:\s*([0-9eE.+-]+)\s+iter\s*:\s*(\d+)")
+
+
+def _progress_observer(job: Job, tolerance: float):
+    """Update a job from the engine's real solver log events."""
+
+    def observe(level, message):
+        text = message.strip()
+        phase = _PHASE_RE.search(text)
+        if phase:
+            job.phase = int(phase.group(1))
+            job.phase_grid = [int(phase.group(2)), int(phase.group(3))]
+            job.stage = "solving"
+            return
+        solver = _SOLVER_RE.match(text)
+        if solver:
+            job.solver = solver.group(1)
+            job.iteration = 0
+            job.solver_error = None
+            job.convergence = 0.0
+            job._first_error = None
+            return
+        match = _ITER_FIRST_RE.search(text)
+        if match:
+            step, error = int(match.group(1)), float(match.group(2))
+        else:
+            match = _ERROR_FIRST_RE.search(text)
+            if not match:
+                return
+            error, step = float(match.group(1)), int(match.group(2))
+        job.iteration = step
+        job.solver_error = error
+        if tolerance <= 0:
+            return
+        first_error = getattr(job, "_first_error", None)
+        if first_error is None or first_error <= 0:
+            job._first_error = max(error, tolerance)
+            first_error = job._first_error
+        if first_error <= tolerance:
+            convergence = 1.0
+        else:
+            ratio = max(error, tolerance) / tolerance
+            start = first_error / tolerance
+            convergence = 1.0 - np.log(ratio) / np.log(start)
+        job.convergence = float(max(0.0, min(1.0, convergence)))
+        phase_count = max(1, job.phase_count)
+        phase = max(1, job.phase)
+        fraction = (phase - 1 + job.convergence) / phase_count
+        job.progress = max(job.progress, int(20 + 70 * min(1.0, fraction)))
+
+    return observe
+
+
 def _solve(job: Job, point_files, fault_files, contour_files, area_files,
            surface_files, area_rules, global_rules, rule_order, fields, value_filter,
            cell_size: float, auto_cell: bool, auto_cells: int, tol: float, solver: str,
@@ -579,6 +642,8 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
             raise ValueError("grid too large: %d x %d" % (nx, ny))
         step_x = (max_x - min_x) / (nx - 1)
         step_y = (max_y - min_y) / (ny - 1)
+        job.phase_count = max(
+            1, int(np.ceil(np.log2(max(nx, ny) / 8.0))) + 1)
         task = surfit.Session(map_name="studio", tol=tol, strict=True)
         task.set_solver(solver)
         surface_dir = tempfile.TemporaryDirectory()
@@ -678,10 +743,15 @@ def _solve(job: Job, point_files, fault_files, contour_files, area_files,
         for group in rule_order:
             handlers[group]()
         job.stage = "solving"
-        job.progress = 20
-        task.solve()
+        job.progress = max(20, job.progress)
+        job._first_error = None
+        surfit.set_log_handler(_progress_observer(job, tol))
+        try:
+            task.solve()
+        finally:
+            surfit.clear_log_handler()
         job.stage = "building mesh"
-        job.progress = 85
+        job.progress = max(85, job.progress)
         values = np.asarray(task.values(), dtype=float)
         extent = {"min_x": min_x, "min_y": min_y,
                   "step_x": step_x, "step_y": step_y}
@@ -1217,7 +1287,15 @@ def get_job(job_id: str):
         raise HTTPException(404, "job not found")
     return {
         "id": job.id, "status": job.status, "stage": job.stage,
-        "progress": job.progress, "error": job.error,
+        "progress": job.progress,
+        "solver": job.solver,
+        "phase": job.phase,
+        "phase_count": job.phase_count,
+        "phase_grid": job.phase_grid,
+        "iteration": job.iteration,
+        "solver_error": job.solver_error,
+        "convergence": job.convergence,
+        "error": job.error,
         "metrics": job.metrics,
         "downloads": {
             "dat": "/api/jobs/%s/download.dat" % job.id if job.dat_path else None,

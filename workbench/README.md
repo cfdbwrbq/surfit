@@ -35,6 +35,14 @@ python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 
 Open <http://127.0.0.1:8000>.  Example inputs are in `examples/`.
 
+## Solve progress
+
+While a job runs, the status area receives the engine's real solver events:
+solver name, multilevel phase, iteration count and step error. The bar advances
+with the phase and the log-error reduction; it is **convergence progress**, not
+a time ETA. The C++ solve exposes no total iteration count, so the workbench does
+not invent a percentage.
+
 ## Workflow
 
 ```text

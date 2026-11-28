@@ -1651,9 +1651,22 @@ function updateProgress(data) {
   const stage = data.stage || data.status || "working";
   const progress = Number.isFinite(Number(data.progress)) ? Number(data.progress) : 0;
   const solving = stage === "solving" || stage === "running";
-  progressBox.classList.toggle("is-indeterminate", solving);
-  $("progress-fill").style.width = solving ? "35%" : `${Math.max(2, progress)}%`;
-  $("progress-label").textContent = STAGE_LABELS[stage] || stage;
+  const hasTelemetry = solving && Number.isFinite(Number(data.convergence))
+    && Number(data.iteration) > 0;
+  progressBox.classList.toggle("is-indeterminate", solving && !hasTelemetry);
+  $("progress-fill").style.width = `${Math.max(2, hasTelemetry ? progress : (solving ? 35 : progress))}%`;
+  const detail = [];
+  if (data.solver) detail.push(data.solver);
+  if (data.phase) {
+    detail.push(`phase ${data.phase}${data.phase_count ? `/${data.phase_count}` : ""}`);
+  }
+  if (data.iteration) detail.push(`${data.iteration} it`);
+  if (data.solver_error !== null && data.solver_error !== undefined) {
+    detail.push(`err ${Number(data.solver_error).toExponential(2)}`);
+  }
+  $("progress-label").textContent = hasTelemetry
+    ? `Solving · ${detail.join(" · ")}`
+    : (STAGE_LABELS[stage] || stage);
   $("progress-track").setAttribute("aria-valuenow", String(progress));
   renderProgressClock();
 }

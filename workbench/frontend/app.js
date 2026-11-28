@@ -8,6 +8,7 @@ const progressBox = $("progress");
 let progressStarted = 0;
 let progressTimer = null;
 let progressHideTimer = null;
+let lastProgressDetail = {};
 const files = [];
 let fileSeq = 0;
 let lastMesh = null;
@@ -1636,6 +1637,7 @@ function renderProgressClock() {
 
 function beginProgress(label = "Queued…") {
   progressStarted = Date.now();
+  lastProgressDetail = {};
   clearTimeout(progressHideTimer);
   progressHideTimer = null;
   clearInterval(progressTimer);
@@ -1651,18 +1653,21 @@ function updateProgress(data) {
   const stage = data.stage || data.status || "working";
   const progress = Number.isFinite(Number(data.progress)) ? Number(data.progress) : 0;
   const solving = stage === "solving" || stage === "running";
-  const hasTelemetry = solving && Number.isFinite(Number(data.convergence))
-    && Number(data.iteration) > 0;
-  progressBox.classList.toggle("is-indeterminate", solving && !hasTelemetry);
-  $("progress-fill").style.width = `${Math.max(2, hasTelemetry ? progress : (solving ? 35 : progress))}%`;
-  const detail = [];
-  if (data.solver) detail.push(data.solver);
-  if (data.phase) {
-    detail.push(`phase ${data.phase}${data.phase_count ? `/${data.phase_count}` : ""}`);
+  for (const key of ["solver", "phase", "phase_count", "iteration", "solver_error", "convergence"]) {
+    if (data[key] !== null && data[key] !== undefined) lastProgressDetail[key] = data[key];
   }
-  if (data.iteration) detail.push(`${data.iteration} it`);
-  if (data.solver_error !== null && data.solver_error !== undefined) {
-    detail.push(`err ${Number(data.solver_error).toExponential(2)}`);
+  const detailData = Object.assign({}, lastProgressDetail, data);
+  const hasTelemetry = solving && Boolean(detailData.solver || detailData.phase);
+  progressBox.classList.toggle("is-indeterminate", solving && !hasTelemetry && progress <= 20);
+  $("progress-fill").style.width = `${Math.max(2, solving ? Math.max(progress, 35) : progress)}%`;
+  const detail = [];
+  if (detailData.solver) detail.push(detailData.solver);
+  if (detailData.phase) {
+    detail.push(`phase ${detailData.phase}${detailData.phase_count ? `/${detailData.phase_count}` : ""}`);
+  }
+  if (detailData.iteration) detail.push(`${detailData.iteration} it`);
+  if (detailData.solver_error !== null && detailData.solver_error !== undefined) {
+    detail.push(`err ${Number(detailData.solver_error).toExponential(2)}`);
   }
   $("progress-label").textContent = hasTelemetry
     ? `Solving · ${detail.join(" · ")}`
@@ -1710,7 +1715,6 @@ async function poll(id) {
   }
   statusBox.textContent = "Rendering…";
   statusBox.className = "status";
-  updateProgress({ stage: "building mesh", progress: 85 });
   lastJob = data;
   const mesh = await (await fetch(`/api/jobs/${id}/mesh`)).json();
   renderResult(data, mesh);
